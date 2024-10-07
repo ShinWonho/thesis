@@ -1,0 +1,158 @@
+% !TEX root = main.tex
+
+\chapter{Related Work}
+\label{ch:related}
+
+\paragraph{Formal Semantics for Programming Languages}
+
+Researchers have defined formal semantics for various real-world programming
+languages.
+%
+\Cref{ch:intro} already provides the list of studies of formal
+semantics for each language.
+%
+Therefore, this section emphasizes their methodologies and compares them with
+the approach proposed in this work.
+
+While numerous studies have directly defined the formal semantics of a complete
+real-world language, this approach necessitates significant manual effort.
+%
+To circumvent this issue, some studies have chosen to define formal semantics
+by defining a small core language and then desugaring the surface language to
+the core
+language~\cite{guha2010essence,politz2012tested,memarian2016depths,politz2013python}.
+%
+This approach aligns with our work, where we introduce OpenQASMCore and perform
+desugaring from OpenQASM to OpenQASMCore.
+
+Another way to reduce the burden of defining formal semantics is to utilize
+semantic frameworks, such as K~\cite{rosu2010overview}, PLT
+Redex~\cite{felleisen2009semantics}, and Lem~\cite{mulligan2014lem}.
+%
+These semantic frameworks are also beneficial because they allow the semantics
+to be executable without any additional work.
+%
+K is a rewrite-based semantic framework, in which the semantics of many
+languages have been
+formalized~\cite{park2015kjs,ellison2012executable,bogdanas2015kjava,filaretti2014executable,jiao2020semantic}.
+%
+PLT Redex is a domain-specific language for specifying operational semantics
+and has been used to describe the semantics of various
+languages~\cite{guha2010essence,politz2013python}.
+
+Researchers have defined formal semantics using proof assistants as well.
+%
+Coq~\cite{barras1997coq} has been widely employed to mechanize formal
+semantics~\cite{bodin2014trusted,blazy2009mechanized,jung2017rustbelt,watt2021two}.
+%
+Isabelle/HOL~\cite{nipkow2002isabelle} is another popular proof assistant used
+for defining formal semantics~\cite{klein2006machine,watt2018mechanising}.
+%
+Semantics defined with proof assistants are often executable, such as shown by
+\citet{bodin2014trusted}, who extract OCaml code from Coq.
+%
+In this work, we also mechanize the semantics in Coq and extract OCaml code.
+
+One notable approach to obtaining formal semantics with low manual effort is to
+automatically extract mechanized semantics from a structured natural language
+specification, as proposed and adopted in JavaScript by \citet{park2021jiset}.
+%
+However, this approach is not applicable to OpenQASM due to its lack of
+sufficient structure in the specification.
+
+When formal semantics is executable, it is a standard approach to validate its
+conformance using existing test suites.
+%
+Most traditional programming languages provide official conformance test
+suites, such as Test262~\cite{test262} for JavaScript and the Java
+Compatibility Kit~\cite{jck} for Java.
+%
+However, quantum computing is still in its early stages, and OpenQASM 2.0 does
+not have an official test suite.
+%
+Consequently, we assess the conformance of the semantics using example circuits
+from the OpenQASM 2.0 specification~\cite{openqasm2} and benchmark circuits
+from QASMBench~\cite{li2023qasmbench}.
+%
+Several studies have demonstrated the practical utility of executable semantics
+in identifying bugs in language
+implementations~\cite{watt2023wasmref,schumi2021spectest,park2021jest} and
+automatically generating test suites of high coverage~\cite{park2023feature}.
+
+\paragraph{Quantum Programming Languages}
+
+Researchers have proposed high-level quantum programming languages, which are
+complementary to quantum circuit description languages, such as OpenQASM, the
+main focus of this work.
+%
+While high-level languages allow programmers to express complex quantum
+algorithms using abstractions, circuit description languages are tightly
+coupled with real quantum hardware and often serve as the compilation targets
+for high-level languages.
+
+In the early days of quantum computing, quantum programming languages were
+defined by incorporating quantum computations into classical languages.
+%
+For instance, QCL~\cite{omer2003structured} and qGCL~\cite{sanders2000quantum}
+introduce imperative features alongside quantum computations, while quantum
+lambda calculus~\cite{maymin1997extending},
+QML~\cite{altenkirch2005functional}, and Quipper~\cite{green2013quipper} enable
+quantum computations within functional languages.
+
+Recently, researchers have proposed quantum programming languages to address
+specific difficulties in quantum programming.
+%
+Here, we discuss a few notable examples.
+%
+Silq~\cite{bichsel2020silq} enables programmers to safely and concisely perform
+\emph{uncomputation}, which means ignoring temporary qubits during computation
+without any side effects.
+%
+Twist~\cite{yuan2022twist} aids in reasoning about \emph{purity}, i.e., the
+absence of entanglement, through its novel type system.
+%
+Tower~\cite{yuan2022tower} allows the use of random-access memory for
+implementing pointer-based data structures.
+%
+Qunity~\cite{voichick2023qunity} generalizes language constructs in classical
+programming, thereby establishing a unified approach to quantum and classical
+computing.
+%
+\citet{Feng2021Hoare} propose a Hoare logic for quantum programs by defining
+classical-quantum states, which are capable of describing states of dynamic
+circuits.
+%
+\textsc{voqc}~\cite{Hietala2021voqc} is the first verified optimizer for quantum
+circuits, utilizing a language called \textsc{sqir}, compatible with OpenQASM.
+%
+Embedded in Coq, \textsc{sqir} facilitates the verification of \textsc{voqc}'s
+correctness.
+
+A notable exception is the work of \citet{paykin2017qwire}, which introduces
+\textsc{Qwire}, a quantum circuit description language that can be manipulated
+using a classical language.
+%
+Like our semantics, \textsc{Qwire}'s semantics is defined in terms of density
+matrices.
+%
+Its type system guarantees the preservation of the trace of the density matrix,
+ensuring that any well-typed circuit maintains a trace of 1 during execution.
+%
+This aligns with the last condition specified by \cref{pos:density}.
+%
+However, \textsc{Qwire} does not enforce the other properties required by the
+density matrix postulate, whereas in this work, we prove the physical
+consistency of the proposed semantics.
+
+\paragraph{Testing Quantum Programming Platforms}
+
+As mentioned in \Cref{ch:evaluation:rq2}, \textsc{QDiff}~\cite{wang2022qdiff}
+and MorphQ~\cite{paltenghi2023morphq} are differential testing and metamorphic
+testing techniques for quantum programming platforms, respectively.
+%
+Although these techniques are effective in identifying bugs in quantum
+programming platforms, all the identified bugs are due to software crashes, but
+not due to outcomes not following the correct probability distributions.
+%
+These approaches do not utilize a testing oracle to compute the correct
+probability distributions, thereby limiting their bug detection capabilities.

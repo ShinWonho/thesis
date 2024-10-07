@@ -1,0 +1,708 @@
+% !TEX root = paper.tex
+
+\chapter{Core Language: OpenQASMCore}
+\label{ch:openqasmcore}
+\noindent
+In this chapter, we define the syntax of OpenQASMCore
+(\cref{ch:openqasmcore:syntax}) and provide examples of quantum circuits
+written in OpenQASMCore (\cref{ch:openqasmcore:example}).
+%
+These examples serve to offer a concise introduction to quantum computing and
+aid in the intuitive understanding of OpenQASMCore's semantics.
+
+\section{Syntax}
+\label{ch:openqasmcore:syntax}
+
+\begin{figure}[t]
+	\[
+		\begin{array}{@{}l}
+			\text{Bit value} \quad b \in \{0,1\} \qquad
+			\text{Real number} \quad r \in \mathbb{R} \qquad
+			\text{Classical bit} \quad c \in \mathbb{N} \qquad
+			\text{Qubit} \quad q \in \mathbb{N} \\
+			\text{Statement} \quad s ::= \inop
+			\ |\ \iseq{s}{s}
+			\ |\ \iif{c}{b}{s}
+			\ |\ \irotate{r}{r}{r}{q}
+			\ |\ \icnot{q}{q}
+			\ |\ \imeasure{q}{c}
+			\ |\ \ireset{q}
+		\end{array}
+	\]
+	\caption{Syntax of OpenQASMCore}
+	\label{fig:syntax-openqasmcore}
+\end{figure}
+
+\noindent
+\cref{fig:syntax-openqasmcore} defines the syntax of OpenQASMCore.
+%
+The metavariable $b$ ranges over (classical) bit values, each of which is
+either $0$ or $1$.
+%
+The metavariable $r$ ranges over real numbers.
+%
+The metavariable $c$ ranges over natural numbers when used to label classical
+bits.
+%
+Similarly, the metavariable $q$ ranges over natural numbers when used to label
+qubits (quantum bits).
+%
+The numbers of classical bits and qubits used by each program (i.e., circuit)
+are finite.
+%
+In a program with $n$ classical bits and $m$ qubits, classical bits are
+numbered from $0$ to $n-1$, and qubits are numbered from $0$ to $m-1$.
+%
+Since classical bits and qubits are used in different syntactic contexts, it is
+always apparent whether a specific natural number corresponds to a classical
+bit or a qubit.
+%
+Finally, the metavariable $s$ ranges over statements, and a program consists of
+a single statement.
+
+The language provides seven kinds of statements.
+%
+The first three kinds are commonly used in classical computing.
+%
+$\inop$ is a no-op, and $\iseq{s_1}{s_2}$ is a sequencing statement that
+sequentially executes $s_1$ and $s_2$.
+%
+$\iif{c}{b}{s}$ is a conditional statement that executes $s$ if the value of
+classical bit $c$ equals $b$.
+%
+The next four kinds are specific to quantum computing.
+%
+$\irotate{r_1}{r_2}{r_3}{q}$ is a rotation gate that alters the state of qubit
+$q$ by rotating it by $r_1$, $r_2$, and $r_3$ radians around certain axes.
+%
+$\icnot{q_1}{q_2}$ is a controlled NOT (CNOT) gate that flips qubit $q_2$ if
+qubit $q_1$ equals $1$.
+%
+$\imeasure{q}{c}$ is a measurement statement that measures qubit $q$, yielding a
+non-deterministic result, which is then assigned to classical bit $c$.
+%
+$\ireset{q}$ is a reset statement that prepares qubit $q$ in $\ket{0}$.
+%
+Further details on these four quantum-specific statements are provided in
+\cref{ch:openqasmcore:example}.
+
+\section{Examples}
+\label{ch:openqasmcore:example}
+
+\noindent
+We now provide example quantum circuits while introducing basic concepts in
+quantum programming.
+%
+These concepts are standard in the physics
+literature~\cite{hayashi2014introduction}.
+%
+First, we explain the execution of a single-qubit circuit, which is simpler
+than a multi-qubit circuit.
+%
+We present the same single-qubit circuit twice: once using state vectors
+(\cref{ch:openqasmcore:example:vector}) and once using density matrices
+(\cref{ch:openqasmcore:example:matrix}).
+%
+State vectors offer an intuitive explanation of quantum circuits, while density
+matrices are closely related the postulates to which our formal semantics
+adheres.
+%
+Next, we show a multi-qubit circuit to illustrate how the concepts from a
+single-qubit circuit can be generalized (\cref{ch:openqasmcore:example:multi}).
+
+\subsection{Single-qubit circuit (with state vector)}
+\label{ch:openqasmcore:example:vector}
+
+\noindent
+A \emph{qubit} is the base unit of quantum computing.
+%
+Unlike a classical bit that can take only values 0 or 1, a qubit exists in a
+\emph{superposition} state, represented as
+$\ket{\psi}=\alpha\ket{0}+\beta\ket{1}$, where $\alpha$ and $\beta$ are complex
+numbers, and $\ket{0}$ and $\ket{1}$ represent states 0 and 1, respectively.
+%
+Measurement of a qubit yields either 0 or 1, with probabilities $|\alpha|^2$
+and $|\beta|^2$, respectively.
+%
+The sum of these probabilities must be equal to 1, satisfying
+$|\alpha|^2+|\beta|^2=1$.
+%
+We refer to $\ket{\psi}$ as the \emph{state vector} of the qubit since it
+denotes a column vector as follows:
+%
+\[
+	%
+	\ket{0}=\mtrx{1\\0}
+	%
+	\qquad\qquad
+	%
+	\ket{1}=\mtrx{0\\1}
+	%
+	\qquad\qquad
+	%
+	\ket{\psi}=\alpha\ket{0}+\beta\ket{1}=\mtrx{\alpha\\\beta}
+	%
+\]
+
+\cref{fig:example:code} presents an example quantum circuit implemented in
+OpenQASMCore, while \cref{fig:example:circuit} provides a visual representation
+of the circuit.
+%
+It is a dynamic circuit because it incorporates a measurement of a qubit in the
+middle of execution (line 2), changing the control flow based on the
+measurement outcome (line 3).
+%
+The circuit employs one qubit, $q_0$, and two classical bits, $c_0$ and $c_1$.
+%
+By convention, the initial state of the qubit is $\ket{0}$, and the initial
+value of each classical bit is $0$.
+%
+We now explain the circuit's execution line by line.
+
+\paragraph{Line 1}
+
+We apply the $\ugate{\frac{\pi}{2}}{0}{\pi}$ gate to qubit $q_0$.
+%
+This gate is known as the \emph{Hadamard gate} and denoted as $H$ in the
+diagram.
+%
+Its purpose is to create a superposition.
+%
+The effect of any rotation gate ($\mathsf{U}$ gate) is represented by matrix
+multiplication with the state vector.
+%
+The matrix representing the Hadamard gate is
+$\frac{1}{\sqrt{2}}\smtrx{1&1\\1&-1}$.
+%
+(A general formula for computing the matrix representing an arbitrary rotation
+gate is discussed in \cref{ch:consistency:semantics}.)
+%
+Consequently, the state vector changes as follows after the gate:
+%
+\[
+	%
+	\frac{1}{\sqrt{2}}\mtrx{1&1\\1&-1}\ket{0}
+	%
+	=\frac{1}{\sqrt{2}}\mtrx{1&1\\1&-1}\mtrx{1\\0}
+	%
+	=\frac{1}{\sqrt{2}}\mtrx{1\\1}
+	%
+	=\frac{1}{\sqrt{2}}\ket{0}+\frac{1}{\sqrt{2}}\ket{1}
+	%
+\]
+
+\begin{figure}[t]
+	\centering
+	\begin{subfigure}{0.3\textwidth}
+		$
+			\begin{array}{@{}r@{~}|l@{}}
+				\iseq
+				{{\scriptsize\texttt{1}} & \irotate{\frac{\pi}{2}}{0}{\pi}{0}}
+				{                                                                          \\ \iseq
+				{{\scriptsize\texttt{2}} & \imeasure{0}{0}}
+				{                                                                          \\ \iseq
+				{{\scriptsize\texttt{3}} & \iif{0}{0}{\irotate{\frac{\pi}{2}}{0}{\pi}{0}}}
+				{                                                                          \\
+				{\scriptsize\texttt{4}}  & \imeasure{0}{1}
+				} } }
+			\end{array}
+		$
+		\caption{OpenQASMCore}
+		\label{fig:example:code}
+	\end{subfigure}
+	\hspace{2em}
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\begin{quantikz}[wire types={q,c,c},row sep={0.5cm,between origins}]
+			\lstick{$q_0$} & \gate{H} & \meter{} \wire[d][1]{c} & \gate{H} & \meter{} \wire[d][2]{c}&\\
+			\lstick{$c_0$} & & & \octrl[vertical wire=c]{-1} & &\\
+			\lstick{$c_1$} & & & & &\\
+		\end{quantikz}
+		\caption{Diagram}
+		\label{fig:example:circuit}
+	\end{subfigure}
+	\caption{An example single-qubit dynamic quantum circuit}
+	\label{fig:example}
+\end{figure}
+
+\paragraph{Line 2}
+
+We measure qubit $q_0$ and assign the outcome to classical bit $c_0$.
+%
+According to the many-worlds interpretation, this measurement splits the world
+into two branches: one where $0$ is obtained and another where $1$ is obtained.
+%
+In the first branch, $0$ is assigned to $c_0$, while the superposition of $q_0$
+collapses to $\ket{0}$.
+%
+Similarly, in the second branch, $1$ is assigned to $c_0$, while the
+superposition of $q_0$ collapses to $\ket{1}$.
+%
+Each branch is reachable from the previous world with a probability of $1/2$.
+%
+We represent a world with a tuple consisting of a state vector, classical bits,
+and the corresponding probability of reaching that branch.
+%
+Therefore, we get $(\smtrx{1\\0},[0,0],\frac{1}{2})$ and
+$(\smtrx{0\\1},[1,0],\frac{1}{2})$.
+
+\paragraph{Line 3}
+
+If the value of $c_0$ equals $0$, we apply the Hadamard gate to qubit $q_0$
+once again.
+%
+In the first world, $(\smtrx{1\\0},[0,0],\frac{1}{2})$, $c_0$ holds $0$, and
+the gate is applied to $q_0$, resulting in
+$(\frac{1}{\sqrt{2}}\smtrx{1\\1},[0,0],\frac{1}{2})$.
+%
+In the second world, $(\smtrx{0\\1},[1,0],\frac{1}{2})$, $c_0$ contains $1$, so
+no changes occur.
+%
+Consequently, we obtain two worlds:
+$(\frac{1}{\sqrt{2}}\smtrx{1\\1},[0,0],\frac{1}{2})$ and
+$(\smtrx{0\\1},[1,0],\frac{1}{2})$.
+
+\paragraph{Line 4}
+
+We measure qubit $q_0$ and assign the outcome to classical bit $c_1$.
+%
+In the first world, the measurement yields $0$ or $1$ with probabilities of
+$1/2$.
+%
+Consequently, the world splits into two: $(\smtrx{1\\0},[0,0],\frac{1}{4})$ and
+$(\smtrx{0\\1},[0,1],\frac{1}{4})$.
+%
+In the second world, the measurement always yields $1$.
+%
+Therefore, the world does not split and only updates the value of $c_1$,
+resulting in $(\smtrx{0\\1},[1,1],\frac{1}{2})$.
+%
+After the measurement, we have three worlds:
+$(\smtrx{1\\0},[0,0],\frac{1}{4})$, $(\smtrx{0\\1},[0,1],\frac{1}{4})$, and
+$(\smtrx{0\\1},[1,1],\frac{1}{2})$.
+%
+From this, we can conclude that the circuit outputs, i.e., the values in the
+classical bits, are either $00$, $01$, or $11$, with probabilities of $1/4$,
+$1/4$, and $1/2$, respectively.
+
+\subsection{Single-qubit circuit (with density matrix)}
+\label{ch:openqasmcore:example:matrix}
+
+\noindent
+The \emph{density matrix}, which is the linear combination of outer products of
+a state vector with itself, is used to represent the state of a qubit as a
+matrix instead of a vector. For example, consider a density matrix with a
+single outer product:
+%
+\[
+	%
+	\rho
+	%
+	=\mtrx{\alpha\\\beta}\mtrx{\alpha\\\beta}^*
+	%
+	=\mtrx{\alpha\\\beta}\mtrx{\alpha^*&\beta^*}
+	%
+	=\mtrx{\alpha\alpha^*&\alpha\beta^*\\\beta\alpha^*&\beta\beta^*}
+	%
+\]
+%
+Note that $\alpha^*$ is the complex conjugate of a complex number $\alpha$, and
+$M^*$ is the conjugate transpose of a matrix $M$.
+%
+The diagonal elements of a density matrix correspond to the probabilities of
+each measurement outcome because $\alpha\alpha^*$ equals $|\alpha|^2$ for every
+complex number $\alpha$.
+%
+We now explain the execution of \cref{fig:example}'s circuit using density
+matrices.
+%
+The initial density matrix is $\smtrx{1\\0}\smtrx{1&0}=\smtrx{1&0\\0&0}$.
+
+\paragraph{Line 1}
+
+We apply the Hadamard gate to $q_0$.
+%
+The effect of a rotation gate is represented by matrix multiplication with the
+density matrix.
+%
+Specifically, the updated density matrix is given by $M\rho M^*$, where $M$ is
+the matrix representing the gate and $\rho$ is the current density matrix.
+%
+Since the Hadamard gate is represented as
+$\frac{1}{\sqrt{2}}\smtrx{1&1\\1&-1}$, the density matrix is updated as
+follows:
+%
+\[
+	%
+	\frac{1}{\sqrt{2}}\mtrx{1&1\\1&-1}\cdot\mtrx{1&0\\0&0}\cdot\frac{1}{\sqrt{2}}\mtrx{1&1\\1&-1}
+	%
+	=\frac{1}{2}\mtrx{1&1\\1&1}
+	%
+\]
+%
+This result matches the result obtained using the state vector:
+%
+\[
+	\frac{1}{2}\mtrx{1&1\\1&1}=\frac{1}{\sqrt{2}}\mtrx{1\\1}\cdot\frac{1}{\sqrt{2}}\mtrx{1&1}.
+\]
+
+\paragraph{Line 2}
+
+We measure $q_0$ and assign the outcome to $c_0$.
+%
+For each possible measurement outcome, there exists a corresponding matrix,
+which is used to compute the probability of the outcome and the density matrix
+after the measurement.
+%
+The matrices for outcomes $0$ and $1$ are $\smtrx{1&0\\0&0}$ and
+$\smtrx{0&0\\0&1}$, respectively.
+%
+The probability of the outcome is $P=\trace{\rho M}$, and the density matrix
+after the measurement is $\frac{1}{P}M\rho M$, where $M$ is the matrix
+corresponding to an outcome and $\rho$ is the current density matrix.
+%
+Note that $\trace{M}$ is the \emph{trace} of $M$, i.e., the sum of $M$'s
+diagonal elements.
+%
+We compute the probability of $0$ being the outcome and the updated density
+matrix as follows:
+%
+\[
+	%
+	\trace{\frac{1}{2}\mtrx{1&1\\1&1}\mtrx{1&0\\0&0}}
+	%
+	=\trace{\frac{1}{2}\mtrx{1&0\\1&0}}
+	%
+	=\frac{1}{2}
+	%
+	\qquad
+	%
+	\frac{1}{\sfrac{1}{2}}\cdot\mtrx{1&0\\0&0}\cdot\frac{1}{2}\mtrx{1&1\\1&1}\cdot\mtrx{1&0\\0&0}
+	%
+	=\mtrx{1&0\\0&0}
+	%
+\]
+%
+Similarly, we compute the probability of $1$ being the outcome and the updated
+density matrix:
+%
+\[
+	%
+	\trace{\frac{1}{2}\mtrx{1&1\\1&1}\mtrx{0&0\\0&1}}
+	%
+	=\trace{\frac{1}{2}\mtrx{0&1\\0&1}}
+	%
+	=\frac{1}{2}
+	%
+	\qquad
+	%
+	\frac{1}{\sfrac{1}{2}}\cdot\mtrx{0&0\\0&1}\cdot\frac{1}{2}\mtrx{1&1\\1&1}\cdot\mtrx{0&0\\0&1}
+	%
+	=\mtrx{0&0\\0&1}
+	%
+\]
+%
+As a result, we obtain two worlds: $(\smtrx{1&0\\0&0},[0,0],\frac{1}{2})$ and
+$(\smtrx{0&0\\0&1},[1,0],\frac{1}{2})$.
+%
+This result is also consistent with the result obtained using the state vector:
+%
+$\smtrx{1&0\\0&0}=\smtrx{1\\0}\smtrx{1&0}$ and
+$\smtrx{0&0\\0&1}=\smtrx{0\\1}\smtrx{0&1}$.
+
+\paragraph{Lines 3--4}
+
+Similar to the process using state vectors, we end up with three worlds in the
+end: $(\smtrx{1&0\\0&0},[0,0],\frac{1}{4})$,
+$(\smtrx{0&0\\0&1},[0,1],\frac{1}{4})$, and
+$(\smtrx{0&0\\0&1},[1,1],\frac{1}{2})$.
+
+\subsection{Multi-qubit circuit}
+\label{ch:openqasmcore:example:multi}
+
+\noindent
+Both state vectors and density matrices easily extend to multi-qubit systems.
+%
+The state of an $n$-qubit system is represented by a state vector of $2^n$
+entries or a density matrix of dimension $2^n \times 2^n$.
+%
+For example, in a $2$-qubit system, a measurement can produce the outcomes
+$00$, $01$, $10$, or $11$.
+%
+A system that produces these outcomes with corresponding probabilities
+$|\alpha|^2$, $|\beta|^2$, $|\gamma|^2$, and $|\delta|^2$ is represented by the
+following state vector and density matrix:
+%
+\[
+	%
+	\ket{\psi}
+	%
+	=\alpha\ket{00}+\beta\ket{01}+\gamma\ket{10}+\delta\ket{11}
+	%
+	=\alpha\mtrx{1\\0\\0\\0}+\beta\mtrx{0\\1\\0\\0}+\gamma\mtrx{0\\0\\1\\0}+\delta\mtrx{0\\0\\0\\1}
+	%
+	=\mtrx{\alpha\\\beta\\\gamma\\\delta}
+	%
+\]
+\[
+	%
+	\rho
+	%
+	=\mtrx{\alpha\\\beta\\\gamma\\\delta}\mtrx{\alpha\\\beta\\\gamma\\\delta}^*
+	%
+	=\mtrx{\alpha\\\beta\\\gamma\\\delta}\mtrx{\alpha^*&\beta^*&\gamma^*&\delta^*}
+	%
+	=\mtrx{
+		%
+		\alpha\alpha^*&\alpha\beta^*&\alpha\gamma^*&\alpha\delta^*\\
+		%
+		\beta\alpha^*&\beta\beta^*&\beta\gamma^*&\beta\delta^*\\
+		%
+		\gamma\alpha^*&\gamma\beta^*&\gamma\gamma^*&\gamma\delta^*\\
+		%
+		\delta\alpha^*&\delta\beta^*&\delta\gamma^*&\delta\delta^*
+		%
+	}
+	%
+\]
+
+\begin{figure}[t]
+	\centering
+	\begin{subfigure}{0.3\textwidth}
+		$
+			\begin{array}{@{}r@{~}|l@{}}
+				\iseq
+				{{\scriptsize\texttt{1}}                          & \irotate{\frac{\pi}{2}}{0}{\pi}{0}}
+				{                                                                                       \\
+				\iseq
+				{{\scriptsize\texttt{2}}                          & \icnot{0}{1}}
+				{                                                                                       \\
+				\iseq
+				{{\scriptsize\texttt{3}}                          & \imeasure{0}{0}}
+				{ \\{\scriptsize\texttt{4}} & \imeasure{1}{1}}
+				}
+				}
+			\end{array}
+		$
+		\caption{OpenQASMCore}
+		\label{fig:example-multi:code}
+	\end{subfigure}
+	\hspace{2em}
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\begin{quantikz}[wire types={q,q,c,c},row sep={0.4cm,between origins}]
+			\lstick{$q_0$} & \gate{H} & \ctrl{1} & \meter{} \wire[d][2]{c} & & \\
+			\lstick{$q_1$} & & \targ{} & & \meter{} \wire[d][2]{c} & \\
+			\lstick{$c_0$} & & & & & \\
+			\lstick{$c_1$} & & & & &
+		\end{quantikz}
+		\caption{Diagram}
+		\label{fig:example-multi:circuit}
+	\end{subfigure}
+	\caption{An example multi-qubit quantum circuit}
+	\label{fig:example-multi}
+\end{figure}
+
+\cref{fig:example-multi} illustrates an example multi-qubit quantum circuit.
+%
+The circuit utilizes two qubits, $q_0$ and $q_1$, as well as two classical
+bits, $c_0$ and $c_1$.
+%
+Each qubit is initially set to $\ket{0}$, resulting in the following initial
+state vector and density matrix of the whole system:
+%
+\[
+	%
+	\ket{00}=
+	%
+	\mtrx{1\\0\\0\\0}
+	%
+	\qquad\qquad\qquad\qquad
+	%
+	\mtrx{1\\0\\0\\0}\mtrx{1\\0\\0\\0}^*
+	%
+	=\mtrx{1&0&0&0\\0&0&0&0\\0&0&0&0\\0&0&0&0}
+	%
+\]
+%
+We now explain the circuit's execution line by line.
+
+\paragraph{Line 1}
+
+We apply the Hadamard gate to $q_0$.
+%
+Since the density matrix is of dimension $4\times4$, the matrix representing
+the gate also needs to be of dimension $4\times4$.
+%
+This matrix can be obtained by taking the tensor product of the original
+$2\times2$ matrix representing the Hadamard gate and an identity matrix.
+%
+The matrix representing the application of the Hadamard gate to $q_0$ is as
+follows:
+%
+\[
+	%
+	\frac{1}{\sqrt{2}}\mtrx{1&1\\1&-1}\otimes\mtrx{1&0\\0&1}
+	%
+	=\frac{1}{\sqrt{2}}\mtrx{1&0&1&0\\0&1&0&1\\1&0&-1&0\\0&1&0&-1}
+	%
+\]
+%
+A general formula for computing a $2^n\times2^n$ matrix from a $2\times2$
+matrix is discussed in \cref{ch:consistency:semantics}.
+%
+Using the above matrix, we compute the density matrix after the gate as
+follows:
+%
+\[
+	%
+	\frac{1}{\sqrt{2}}\mtrx{1&0&1&0\\0&1&0&1\\1&0&-1&0\\0&1&0&-1}
+	%
+	\cdot
+	%
+	\mtrx{1&0&0&0\\0&0&0&0\\0&0&0&0\\0&0&0&0}
+	%
+	\cdot
+	%
+	\frac{1}{\sqrt{2}}\mtrx{1&0&1&0\\0&1&0&1\\1&0&-1&0\\0&1&0&-1}
+	%
+	= \frac{1}{2}\mtrx{1&0&1&0\\0&0&0&0\\1&0&1&0\\0&0&0&0}
+	%
+\]
+%
+The diagonal elements imply that the measurement outcome of the system is
+either $00$ or $10$ with probabilities $1/2$.
+%
+In other words, the measurement outcome of $q_0$ has a probability of $1/2$ of
+being $0$ or $1$, while the measurement outcome of $q_1$ is always $0$.
+%
+This aligns with the intuition that the Hadamard gate applied to $q_0$ should
+create a superposition in $q_0$ only, leaving $q_1$ unaffected.
+
+\paragraph{Line 2}
+
+We apply the CNOT gate to $q_0$ and $q_1$, with $q_0$ serving as the
+\emph{control} and $q_1$ as the \emph{target}.
+%
+Intuitively, it flips the target if the control is $1$.
+%
+The purpose of this gate is to \emph{entangle} the qubits, establishing a
+quantum mechanical dependency between them.
+%
+The CNOT gate operates on two distinct qubits and is represented by a
+$4\times4$ matrix: $\Smtrx{1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0}$.
+%
+We generalize this matrix for a system with more than two qubits in
+\cref{ch:consistency:semantics}.
+%
+We compute the density matrix after the gate as follows:
+%
+\[
+	%
+	\mtrx{1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0}
+	%
+	\cdot
+	%
+	\frac{1}{2}\mtrx{1&0&1&0\\0&0&0&0\\1&0&1&0\\0&0&0&0}
+	%
+	\cdot
+	%
+	\mtrx{1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0}
+	%
+	=\frac{1}{2}\mtrx{1&0&0&1\\0&0&0&0\\0&0&0&0\\1&0&0&1}
+	%
+\]
+%
+The diagonal elements indicate that the measurement outcome of the system can
+be either $00$ or $11$ with probabilities of $1/2$.
+%
+This implies that measuring one qubit allows determining the measurement
+outcome of the other qubit, demonstrating the entanglement between $q_0$ and
+$q_1$.
+
+\paragraph{Line 3}
+
+We measure $q_0$ and assign the outcome to $c_0$.
+%
+The matrices corresponding to each measurement outcome are generalized using
+tensor product, similar to the matrices representing rotation gates.
+%
+The matrices corresponding to outcomes $0$ and $1$ from the measurement of
+$q_0$ are as follows:
+%
+\[
+	%
+	\mtrx{1&0\\0&0}\otimes\mtrx{1&0\\0&1}
+	%
+	=\mtrx{1&0&0&0\\0&1&0&0\\0&0&0&0\\0&0&0&0}
+	%
+	\qquad\qquad
+	%
+	\mtrx{0&0\\0&1}\otimes\mtrx{1&0\\0&1}
+	%
+	=\mtrx{0&0&0&0\\0&0&0&0\\0&0&1&0\\0&0&0&1}
+	%
+\]
+%
+We compute the probability of $0$ being the outcome and the updated density
+matrix as follows:
+%
+\[
+	%
+	\btrace{\frac{1}{2}\mtrx{1&0&0&1\\0&0&0&0\\0&0&0&0\\1&0&0&1}\mtrx{1&0&0&0\\0&1&0&0\\0&0&0&0\\0&0&0&0}}
+	%
+	=\btrace{\frac{1}{2}\mtrx{1&0&0&0\\0&0&0&0\\0&0&0&0\\1&0&0&0}}
+	%
+	=\frac{1}{2}
+	%
+\]
+\[
+	%
+	\frac{1}{\sfrac{1}{2}}
+	%
+	\cdot\mtrx{1&0&0&0\\0&1&0&0\\0&0&0&0\\0&0&0&0}
+	%
+	\cdot\frac{1}{2}\mtrx{1&0&0&1\\0&0&0&0\\0&0&0&0\\1&0&0&1}
+	%
+	\cdot\mtrx{1&0&0&0\\0&1&0&0\\0&0&0&0\\0&0&0&0}
+	%
+	=\mtrx{1&0&0&0\\0&0&0&0\\0&0&0&0\\0&0&0&0}
+	%
+\]
+%
+We can compute the probability of $1$ being the outcome and the updated density
+matrix in a similar fashion.
+%
+Consequently, we obtain two worlds:
+$(\Smtrx{1&0&0&0\\0&0&0&0\\0&0&0&0\\0&0&0&0},[0,0],\frac{1}{2})$ and
+$(\Smtrx{0&0&0&0\\0&0&0&0\\0&0&0&0\\0&0&0&1},[1,0],\frac{1}{2})$.
+
+\paragraph{Line 4}
+
+We measure $q_1$ and assign the outcome to $c_1$.
+%
+The matrices corresponding to the outcomes $0$ and $1$ from the measurement of
+$q_1$ are as follows:
+%
+\[
+	%
+	\mtrx{1&0\\0&1}\otimes\mtrx{1&0\\0&0}
+	%
+	=\mtrx{1&0&0&0\\0&0&0&0\\0&0&1&0\\0&0&0&0}
+	%
+	\qquad\qquad
+	%
+	\mtrx{1&0\\0&1}\otimes\mtrx{0&0\\0&1}
+	%
+	=\mtrx{0&0&0&0\\0&1&0&0\\0&0&0&0\\0&0&0&1}
+	%
+\]
+%
+Using these matrices, we can compute that the probability of the outcome being
+$0$ is $1$ in the first world, and the probability of the outcome being $1$ is
+$1$ in the second world.
+%
+Therefore, the execution terminates with two worlds:
+%
+$(\Smtrx{1&0&0&0\\0&0&0&0\\0&0&0&0\\0&0&0&0},[0,0],\frac{1}{2})$ and
+$(\Smtrx{0&0&0&0\\0&0&0&0\\0&0&0&0\\0&0&0&1},[1,1],\frac{1}{2})$.

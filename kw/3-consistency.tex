@@ -1,0 +1,710 @@
+% !TEX root = main.tex
+\chapter{Executable Formal Semantics and Its Physical Consistency}
+\label{ch:consistency}
+
+\noindent
+In this section, we define the executable formal semantics of OpenQASMCore
+(\cref{ch:consistency:semantics}) and introduce two optimization techniques
+(\cref{ch:consistency:optimization}).
+%
+We then prove the physical consistency of the semantics
+(\cref{ch:consistency:consistency}).
+%
+The semantics and the proof are mechanized in Coq and publicly
+available~\cite{artifact}.
+
+\section{Semantics}
+\label{ch:consistency:semantics}
+
+\begin{figure}[t]
+	\[
+		\begin{array}{@{}rr@{~}c@{~}l@{\qquad\qquad}r@{~}c@{~}l@{}}
+			\text{Density matrix}  & \rho   & \in                                                    & \bigcup_{n\in\mathbb{N}}\mathcal{M}_{2^n,2^n}(\mathbb{C}) &
+			\sunitary{\rho}{M}     & =      & M\rho M^*                                                                                                            \\
+			\text{Classical state} & \sigma & \in                                                    & \bigcup_{n\in\mathbb{N}}\mathbb{Z}_n\rightarrow \{0,1\}   &
+			\sprob{\rho}{M}        & =      & \trace{\rho M}                                                                                                       \\
+			\text{Probability}     & P      & \in                                                    & \mathbb{R}_{[0,1]}                                        &
+			\smeasure{\rho}{M}     & =      & \frac{1}{\sprob{\rho}{M}}M\rho M                                                                                     \\
+			\text{World}           & w      & ::=                                                    & (\rho,\sigma,P)                                           &
+			\qubits{\rho}          & =      & n\ \text{if}\ \rho\in\mathcal{M}_{2^n,2^n}(\mathbb{C})
+		\end{array}
+	\]
+	\caption{Semantic elements and functions}
+	\label{fig:semantic-elements}
+\end{figure}
+
+\noindent
+\cref{fig:semantic-elements} shows the definitions related to the semantics of
+OpenQASMCore.
+%
+The metavariable $\rho$ ranges over density matrices, which are complex
+matrices of dimensions $2^n\times2^n$, where $n$ is a natural number.
+%
+The metavariable $\sigma$ ranges over classical states, which are mappings from
+classical bits to their values.
+%
+The metavariable $P$ ranges over probabilities of a world, which are real
+numbers inclusively between $0$ and $1$.
+%
+The metavariable $w$ ranges over worlds, which are triples consisting of a
+density matrix, a classical state, and a probability.
+%
+The functions $\embox{gate}$, $\embox{prob}$, and $\embox{msr}$ compute the
+updated density matrix after a gate, the probability of a measurement outcome,
+and the updated density matrix after a measurement, respectively.
+%
+Each function takes a density matrix and a matrix representing a gate/outcome
+as inputs, and the result is defined only when the two matrices are of the same
+dimension.
+%
+In addition, $\smeasure{\rho}{M}$ is also undefined when $\sprob{\rho}{M}$ is
+$0$.
+%
+The function $\embox{qbts}$ returns the number of qubits in the system
+represented by a given density matrix.
+
+\begin{figure}[t]
+	\[
+		\small
+		\begin{array}{@{}c@{}}
+			\fbox{$\eval{\rep{w}}{s}{\rep{w}}$}
+			\qquad\qquad
+			\inferrule
+			{ \rep{\eval{w}{s}{\rep{w'}}} }
+			{ \eval{\rep{w}}{s}{\rep{\rep{w'}}} }
+			\quad[\textsc{Eval-Many}]
+			\qquad\qquad
+			\eval{w}{\inop}{w}
+			\quad[\textsc{Eval-Nop}]
+			\\[1.5em]
+			\inferrule
+			{ \eval{w}{s_1}{\rep{w'}}                                                                 \\ \eval{\rep{w'}}{s_2}{\rep{w''}} }
+			{ \eval{w}{\iseq{s_1}{s_2}}{\rep{w''}} }
+			\quad[\textsc{Eval-Seq}]
+			\qquad
+			\inferrule
+			{
+			w=(\rho,\sigma,P)                                                                         \\
+				\sigma(c)\not=b
+			}
+			{ \eval{w}{\iif{c}{b}{s}}{w} }
+			\quad[\textsc{Eval-If-False}]
+			\\[1.5em]
+			\inferrule
+			{
+			w=(\rho,\sigma,P)                                                                         \\
+			\sigma(c)=b                                                                               \\
+				\eval{w}{s}{\rep{w'}}
+			}
+			{ \eval{w}{\iif{c}{b}{s}}{\rep{w'}} }
+			\quad[\textsc{Eval-If-True}]
+			\\[1.5em]
+			\inferrule
+			{ \qubits{\rho}=n }
+			{
+				\eval{(\rho,\sigma,P)}{\irotate{r_1}{r_2}{r_3}{q}}{(\sunitary{\rho}{\mrotate{n,q,r_1,r_2,r_3}},\sigma,P)}
+			}
+			\quad[\textsc{Eval-Rotate}]
+			\\[1.5em]
+			\inferrule
+			{ \qubits{\rho}=n }
+			{
+				\eval{(\rho,\sigma,P)}{\icnot{q_1}{q_2}}{(\sunitary{\rho}{\mcnot{n,q_1,q_2}},\sigma,P)}
+			}
+			\quad[\textsc{Eval-Cnot}]
+			\\[1.5em]
+			\inferrule
+			{
+			\qubits{\rho}=n                                                                           \\
+			\sprob{\rho}{\mproj{n,q,0}} \neq 0                                                        \\
+			\sprob{\rho}{\mproj{n,q,1}} \neq 0                                                        \\\\
+			w_0=(\smeasure{\rho}{\mproj{n,q,0}},\sigma[c\mapsto0],P\times\sprob{\rho}{\mproj{n,q,0}}) \\
+				w_1=(\smeasure{\rho}{\mproj{n,q,1}},\sigma[c\mapsto1],P\times\sprob{\rho}{\mproj{n,q,1}})
+			}
+			{ \eval{(\rho,\sigma,P)}{\imeasure{q}{c}}{w_0,w_1} }
+			\quad[\textsc{Eval-Measure}]
+			\\[1.5em]
+			\inferrule
+			{
+			\qubits{\rho}=n                                                                           \\
+			\sprob{\rho}{\mproj{n,q,1}}=0                                                             \\\\
+				w_0=(\smeasure{\rho}{\mproj{n,q,0}},\sigma[c\mapsto0],P\times\sprob{\rho}{\mproj{n,q,0}})
+			}
+			{ \eval{(\rho,\sigma,P)}{\imeasure{q}{c}}{w_0} }
+			\quad[\textsc{Eval-Measure-0}]
+			\\[1.5em]
+			\inferrule
+			{
+			\qubits{\rho}=n                                                                           \\
+			\sprob{\rho}{\mproj{n,q,0}}=0                                                             \\\\
+				w_1=(\smeasure{\rho}{\mproj{n,q,1}},\sigma[c\mapsto1],P\times\sprob{\rho}{\mproj{n,q,1}})
+			}
+			{ \eval{(\rho,\sigma,P)}{\imeasure{q}{c}}{w_1} }
+			\quad[\textsc{Eval-Measure-1}]
+			\\[1.5em]
+			\inferrule
+			{
+			w=(\rho,\sigma,P)                                                                         \\
+			c_{\embox{\tiny reset}} \notin \dom{\sigma}                                               \\\\
+				\eval {w} {
+					\iseq{
+						\imeasure{q}{c_{\embox{\tiny reset}}}
+					}{
+						\iif{c_{\embox{\tiny reset}}}{1}{\irotate{\pi}{0}{\pi}{q}}
+					}} {\rep{w'}}
+			} { \eval {w} {\ireset{q}} {\rep{w'}}}
+			\quad[\textsc{Eval-Reset}]
+		\end{array}
+	\]
+	\caption{Semantics of OpenQASMCore}
+	\label{fig:semantics}
+\end{figure}
+
+\cref{fig:semantics} defines the big-step operational semantics of OpenQASMCore
+in the form of \fbox{$\eval{\rep{w}}{s}{\rep{w}}$}.
+%
+Following the notation used by \citet{vytiniotis2013halo} and
+\citet{coughlin2014fissile}, an overline above material represents zero or more
+repetitions of the material, separated by commas, with a subscript added to
+each metavariable in the material.
+%
+Thus, $\eval{\rep{w}}{s}{\rep{w'}}$ denotes
+$\eval{w_1,w_2,\ldots,w_n}{s}{w_1',w_2',\ldots,w_m'}$, indicating that the
+worlds $w_1$, $w_2$, \ldots, $w_n$ transform into $w_1'$, $w_2'$, \ldots,
+$w_m'$ when $s$ is executed.
+
+Most rules handle the case where a single world is provided as input, and they
+are generalized to accommodate multiple worlds through rule
+	[\textsc{Eval-Many}].
+%
+This rule states that when multiple worlds are given, the statement runs in
+each world, and the output is determined by collecting the outputs from each
+individual run.
+%
+Note that when overlines are nested, the outermost one expands first, while the
+copies of each inner overline expand independently and may have different
+lengths.
+
+The semantics of classical statements are conventional, as defined by rules
+	[\textsc{Eval-Nop}], [\textsc{Eval-Seq}], [\textsc{Eval-If-False}], and
+	[\textsc{Eval-If-True}].
+%
+$\inop$ does not alter the world state.
+%
+$\iseq{s_1}{s_2}$ executes $s_1$ first in the given world and subsequently
+executes $s_2$ in every world generated by $s_1$.
+%
+$\iif{c}{b}{s}$ executes $s$ if the value of $c$ equals $b$.
+
+Rule [\textsc{Eval-Rotate}] defines the semantics of a rotation gate, which
+updates only the density matrix.
+%
+The definition of the matrix $\mrotate{n,q,r_1,r_2,r_3}$ can be found in
+\cref{fig:gen22}, which illustrates the generalization of $2\times2$ matrices
+representing gates/measurements operating on a single qubit.
+%
+The function $\embox{gen}_{n,q}$ returns a $2^n\times2^n$ matrix that affects
+the $q$-th qubit (indexed from zero) in an $n$-qubit system by generalizing a
+given $2\times2$ matrix.
+%
+Note that $\identity{m}$ represents the identity matrix of dimension
+$2^m\times2^m$.
+%
+The effect of the $\ugate{r_1}{r_2}{r_3}$ gate on a single qubit is denoted as
+$\mrotate{r_1,r_2,r_3}$ and is generalized by $\embox{gen}_{n,q}$ to form
+$\mrotate{n,q,r_1,r_2,r_3}$.
+
+Rule [\textsc{Eval-Cnot}] defines the semantics of the CNOT gate, which also
+updates only the density matrix.
+%
+\cref{fig:cnot} defines the matrix $\mcnot{n,q_1,q_2}$, which flips the
+$q_2$-th qubit using the $q_1$-th qubit as control in an $n$-qubit system, by
+generalizing the $4\times4$ matrix $\mcnot{}$.
+%
+Unlike rotation matrices, $\mcnot{}$ is not simply generalized by tensor
+products with identity matrices due to its ability to operate on two qubits,
+which may be non-adjacent.
+%
+To address this, we introduce the matrix $\mswap{n,q_1,q_2}$, which swaps the
+$q_1$-th and $q_2$-th qubits in an $n$-qubit system, and employ this matrix to
+define $\mcnot{n,q_1,q_2}$.
+%
+Since $\mswap{n,q_1,q_2}$ is meaningful only when $q_1$ differs from $q_2$, it
+is an identity matrix when $q_1$ equals $q_2$.
+%
+For $q_1\not=q_2$, $\mswap{n,q_1,q_2}$ is recursively defined, beginning with
+the base case $\mswap{}$, which swaps the qubits in a $2$-qubit system.
+%
+We then define $\mswap{n,0,n-1}$, which swaps the $0$-th and $(n-1)$-th qubits
+by swapping the $0$-th and $1$-st, then the $1$-st and $(n-1)$-th, and finally
+$0$-th and $1$-st.
+%
+Subsequently, we define $\mswap{n,q_1,q_2}$ using tensor products.
+%
+Finally, $\mcnot{n,q_1,q_2}$ is defined by swapping the $0$-th and $q_1$-th
+qubits, then the $1$-st and $q_2$-th qubits, flipping the $1$-st qubit using
+the $0$-th qubit as control, and finally swapping back the $0$-th and $q_1$-th
+qubits as well as the $1$-st and $q_2$-th qubits.
+
+Rules [\textsc{Eval-Measure}], [\textsc{Eval-Measure-0}], and
+	[\textsc{Eval-Measure-1}] define the semantics of a measurement statement.
+%
+Rule [\textsc{Eval-Measure}] handles the case where both $0$ and $1$ are
+possible outcomes by splitting the world into two, while rules
+	[\textsc{Eval-Measure-0}] and [\textsc{Eval-Measure-1}] handle the cases where
+only one of them is a possible outcome.
+%
+The matrices $\mproj{n,q,0}$ and $\mproj{n,q,1}$ are defined by generalizing
+$\mproj{0}$ and $\mproj{1}$ using tensor products, as shown in
+\cref{fig:gen22}.
+
+Rule [\textsc{Eval-Reset}] defines the semantics of a reset statement, which
+collapses a qubit's superposition and sets its state to $\ket{0}$.
+%
+To achieve this, we introduce a fresh classical bit that is not used by the
+circuit and assign the measurement result to the bit.
+%
+If the measurement outcome is $0$, the qubit is already in the state $\ket{0}$.
+%
+If the outcome is $1$, the qubit is in the state $\ket{1}$, and we flip it by
+applying the $\ugate{\pi}{0}{\pi}$ gate.
+%
+Due to the measurement, the world splits into two unless the qubit is already
+in the states $\ket{0}$ or $\ket{1}$ before the measurement.
+
+When executing a statement as a single program, the input is a single world
+where every qubit is $\ket{0}$ and every classical bit is $0$. The probability
+of the world is $1$.
+
+\begin{figure}[t]
+	\[
+		\begin{array}{@{}r@{~}c@{~}l@{\quad}r@{~}c@{~}l@{}}
+			\multicolumn{6}{c}{
+				\generalize{n,q}{M}=\identity{q}\otimes{M}\otimes\identity{n-q-1}
+			}                                                                          \\[1em]
+			\mrotate{r_1,r_2,r_3}        & = &
+			\mtrx{
+			e^{-i(r_2+r_3)/2}\cos(r_1/2) &
+			-e^{-i(r_2-r_3)/2}\sin(r_1/2)                                              \\
+			e^{i(r_2-r_3)/2}\sin(r_1/2)  &
+			e^{i(r_2+r_3)/2}\cos(r_1/2)
+			}
+			                             &
+			\mrotate{n,q,r_1,r_2,r_3}    & = & \generalize{n,q}{\mrotate{r_1,r_2,r_3}}
+			\\[1em]
+			\multicolumn{6}{c}{
+			\mproj{0}=\smtrx{1           & 0                                           \\0                  & 0} \qquad
+				  \mproj{n,q,0}=\generalize{n,q}{\mproj{0}} \qquad
+			\mproj{1}=\smtrx{0           & 0                                           \\0 & 1} \qquad
+				  \mproj{n,q,1}=\generalize{n,q}{\mproj{1}}
+			}
+		\end{array}
+	\]
+	\caption{Generalization of $2\times2$ matrices}
+	\label{fig:gen22}
+\end{figure}
+
+\begin{figure}[t]
+	\[
+		\begin{array}{@{}r@{~}c@{~}l@{\quad}r@{~}c@{~}l@{}}
+			\mswap{}          & = & \Smtrx{1                                                                                    & 0 & 0 & 0 \\0&0&1&0\\0&1&0&0\\0                 & 0 & 0                         & 1}
+			                  &
+			\mswap{n,q_1,q_2} & = & \begin{cases}
+				                        I_n\qquad\qquad\qquad\qquad\qquad\text{if}\ q_1=q_2                      \\
+				                        \mswap{}\ \ \qquad\qquad\qquad\qquad\text{if}\ n=2\land q_1=0\land q_2=1 \\
+				                        (\mswap{}\otimes\identity{n-2})
+				                        (\identity{1}\otimes\mswap{n-1,0,n-2})
+				                        (\mswap{}\otimes\identity{n-2})                                          \\
+				                        \quad\qquad\qquad\qquad\qquad
+				                        \text{if}\ n>2\land q_1=0\land q_2=n-1                                   \\
+				                        \identity{q_1}\otimes\mswap{q_2-q_1+1,0,q_2-q_1}\otimes\identity{n-q_2-1}
+				                        \ \qquad\quad\text{otherwise}
+			                        \end{cases}
+			\\[2em]
+			\mcnot{}          & = & \Smtrx{1                                                                                    & 0 & 0 & 0 \\0&1&0&0\\0&0&0&1\\0                 & 0 & 1                                                                                           & 0}
+			                  &
+			\mcnot{n,q_1,q_2} & = & \mswap{n,0,q_1}\mswap{n,1,q_2}(\mcnot{}\otimes\identity{n-2})\mswap{n,1,q_2}\mswap{n,0,q_1}
+		\end{array}
+	\]
+	{\footnotesize$(0\le q_1<n,0\le q_2<n)$}
+	\caption{Generalization of CNOT}
+	\label{fig:cnot}
+\end{figure}
+
+\section{Optimizations}
+\label{ch:consistency:optimization}
+
+\noindent
+We propose optimization techniques for our executable formal semantics.
+%
+Since we split worlds at each measurement following MWI, the number of worlds
+exponentially increases as the number of measurements grows.
+%
+This prevents the execution of large quantum circuits in a reasonable time.
+%
+To address this issue, we introduce optimizations that reduce the number of
+worlds.
+
+The key idea behind these optimizations is the notion of a \emph{mixed state},
+which represents different quantum states and their probabilities using a
+single density matrix.
+%
+For example, consider the density matrix $\rho=\tfrac{1}{2}\smtrx{1&1\\1&1}$
+for a superposed state of
+$\tfrac{1}{\sqrt{2}}\ket{0}+\tfrac{1}{\sqrt{2}}\ket{1}$.
+%
+When measuring the qubit, it yields either $0$ or $1$, each with a probability
+of $\frac{1}{2}$.
+%
+The corresponding density matrices are $\rho_0=\smtrx{1&0\\0&0}$ and
+$\rho_1=\smtrx{0&0\\0&1}$.
+%
+Instead of maintaining two matrices with their respective probabilities, a
+single matrix can represent both possibilities through a weighted sum:
+%
+$\rho_{\embox{\tiny mixed}} = \tfrac{1}{2}\rho_0+\tfrac{1}{2}\rho_1 =
+	\tfrac{1}{2}\smtrx{1&0\\0&1}$.
+
+Unfortunately, we cannot always use mixed states to avoid splitting worlds
+because we need to consider not only qubits and probabilities but also
+classical bits.
+%
+Without using mixed states, we have two post-measurement worlds,
+$(\rho_0,[0],\frac{1}{2})$ and $(\rho_1,[1],\frac{1}{2})$.
+%
+We cannot simply replace them with a single world containing
+$\rho_{\embox{\tiny mixed}}$ because we cannot retain the classical bit
+information.
+%
+Neither $(\rho_{\embox{\tiny mixed}},[0],1)$ nor $(\rho_{\embox{\tiny
+			mixed}},[1],1)$ is correct.
+%
+To have only a single world, we would need to expand the density matrix to
+incorporate the classical bit as if it were a qubit, necessitating a $4\times
+	4$ matrix for a 2-qubit system, with sixteen entries.
+%
+However, this is less efficient than simply splitting the world into two,
+requiring two $2\times 2$ matrices, which have eight entries in total.
+%
+Therefore, we should utilize mixed states only when we do not need to add
+classical bit information to the density matrix.
+
+As a solution, we identify two cases where mixed states can be used without
+concerning classical bits and optimize each case by replacing two worlds with a
+single world containing a mixed state.
+%
+This leads to two optimizations: \emph{world merging} and \emph{efficient
+	reset}.
+%
+\cref{fig:optimization} defines the operational semantics for optimized
+executions.
+%
+We now describe each optimization in detail.
+
+\paragraph{World Merging}
+
+Rule [\textsc{Eval-Merge}] defines the world-merging optimization, which can be
+applied to the evaluation of any statements.
+%
+During execution, when two distinct worlds with identical classical states but
+different quantum states emerge, we merge their quantum states into a single
+density matrix, creating a mixed state while preserving the identical classical
+state.
+%
+This rule guarantees that the number of worlds during the execution of a
+circuit with $n$ different classical bits is upper-bounded by $2^n$ because the
+system can result in a maximum of $2^n$ different classical states.
+
+\paragraph{Efficient Reset}
+
+Rule [\textsc{Eval-Reset-Opt}] enhances the efficiency of evaluating reset
+statements by replacing Rule [\textsc{Eval-Reset}].
+%
+In the case of Rule [\textsc{Eval-Reset}], a reset statement assigns a
+measurement outcome from a qubit to a classical bit.
+%
+This classical bit is solely utilized for conditionally flipping the qubit and
+is never used thereafter.
+%
+Therefore, we can simply remove the classical bit from the world and employ a
+mixed state instead of splitting the world into two.
+%
+Adopting this idea, Rule [\textsc{Eval-Reset-Opt}] updates the density matrix
+but does not split the world.
+
+\begin{figure}
+	\[
+		\small
+		\begin{array}{@{}c@{}}
+			\inferrule
+			{
+			\eval {\rep{w}} {s} {w'_0,\ldots,w'_i,\ldots,w'_j,\ldots,w'_n}      \\\\
+			w'_i = (\rho_i, \sigma, P_i)                                        \\
+			w'_j = (\rho_j, \sigma, P_j)                                        \\
+			\rho_{ij} = \tfrac{P_i}{P_i+P_j}\rho_i + \tfrac{P_j}{P_i+P_j}\rho_j \\
+			} {
+			\eval {\rep{w}} {s} {w'_0,\ldots,w'_{i-1},w'_{i+1},\ldots,w'_{j-1},w'_{j+1},\ldots,w'_n,(\rho_{ij}, \sigma, P_i + P_j)}			}
+			\quad[\textsc{Eval-Merge}]
+			\\[3em]
+			\inferrule
+			{
+			\qubits{\rho}=n                                                     \\
+			\rho_0 = \smeasure{\rho}{\mproj{n,q,0}}                             \\
+			p_0 = \sprob{\rho}{\mproj{n,q,0}}                                   \\\\
+			\rho_1 = \smeasure{\rho}{\mproj{n,q,1}}                             \\
+			p_1 = \sprob{\rho}{\mproj{n,q,1}}                                   \\\\
+				\rho' = p_0\rho_0 + p_1\sunitary{\rho_1}{U_{\pi,0,\pi}}
+			} {
+				\eval {(\rho,\sigma,P)} {\ireset{q}} {(\rho',\sigma,P)}
+			}
+			\quad[\textsc{Eval-Reset-Opt}]
+		\end{array}
+	\]
+	\caption{Optimized semantics}
+	\label{fig:optimization}
+\end{figure}
+
+\section{Physical Consistency}
+\label{ch:consistency:consistency}
+
+\noindent
+We introduce the postulates of quantum computing and prove that the optimized
+version of the proposed formal semantics adheres to the postulates.
+%
+\citet{scherer2019mathematics} summarizes the laws of quantum physics within
+five postulates.
+%
+The exact quote of the postulates can be found in our companion
+report~\cite{supp}.
+%
+To ensure clarity and consistency with the terminologies defined in this paper,
+we rephrase the original postulates by presenting three postulates:
+\cref{pos:gate} (corresponding to postulate 4), \cref{pos:measurement}
+(corresponding to postulates 2 and 3), and \cref{pos:density} (corresponding to
+postulate 5).
+%
+We ignore postulate 1 due to its irrelevance to the functionality of
+OpenQASMCore.
+
+The first postulate describes the operation of gates:
+%
+\begin{postulate}[Gate]
+	%
+	\label{pos:gate}
+	%
+	The change of a density matrix from $\rho$ to $\rho'$ by a gate is described by
+	$\rho'=M\rho M^*$ where $M$ is a unitary matrix, i.e., $M^*M=I$.
+	%
+\end{postulate}
+%
+\noindent
+%
+Since OpenQASMCore has two kinds of gate statements, we prove that each
+satisfies the postulate.
+%
+\begin{theorem}[Rotation Gate]
+	%
+	\label{thm:rotation}
+	%
+	Suppose that the following holds:
+	%
+	$\eval{(\rho,\sigma,P)}{\irotate{r_1}{r_2}{r_3}{q}}{(\rho',\sigma',P')}$.
+	%
+	Then, there exists a unitary matrix $M$ such that $\rho'=M\rho M^*$.
+	%
+\end{theorem}
+%
+\begin{proof}
+	%
+	By rule [\textsc{Eval-Rotate}], $\rho'=M\rho M^*$ where
+	$M=\mrotate{\qubits{\rho},q,r_1,r_2,r_3}$. Therefore, it is enough to show that
+	$M$ is unitary. We can easily show that a $2\times2$ matrix
+	$\mrotate{r_1,r_2,r_3}$ and the identity matrix of any dimension are unitary.
+	Since the tensor product of unitary matrices is also unitary, $M$ is unitary.
+	%
+\end{proof}
+%
+\begin{theorem}[Cnot Gate]
+	%
+	\label{thm:cnot}
+	%
+	Suppose that the following holds:
+	%
+	$\eval{(\rho,\sigma,P)}{\icnot{q_1}{q_2}}{(\rho',\sigma',P')}$.
+	%
+	Then, there exists a unitary matrix $M$ such that $\rho'=M\rho M^*$.
+	%
+\end{theorem}
+%
+\begin{proof}
+	%
+	By rule [\textsc{Eval-Cnot}], $\rho'=M\rho M^*$ where
+	$M=\mcnot{\qubits{\rho},q_1,q_2}$, it is enough to show that $M$ is unitary. By
+	induction on $n$, we can show that $\mswap{n,0,n-1}$ is unitary for any $n$.
+	Since the tensor product of unitary matrices is also unitary,
+	$\mswap{n,q_1,q_2}$ is unitary. It is easy to show that the $4\times4$ matrix
+	$\mcnot{}$ is unitary. Since the product of unitary matrices is also unitary,
+	$M$ is unitary.
+	%
+\end{proof}
+
+The second postulate describes the results of measurements:
+%
+\begin{postulate}[Measurement]
+	%
+	\label{pos:measurement}
+	%
+	For a quantum system described by a density matrix $\rho$, a physical
+	observable to be measured is represented by a self-adjoint matrix $A$, whose
+	dimension is the same as $\rho$.
+	%
+	Each measurement outcome corresponds to $\lambda$, an eigenvalue of $A$.
+	%
+	The probability of the outcome corresponding to $\lambda$ is $\trace{\rho M}$
+	where $M$ is the projection onto the eigenspace of $\lambda$.
+	%
+	The change of a density matrix from $\rho$ to $\rho'$ by the measurement is
+	described by $\rho'=\frac{1}{\trace{\rho M}}M\rho M$.
+	%
+\end{postulate}
+%
+\noindent
+%
+OpenQASMCore has only one kind of measurement statement, and we show that the
+semantics of the statement follows the postulate:
+%
+\begin{theorem}[Measurement]
+	%
+	\label{thm:measure}
+	%
+	Suppose that the following holds:
+	%
+	$\eval{(\rho,\sigma,P)}{\imeasure{q}{c}}{\rep{w'}}$.
+	%
+	Then, $\exists A.\forall w'\in\{\rep{w'}\}.\exists\lambda$ such that the
+	followings hold:
+	%
+	(1) $A$ is self-adjoint;
+	%
+	(2) $\lambda$ is an eigenvalue of $A$;
+	%
+	(3) $M$ is the projection operator onto the eigenspace of $\lambda$;
+	%
+	(4) $w'=(\rho',\sigma',P')$;
+	%
+	(5) $\rho'=\frac{1}{\trace{\rho M}}M\rho M$;
+	%
+	(6) $\frac{P'}{P}=\trace{\rho M}$.
+	%
+\end{theorem}
+%
+\begin{proof}
+	%
+	By rules [\textsc{Eval-Measure}], [\textsc{Eval-Measure-0}], and
+		[\textsc{Eval-Measure-1}], $w'\in\{\rep{w'}\}$ is either
+	$(\smeasure{\rho}{\mproj{n,q,0}},\sigma[c\mapsto0],P\times\sprob{\rho}{\mproj{n,q,0}})$
+	or
+	$(\smeasure{\rho}{\mproj{n,q,1}},\sigma[c\mapsto1],P\times\sprob{\rho}{\mproj{n,q,1}})$
+	where $n=\qubits{\rho}$.
+	%
+	Let $A=\identity{q}\otimes\smtrx{1&0\\0&-1}\otimes\identity{n-q-1}$.
+	%
+	We can easily show that $1$ and $-1$ are eigenvalues of $A$, and
+	$\mproj{n,q,0}$ and $\mproj{n,q,1}$ are their corresponding projections.
+	%
+\end{proof}
+
+The last postulate describes the properties of density matrices:
+%
+\begin{postulate}[Density Matrix]
+	%
+	\label{pos:density}
+	%
+	A density matrix $\rho$ satisfies the following:
+	%
+	(1) $\rho$ is self-adjoint: $\rho^*=\rho$;
+	%
+	(2) $\rho$ is positive semi-definite: $\rho\ge0$, i.e., $z^*\rho z\ge 0$ for every
+	column vector $z$;
+	%
+	(3) $\trace{\rho}=1$.
+	%
+\end{postulate}
+%
+\noindent
+%
+We show that for every OpenQASMCore program, if its execution starts with a
+valid density matrix, then the execution ends with valid density matrices.
+%
+\begin{theorem}[Density Matrix]
+	%
+	Suppose that the following holds:
+	%
+	$\eval{(\rho,\sigma,P)}{s}{\rep{w'}}$.
+	%
+	If $\rho$ is self-adjoint and positive semi-definite and $\trace{\rho}=1$, then
+	for every $(\rho',\sigma',P')\in\{\rep{w'}\}$, $\rho'$ is self-adjoint and
+	positive semi-definite and $\trace{\rho'}=1$.
+	%
+\end{theorem}
+%
+\begin{proof} We prove it by structural induction on $s$.
+	%
+	\begin{itemize}
+		%
+		\item $s=\inop$.
+		      %
+		      By rule [\textsc{Eval-Nop}], $\rho'=\rho$.
+		      %
+		\item $s=\iseq{s_1}{s_2}$.
+		      %
+		      We prove it using rule [\textsc{Eval-Seq}] and the induction hypothesis.
+		      %
+		\item $s=\iif{c}{b}{s'}$.
+		      %
+		      If $\sigma(c)\not=b$, $\rho'=\rho$ by rule [\textsc{Eval-If-False}].
+		      %
+		      If $\sigma(c)=b$, we prove it using rule [\textsc{Eval-If-True}] and the
+		      induction hypothesis.
+		      %
+		\item $s=\irotate{r_1}{r_2}{r_3}{q}$ or $s=\icnot{q_1}{q_2}$.
+		      %
+		      By \cref{thm:rotation,thm:cnot}, $\rho'=M\rho M^*$ where $M$ is unitary.
+		      %
+		      Basic linear algebra allows us to prove it using that $M$ is unitary.
+		      %
+		\item $s=\imeasure{q}{c}$.
+		      %
+		      By \cref{thm:measure}, $\rho'=\frac{1}{\trace{\rho M}}M\rho M$ where $M$ is a
+		      projection.
+		      %
+		      Basic linear algebra allows us to prove it using that $M$ is a projection.
+		      %
+		\item $s=\ireset{q}$.
+		      %
+		      Rule [\textsc{Eval-Reset-Opt}] yields $\rho'=p_0\rho_0 +
+			      p_1\sunitary{\rho_1}{X}$ where $p_0$ and $p_1$ correspond to measurement
+		      outcomes of $q$ being 0 and 1, respectively, and $X$ representing a unitary
+		      operator.
+		      %
+		      By proving that probabilities are non-negative and their sum is unity, and that
+		      positive semi-definiteness and self-adjointness are preserved under convex
+		      combinations, $\rho'$ retains the required properties.
+	\end{itemize}
+	%
+	Finally, the application of [\textsc{Eval-Merge}] preserves the three
+	properties of density matrices.
+	%
+	If $\rho' = \frac{P_0}{P_0+P_1}\rho_1 + \frac{P_1}{P_0+P_1}\rho_2$, which is a
+	convex combination of $\rho_1$ and $\rho_2$, all properties are preserved,
+	analogous to the $s=\ireset{q}$ case.
+	%
+\end{proof}
+
+\noindent
+%
+The initial state in OpenQASMCore is a state where every qubit is $\ket{0}$,
+which is straightforward to prove that it is a valid density matrix.
+%
+Therefore, we ensure that the execution of every OpenQASMCore program ends with
+valid density matrices.

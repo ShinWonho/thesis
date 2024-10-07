@@ -1,0 +1,265 @@
+% !TEX root = main.tex
+
+\chapter{Desugaring from OpenQASM to OpenQASMCore}
+\label{ch:openqasm}
+
+\noindent
+In this section, we present the syntax of OpenQASM 2.0
+(\cref{ch:openqasm:syntax}) and define desugaring from OpenQASM to
+OpenQASMCore (\cref{ch:openqasm:desugaring}).
+%
+This enables us to indirectly define the executable formal semantics of
+OpenQASM and naturally achieve the physical consistency of OpenQASM.
+
+\section{Syntax of OpenQASM}
+\label{ch:openqasm:syntax}
+
+\begin{figure}[t]
+	\[
+		\begin{array}{@{}rrrll@{}}
+			\text{Identifier}        & x                            & \multicolumn{1}{c}{\in} & \embox{Id}                                                                \\
+			\text{Length/Index}      & n                            & \multicolumn{1}{c}{\in} & \mathbb{N}                                                                \\
+			\text{Program}           & p                            & ::=                     & \rep{d};\rep{S}                                                           \\
+			\text{Declaration}       & d                            & ::=                     & \dcreg{x_c}{n}                             & \text{Classical register}    \\
+			                         &                              & |                       & \dqreg{x_q}{n}                             & \text{Quantum register}      \\
+			                         &                              & |                       & \dgate{x_g}{\rep{x_r}}{\rep{x_q}}{\rep{g}} & \text{Custom gate}           \\
+			\text{Gate operation}    & g                            & ::=                     & \irotate{e}{e}{e}{a_q}                     & \text{Rotation}              \\
+			                         &                              & |                       & \icnot{a_q}{a_q}                           & \text{Cnot}                  \\
+			                         &                              & |                       & \icustom{x_g}{\rep{e}}{\rep{a_q}}          & \text{Custom gate}           \\
+			\text{Expression}        & e                            & ::=                     & r                                          & \text{Real number}           \\
+			                         &                              & |                       & x_r                                        & \text{Real number parameter} \\
+			                         &                              & |                       & e+e\quad|\quad\cdots                       & \text{Math operations}       \\
+			\text{Argument}          & a                            & ::=                     & x[n]
+			                         & \text{Quantum/classical bit}                                                                                                       \\
+			                         &                              & |                       & x                                          & \text{Register}              \\
+			\text{Statement}         & S                            & ::=                     & Q                                          & \text{Quantum operation}     \\
+			                         &                              & |                       & \iif{x_c}{n}{Q}                            & \text{Conditional}           \\
+			\text{Quantum operation} & Q                            & ::=                     & g                                          & \text{Gate operation}        \\
+			                         &                              & |                       & \imeasure{a_q}{a_c}                        & \text{Measurement}           \\
+			                         &                              & |                       & \ireset{a_q}                               & \text{Reset}                 \\
+		\end{array}
+	\]
+	\caption{Syntax of OpenQASM}
+	\label{fig:openqasm-syntax}
+\end{figure}
+
+\noindent
+The syntax of OpenQASM is outlined in \cref{fig:openqasm-syntax}.
+%
+The metavariable $x$ ranges over identifiers, which serve as names for
+classical registers, quantum registers, custom gates, and real-number
+parameters of custom gates.
+%
+Although these various kinds of names are not syntactically differentiated, we
+denote them with $x_c$, $x_q$, $x_g$, and $x_r$ in the syntax to provide
+clarity regarding the role of an identifier in each context.
+%
+The metavariable $n$ ranges over natural numbers, which are used as the lengths
+of registers and indices to access specific bits within registers.
+%
+The metavariable $p$ ranges over programs, which consist of declarations and
+statements.
+
+A declaration $d$ declares either a classical register, a quantum register, or
+a custom gate.
+%
+$\dcreg{x_c}{n}$ declares a classical register named $x_c$ of length $n$.
+%
+Similarly, $\dqreg{x_q}{n}$ declares a quantum register named $x_q$ of length
+$n$.
+%
+$\dgate{x_g}{\rep{x_r}}{\rep{x_q}}{\rep{g}}$ defines a custom gate named $x_g$
+that takes zero or more real numbers $\rep{x_r}$ and one or more qubits
+$\rep{x_q}$.
+%
+The behavior of a custom gate is specified by a sequence of gate operations
+$\rep{g}$, which apply gates to qubits.
+%
+The scope of a custom gate begins after its definition.
+%
+Therefore, each custom gate can only refer to built-in or already-defined gates
+and cannot be recursive.
+
+A gate operation is either a rotation gate $\irotate{e_1}{e_2}{e_3}{a_q}$, a
+CNOT gate $\icnot{a_q}{a_q'}$, or a custom gate
+$\icustom{x_g}{\rep{e}}{\rep{a_q}}$.
+%
+A rotation gate requires three expressions, namely $e_1$, $e_2$, and $e_3$,
+which evaluate to real numbers.
+%
+These expressions can either be a real number $r$, a real-number parameter
+$x_r$ (only used in the body of a custom gate), or mathematical operations
+between expressions (e.g., $e+e$).
+%
+Additionally, a rotation gate takes a quantum argument $a_q$.
+%
+Note that an argument $a$ is either a single bit $x[n]$ or a register $x$;
+%
+we use $a_q$ for a quantum argument $x_q[n]$ or $x_q$, and $a_c$ for a
+classical argument $x_c[n]$ or $x_c$.
+%
+When a rotation gate operates on a register, it independently applies the
+rotation of the same degree to every bit in the register.
+%
+CNOT and custom gates are similar to rotation gates but can have multiple
+quantum arguments.
+%
+If multiple registers are provided to a gate, their lengths must be equal, and
+the gate is independently applied to every index of the registers.
+%
+For example, $\icnot{x}{y}$ means $\icnot{x[i]}{y[i]}$ for all $i$ where $x$
+and $y$ have the same length, and $\icnot{x[0]}{y}$ means $\icnot{x[0]}{y[i]}$
+for all $i$.
+
+A statement $S$ is either a quantum operation $Q$ or a conditional quantum
+operation $\iif{x_c}{n}{Q}$.
+%
+Unlike the conditional statement in OpenQASMCore, which checks the value of a
+single bit, the conditional statement in OpenQASM compares the value of a
+classical register, interpreted as a binary number using the bit at index zero
+as the low order bit, with a natural number.
+
+A quantum operation $Q$ is either a gate operation $g$, a measurement
+$\imeasure{a_q}{a_c}$, or a reset $\ireset{a_q}$.
+%
+A measurement operation can measure either a single qubit or a quantum
+register.
+%
+In the latter case, the outcome should be assigned to a classical register of
+the same length.
+%
+A reset operation assigns a new state $\ket{0}$ to a single qubit or each qubit
+of a quantum register.
+
+In fact, for the sake of presentation, the syntax defined in
+\cref{fig:openqasm-syntax} differs from the syntax of real OpenQASM 2.0 in a
+few aspects:
+%
+\begin{itemize}
+	%
+	\item We omit \emph{include} statements, which are used to include code from another
+	      file in the current code.
+	      %
+	      They can be replaced with proper code through preprocessing.
+	      %
+	\item We omit \emph{opaque gate} declarations, which declare gates that can be
+	      physically implemented but cannot be described in OpenQASM.
+	      %
+	      It is impossible to determine the behavior of opaque gates, and they do not
+	      accord with our goal of defining executable formal semantics.
+	      %
+	\item We omit \emph{barrier} statements, which disable optimization across
+	      themselves.
+	      %
+	      They do not affect the semantics and can be simply replaced by $\inop$ during
+	      desugaring.
+	      %
+	\item We require all declarations to precede statements, whereas the real OpenQASM
+	      syntax allows the interleaving of declarations and statements.
+	      %
+	      They can be easily reordered to follow our restriction through preprocessing.
+	      %
+\end{itemize}
+
+\section{Desugaring}
+\label{ch:openqasm:desugaring}
+
+\noindent
+The desugaring process from OpenQASM to OpenQASMCore involves five steps:
+%
+unrolling operations to prevent registers from being used as arguments
+(\cref{ch:openqasm:desugaring:unrolling});
+%
+inlining custom gates to remove their definitions and usages
+(\cref{ch:openqasm:desugaring:inlining});
+%
+decomposing each conditional into nested conditionals to handle comparisons
+with natural numbers (\cref{ch:openqasm:desugaring:conditional});
+%
+representing qubits or classical bits with natural numbers instead of
+identifiers to remove register declarations
+(\cref{ch:openqasm:desugaring:register});
+%
+evaluating expressions to real numbers in rotation gate operations
+(\cref{ch:openqasm:desugaring:expr}).
+
+\subsection{Unrolling operations}
+\label{ch:openqasm:desugaring:unrolling}
+
+\noindent
+We unroll each quantum operation that takes a quantum register as an argument
+into a sequence of operations, each operating on a single qubit.
+%
+This process resembles loop unrolling, which transforms a loop with a finite
+number of iterations into a sequence of individual statements.
+%
+For instance, $\icnot{x}{y}$ is desugared as
+$\icnot{x[0]}{y[0]};\icnot{x[1]}{y[1]}$, assuming both $x$ and $y$ have lengths
+of 2.
+%
+It is a precondition in OpenQASM that the involved registers must be of equal
+length; otherwise, the desugaring fails.
+%
+This step addresses the disparity between OpenQASM and OpenQASMCore regarding
+the acceptance of registers as arguments;
+%
+while every operation in OpenQASM allows registers, a statement in OpenQASMCore
+does not.
+
+\subsection{Inlining custom gates}
+\label{ch:openqasm:desugaring:inlining}
+
+\noindent
+We inline custom gates to eliminate their definitions and usages because
+OpenQASMCore lacks the notion of a custom gate.
+%
+The inlining process is straightforward as none of the custom gates are
+recursive.
+%
+If the inlining process encounters a reference to a custom gate that is not
+defined, it will result in failure.
+
+\subsection{Decomposing conditionals}
+\label{ch:openqasm:desugaring:conditional}
+
+\noindent
+We desugar conditional statements, which allow comparison with a natural
+number, whereas OpenQASMCore only allows comparison with a bit.
+%
+We decompose each conditional statement into nested conditionals that compare
+each bit of the register with the corresponding digit in the binary
+representation of the natural number.
+%
+For instance, $\iif{x}{6}{\cdots}$ is desugared as
+$\iif{x[2]}{1}{\iif{x[1]}{1}{\iif{x[0]}{0}{\cdots}}}$, where the length of $x$
+is $3$.
+
+\subsection{Representing qubits and classical bits with natural numbers}
+\label{ch:openqasm:desugaring:register}
+
+\noindent
+We represent qubits and classical bits using natural numbers instead of
+identifiers because OpenQASMCore prohibits the declaration of registers and
+requires each qubit or classical bit to be represented by a natural number.
+%
+Conceptually, we merge all quantum registers into a single register and
+substitute each qubit access with the corresponding index within the merged
+register;
+%
+this process is repeated for classical registers.
+
+\subsection{Evaluating expressions}
+\label{ch:openqasm:desugaring:expr}
+
+\noindent
+We substitute every expression, which is used as an argument for a rotation
+gate, with the actual real number denoted by the expression by evaluating it.
+%
+Note that rotation gates in OpenQASMCore accept only real-number constants as
+arguments, whereas OpenQASM allows arbitrary expressions.
+%
+This substitution is possible because all real-number parameters have been
+replaced by arguments through inlining, and, at this stage, every expression
+contains no variables but solely consists of constants and operations involving
+them.
+

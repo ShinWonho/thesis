@@ -1,0 +1,199 @@
+% !TEX root = main.tex
+
+\chapter{Introduction}
+\label{ch:intro}
+\noindent
+Quantum computing is attracting significant attention from academia and
+industry, offering distinct advantages over classical computing by enabling the
+development of substantially faster algorithms.
+%
+A prime example is \citet{shor1994algorithms}'s algorithm, which efficiently
+factorizes integers in polynomial time.
+
+When developing quantum programs, \emph{quantum circuit simulators} are
+essential.
+%
+Quantum programs, written in high-level languages, are typically compiled to
+quantum circuits described by specific \emph{quantum circuit description
+	languages}~\cite{wang2022qdiff, paltenghi2023morphq}.
+%
+These circuits are executed either on real quantum computers or simulators
+running on classical devices.
+%
+Owing to the high cost of quantum computing resources, developers predominantly
+rely on simulators.
+
+Unfortunately, the correctness of existing quantum circuit simulators has not
+been explored, primarily due to the lack of formal semantics for quantum
+circuit description languages.
+%
+Since formal semantics are crucial for verifying language implementations,
+researchers have defined formal semantics for numerous real-world languages,
+such as
+%
+JavaScript~\cite{maffeis2008operational,guha2010essence,politz2012tested,bodin2014trusted,park2015kjs,park2021jiset},
+%
+C~\cite{blazy2009mechanized,leroy2009formal,ellison2012executable,krebbers2014formal,memarian2016depths},
+%
+Java~\cite{farzan2004formal,klein2006machine,bogdanas2015kjava},
+%
+Standard ML~\cite{kumar2014cakeml,lee2007towards},
+%
+WebAssembly~\cite{watt2018mechanising,watt2021two},
+%
+Rust~\cite{jung2017rustbelt},
+%
+Python~\cite{politz2013python},
+%
+PHP~\cite{filaretti2014executable},
+%
+Solidity~\cite{jiao2020semantic},
+%
+and even the POSIX shell~\cite{greenberg2019executable},
+%
+often using proof assistants or semantic frameworks like
+K~\cite{rosu2010overview}.
+%
+Particularly, \emph{executable} formal semantics has been beneficial for
+testing, serving as a testing oracle to aid in bug
+detection~\cite{watt2023wasmref,schumi2021spectest,park2021jest} and test suite
+generation~\cite{park2023feature}.
+%
+However, the semantics of quantum circuit description languages has not been
+formalized yet.
+%
+Notably, OpenQASM~\cite{cross2017open}, a representative language supported by
+various major quantum programming platforms~\cite{qiskit, cirq, q-sharp},
+defines its syntax using BNF but explains its semantics in prose, lacking
+formal rigor.
+%
+This gap hinders the systematic verification and testing of quantum circuit
+simulators.
+
+In this work, we present the first executable formal semantics for OpenQASM
+2.0.
+%
+We chose version 2.0 over the newer OpenQASM 3.0 due to its established
+stability and extensive software support.
+%
+Our formalization employs Coq, from which we extract OCaml code to achieve
+executability.
+%
+The unique characteristics of quantum circuits pose distinct challenges in
+developing formal semantics, compared to traditional programming languages.
+%
+Specifically, we address two challenges:
+%
+(1) taming \emph{nondeterminism} and (2) ensuring \emph{physical consistency}.
+
+The first challenge stems from the nondeterminism in quantum circuit execution,
+a fundamental aspect of quantum mechanics.
+%
+Quantum circuit simulators mimic this nondeterministic behavior through
+\emph{sampling-based} executions.
+%
+While outcomes may vary between executions, they collectively conform to a
+specific probability distribution over multiple runs.
+%
+Since executable formal semantics should have deterministic results, we adopt
+the notion of \emph{exact inference}, i.e., calculating the probability
+distribution of possible outcomes, from probabilistic programming.
+%
+For \emph{static quantum circuits}, featuring end-of-circuit measurements,
+exact inference is relatively straightforward, as probability distributions can
+be computed by multiplying matrices corresponding to circuits' gates.
+%
+However, applications like quantum teleportation and iterative phase
+estimation~\cite{dobsicek2007arbitrary} involve \emph{dynamic quantum
+	circuits}~\cite{dynamic-circuit}.
+%
+These circuits modify the control flow based on mid-circuit measurements, and
+their effects cannot be captured through matrix multiplication.
+
+To enable exact inference for dynamic circuits, we adopt physicist
+\citet{everett1957relative}'s \emph{many-worlds interpretation} (MWI), which
+posits that each nondeterministic event generates multiple parallel
+\emph{worlds} with varying outcomes.
+%
+Our semantics maintains a list of worlds, starting with one world and splitting
+it as execution progresses.
+%
+A potential concern with MWI is that large circuits may create an excessive
+number of worlds, leading to unreasonably long execution times and hindering
+the use as a testing oracle.
+%
+To address this, we introduce two optimizations:
+%
+\emph{world merging} and \emph{efficient reset}, both aimed at reducing the
+number of worlds.
+
+The second challenge relates to the physical laws governing quantum circuits.
+%
+Unlike traditional programming languages for high-level computations, quantum
+circuit description languages specify behavior of circuits running on quantum
+hardware, bound to physical principles.
+%
+Physicists use \emph{density matrices} to model quantum states, and these
+matrices and their transformations must fulfill specific constraints, stated
+through five postulates~\cite{scherer2019mathematics}.
+%
+Formal semantics must align with this physical model because deviating from
+these constraints would yield probability distributions unrealizable in actual
+quantum devices, failing as a testing oracle for simulators.
+%
+Therefore, verifying the \emph{physical consistency}, i.e., adherence to these
+postulates, of our semantics is critical.
+
+To prove the physical consistency of our semantics, we introduce OpenQASMCore,
+a core language of OpenQASM.
+%
+The simplified nature of OpenQASMCore facilitates a streamlined proof of
+physical consistency.
+%
+We define OpenQASMCore's big-step operational semantics and prove its physical
+consistency in Coq.
+%
+We then indirectly define OpenQASM's semantics through desugaring from OpenQASM
+to OpenQASMCore.
+%
+As OpenQASM programs are essentially OpenQASMCore programs with syntactic
+sugar, OpenQASM's physical consistency naturally follows.
+
+To demonstrate the effectiveness of our formal executable semantics as a
+testing oracle, we tested real-world quantum programming platforms,
+Qiskit~\cite{qiskit} and staq~\cite{staq}, specifically a simulator and its
+optimization passes in Qiskit and optimizers in staq, and identified five
+previously unknown bugs with distinct root causes.
+%
+For testing, we collected three OpenQASM benchmark suites~\cite{cross2017open,
+	li2023qasmbench, tomesh2022supermarq} and generated random circuits, some of
+them designed to target Qiskit's optimization passes.
+%
+Of the five bugs, one was in Qiskit's transpiler, three in Qiskit's
+optimization passes, and one in staq's optimizer.
+%
+All the bugs were confirmed by the developers and two have been already fixed.
+
+Overall, our contributions are as follows:
+%
+\begin{itemize}
+	%
+	\item We introduce OpenQASMCore, a core language of OpenQASM
+	      (\cref{ch:openqasmcore}).
+	      %
+	\item We define the executable formal semantics of OpenQASMCore, propose its
+	      optimizations, and prove its physical consistency using Coq
+	      (\cref{ch:consistency}).
+	      %
+	\item We indirectly define the semantics of OpenQASM by introducing desugaring from
+	      OpenQASM to OpenQASMCore (\cref{ch:openqasm}).
+	      %
+	\item We show the effectiveness of our optimizations in reducing execution times and
+	      validate the utility of our executable semantics as a testing oracle by
+	      identifying five previously unknown bugs in real-world quantum programming
+	      platforms (\cref{ch:evaluation}).
+	      %
+\end{itemize}
+%
+We then discuss related work (\cref{ch:related}) and conclude
+(\cref{ch:conclusion}).

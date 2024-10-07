@@ -1,0 +1,24 @@
+% !TEX root = main.tex
+\chapter{Conclusion}
+\label{ch:conclusion}
+
+\noindent
+In this work, we propose the first executable formal semantics for OpenQASM
+2.0, a representative quantum circuit description language.
+%
+To address the nondeterministic nature of quantum circuits, our semantics
+computes the probability distribution of possible outcomes.
+%
+We adopt MWI from the physics literature to compute the probability
+distribution even for dynamic quantum circuits and optimize the semantics using
+mixed states.
+%
+Additionally, we prove the physical consistency of the semantics, which implies
+adherence to the postulates of quantum mechanics.
+%
+To simplify the proof, we define OpenQASMCore as a core language of OpenQASM
+and desugar OpenQASM to OpenQASMCore.
+%
+Our evaluation demonstrates the effectiveness of the optimizations in improving
+performance and the utility of the semantics as a testing oracle, finding five
+previously unknown bugs in two real-world quantum computing platforms.
