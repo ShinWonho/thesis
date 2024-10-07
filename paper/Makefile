@@ -13,19 +13,19 @@ BIBTEX = bibtex
 all: $(MAIN).pdf
 
 # Rule to compile the main document
-$(MAIN).pdf: $(MAIN).tex $(MAIN).bbl
+$(MAIN).pdf: $(MAIN).tex # $(MAIN).bbl
 	$(LATEX) $(MAIN)
 	$(LATEX) $(MAIN)
 
 # Rule to compile the bibliography
-$(MAIN).bbl: $(MAIN).tex reference.bib
+$(MAIN).bbl: $(MAIN).tex # reference.bib
 	$(LATEX) $(MAIN)
 	$(BIBTEX) $(MAIN)
 	$(LATEX) $(MAIN)
 
 # Clean auxiliary files
 clean:
-	rm -f $(MAIN).aux $(MAIN).bbl $(MAIN).blg $(MAIN).log $(MAIN).out $(MAIN).toc $(MAIN).lof $(MAIN).lot
+	rm -f *.aux $(MAIN).bbl $(MAIN).blg $(MAIN).log $(MAIN).out $(MAIN).toc $(MAIN).lof $(MAIN).lot
 
 # Clean all files including the PDF
 distclean: clean

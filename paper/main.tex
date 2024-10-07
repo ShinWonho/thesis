@@ -35,8 +35,9 @@
 % - pdfdoc : 선택하지 않으면 북마크와 colorlink를 만들지 않습니다.
 
 
-%\documentclass[master,english,final]{kaist-ucs} % 석사과정
-\documentclass[doctor,english,final]{kaist-ucs} % 박사과정
+% TODO: This is a draft
+\documentclass[master,english,draft]{kaist-ucs} % 석사과정
+%\documentclass[doctor,english,final]{kaist-ucs} % 박사과정
 
 
 % If you want make pdf document (include bookmark, colorlink)
@@ -50,8 +51,9 @@
 % @command title 논문 제목(title of thesis)
 % @options [default: (none)]
 % - korean: 한글제목(korean title) | english: 영문제목(english title)
-\title[korean] {양자 통신의 근원적 이론과 응용}
-\title[english]{Theoretical Study on Quantum Communication with\linebreak Some Applications}
+% TODO: Below is working titles
+\title[korean] {AL 의미 수식화 및 AL 타입 시스템 도입}
+\title[english]{AL Semantics Formalization and AL Type System Introduction}
 
 % @note 표지에 출력되는 제목을 강제로 줄바꿈하려면 \linebreak 을 삽입.
 %       \\ 나 \newline 등을 사용하면 안됩니다. (아래는 예시)
@@ -79,17 +81,18 @@
 % \author[chinese]{family name in your native language}{given name in your native language}
 % \author[english]{family name in english}{given name in english}
 %
-\author[korean] {박}{상 우}
-\author[korean2] {박}{상우}    %이름을 붙여 써 주시기 바랍니다.
-\author[chinese]{朴}{相 禹}
-\author[english]{Park}{Sangwoo}
+\author[korean] {신}{원 호}
+\author[korean2] {신}{원호}    %이름을 붙여 써 주시기 바랍니다.
+\author[chinese]{申}{元 鎬}
+\author[english]{Shin}{Wonho}
 
 % @command advisor 지도교수 이름 (복수가능)
 % @usage   \advisor[options]{...한글이름...}{...영문이름...}{signed|nosign}
 % @options [default: major]
 % - major: 주 지도교수  | coopr: 공동 지도교수
-\advisor[major]{홍 길 동}{Gildong Hong}{signed}
-\advisor[major2]{홍길동}{Gildong Hong}{signed}    %한글 성과 한글 이름을 모두 붙여 써 주시기 바랍니다.
+% TODO: sign
+\advisor[major]{류 석 영}{Sukyoung Ryu}{nosign}
+\advisor[major2]{류석영}{Sukyoung Ryu}{nosign}    %한글 성과 한글 이름을 모두 붙여 써 주시기 바랍니다.
 
 % [주의] 전산학부의 경우, 전공이름(Computer Science)을 적어주시기 바랍니다. 조직명(School of Computing) 적지 말아주세요!
 \advisorinfo{Professor of Computer Science} %제출승인서에 들어가는 교수님 정보, advisor's information 
@@ -124,194 +127,102 @@
 \department{CS}{engineering}{a}
 
 % @command referee 심사위원 (석사과정 3인, 박사과정 5인)
-\referee[1]{홍 길 동}
-\referee[2]{안 진 현}
-\referee[3]{정 태 성}
-\referee[4]{가 동 호}
-\referee[5]{박 태 현}
-% \referee[5] {Barack Obama}
+\referee[1]{류 석 영}
+\referee[2]{유 신}
+\referee[3]{허 기 홍}
 % Of course english name is available
 
 % @command approvaldate 지도교수논문승인일
 % @param   year,month,day 연,월,일 순으로 입력
+% TODO: not approved!
 \approvaldate{2020}{12}{5}
 
 % @command refereedate 심사위원논문심사일
 % @param   year,month,day 연,월,일 순으로 입력
+% TODO: TBD
 \refereedate{2020}{12}{5}
 
 % @command gradyear 졸업년도
-\gradyear{2020}
+\gradyear{2025}
 
 % 본문 시작
 \begin{document}
 
-    % 앞표지, 속표지, 학위논문 제출승인서, 학위논문 심사완료 검인서는
-    % 클래스 옵션을 final로 지정해주면 자동으로 생성되며,
-    % 반대로 옵션을 draft로 지정해주면 생성되지 않습니다.
+  % 앞표지, 속표지, 학위논문 제출승인서, 학위논문 심사완료 검인서는
+  % 클래스 옵션을 final로 지정해주면 자동으로 생성되며,
+  % 반대로 옵션을 draft로 지정해주면 생성되지 않습니다.
 
-    % 논문 서지, 초록, 핵심 낱말, 영문 초록, 영어 핵심 낱말 (Information of thesis, abstract in korean, keywords in korean, abstract in english, keywords in english)
-   \thesisinfo
-   %% Letters of abstract in korean must be less than 500 and words of abstract in english must be less than 300.
-   %% Number of keywords must be less than 6.
-   %% Don't write english letters in the abstract in korean.
-    \begin{summary}      
-    이 논문에서는 부 쓰는이가 여러 안테나를 쓰는 협력 인지 무선통신망을 다루었다. 안테나 개수는 이제까지의 방법과 같도록 유지하면서 부 쓰는이가 다다를 수 있는 전송률을 높이는 방안을 제시하였다. 좀 더 자세히 말하면, 동시 송수신 안테나를 써서 부 쓰는이끼리 전 이중으로 신호를 주고받을 수 있게 하여 부 쓰는이가 다다를 수 있는 전송률을 높이는 방안을 제시하고 그 성능을 살펴보았다. 제안한 협력 인지 무선통신망이 나타내는 다다를 수 있는 전송률이 이제까지의 다른 협력 인지 무선통신망에서 얻을 수 있는 것과 견주어 꽤 높음을 해석적인 방법과 계산적인 방법으로 보였다.
+  % 논문 서지, 초록, 핵심 낱말, 영문 초록, 영어 핵심 낱말 (Information of thesis, abstract in korean, keywords in korean, abstract in english, keywords in english)
+ \thesisinfo
+ %% Letters of abstract in korean must be less than 500 and words of abstract in english must be less than 300.
+ %% Number of keywords must be less than 6.
+ %% Don't write english letters in the abstract in korean.
+  \begin{summary}
+  % TODO: Korean abstract
+  초록초록
 
-    \end{summary}
-   
-    \begin{Korkeyword}
-    인지 무선 통신, 협력 통신, 중계, 전 이중, 동시 송수신
-    \end{Korkeyword}
+  \end{summary}
 
-
-    \begin{abstract}
-    We address cooperative cognitive radio networks (CCRNs) with secondary users (SUs) exploiting multiple antennas. In order to expand the achievable rate region by enabling full-duplex communication between SUs, we adopt simultaneous transmitting and receiving antennas for the SUs. The link capacities of the proposed framework are analyzed theoretically. It is shown through numerical analysis that the proposed framework can provide a considerable performance gain over the conventional CCRN framework.
-    \end{abstract} 
-     
-    \begin{Engkeyword}
-    Cognitive radio, cooperation communication, relay, full-duplex, simultaneous transmission and reception
-    \end{Engkeyword}
-   
-
-    \addtocounter{pagemarker}{1}                 % 백색별지분을 고려
-    \newpage 
-  
+  \begin{Korkeyword}
+  % TODO: Korean keyword
+  \end{Korkeyword}
 
 
-    % 목차 (Table of Contents) 생성
-    \tableofcontents
+  \begin{abstract}
+  % TODO: English abstract
+  Greengreen
+  \end{abstract}
 
-    % 표목차 (List of Tables) 생성
-    \listoftables
+  \begin{Engkeyword}
+  % TODO: English keyword
+  \end{Engkeyword}
 
-    % 그림목차 (List of Figures) 생성
-    \listoffigures
 
-    % 위의 세 종류의 목차는 한꺼번에 다음 명령으로 생성할 수도 있습니다.
-    %\makecontents
+  \addtocounter{pagemarker}{1}                 % 백색별지분을 고려
+  \newpage
+
+
+
+  % 목차 (Table of Contents) 생성
+  \tableofcontents
+
+  % 표목차 (List of Tables) 생성
+  \listoftables
+
+  % 그림목차 (List of Figures) 생성
+  \listoffigures
+
+  % 위의 세 종류의 목차는 한꺼번에 다음 명령으로 생성할 수도 있습니다.
+  %\makecontents
 
 %% 이하의 본문은 LaTeX 표준 클래스 report 양식에 준하여 작성하시면 됩니다.
 %% 하지만 part는 사용하지 못하도록 제거하였으므로, chapter가 문서 내의
 %% 최상위 분류 단위가 됩니다.
 %% You cannot use 'part'
 
-\chapter{Introduction}
-\label{ch:intro}
-\noindent
-Cognitive radio (CR), a key technology of resource-efficient wireless communications, can be employed to solve the problem of frequency resource shortage. However, due to the uncertainty of the secondary users' (SUs') usage of frequency band, the original CR has failed to gain sufficient interests. Recently, a new paradigm termed cooperative cognitive radio networks (CCRNs) has been proposed \cite{FD1}-\cite{ML1}...
+\include{1-intro}
 
-There ...
+\include{2-background}
 
-\chapter[Background]{Background}
-\label{ch:background}
-\noindent
-Here is for background.
+\include{3-semantics}
 
+\include{4-type}
 
-\chapter[Related Work]{Related Work}
-\label{ch:relatedwork}
-\noindent
-There have been extensive studies on cognitive radio in recent years.
+\include{5-eval}
+
+\include{6-related}
+
+\include{7-conclusion}
 
 
 
-\chapter[Method]{Method}
-\label{ch:ourmethod}
-\section{Quantum Communication}
- To enhance the performance gain of original cognitive radio networks (CRNs), leveraging cooperative diversity has attracted a lot of attention \cite{SOCA1}...
-
-\subsection{Examples}
-
-
-\section{Applications of Quantum Communication}
-\label{ch:application}
-\noindent
-Despite its potential to improve the throughput, spatial domain diversity was not fully considered in the studies of original CCRNs. Utilizing the spatial domain for the communications, the concept of MIMO has been adopted in many cases to increase the wireless capacity \cite{EF1,FD2}...
-
-Let us consider an MIMO-CCRN with one PL and one SL. Each PU has one legacy antenna and each SU has two STAR antennas. The duration of one communication time frame is divided into two phases \cite{RVP2,ML2} ...
-%%
-%% 표 삽입 예시
-%% Example. how to insert table
-%%
-\begin{table}[t]
-\caption[Enter the caption title here]{Energy stability $E$ (eV) per molecule of all meta-stable
-isomer states of C$_{60}$ opening process for forming the (5,5) cap.
-In the SW-I and SW-II, both ferromagnetic (Ferro) and paramagnetic (Para)
-spin configurations are obtained, whereas only non-magnetic configuration
-is obtained in the BF, SW-III, and CAP(5,5).
-$M$ is total magnetization $n_{\rm up}$-$n_{\rm down}$ in unit of $\mu_B$, where
-$n_{\rm up(down)}$ is the number of up (down) spins.
-}
-\label{mag-tab1}
-\begin{center}
-\begin{tabular} {ccccccccccc}
-\hline\hline
-& & BF &\multicolumn{2}{c}{SW-I}&&\multicolumn{2}{c}{SW-II}&SW-III&CAP&\\
-\cline{4-5} \cline{7-8}
-&               &   &  Para & Ferro &&   Para &  Ferro &      &      &\\
-\hline
-& $E$ (eV)      & 0 & 7.796 & 7.832 && 10.418 & 10.408 & 11.5 & 13.2 &\\
-& $M$ ($\mu_B$) & 0 &     0 &  1.94 &&      0 &   2.06 &    0 &    0 &\\
-\hline\hline
-\end{tabular}
-\end{center}
-\end{table}
-
-%%
-%% 그림 삽입 예시
-%% Example. how to insert graph
-%%
-%% Note. 가급적 \includegraphics 명령을 사용하십시오.
-%% Recommen : Use \includegraphics to insert graph.
-%%
-\begin{figure}[t]
-    \centerline{\includegraphics[width=12.5cm]{sample-fig1}}
-    \caption[Enter the caption title here]{ Ball-and-stick models of meta-stable isomers in
-        cage opening process from a C$_{60}$ buckminsterfullerene
-        to a (5,5) capsule. We name them BF and CAP(5,5).
-        Depending on the number of the Stone-Wales (SW) transformation,
-        we call the intermediate isomers with SW-I, SW-II, and SW-III.
-        Highlighted atoms are undercoordinated except BF.
-    } \label{mag-fig1}
-\end{figure}
-
-\section{Discussion and Future Work}
-\noindent
-The achievable rates can be calculated by finding the statistics of the five signals transmitted that maximize the mutual information between $s_{t,XY}$ and $y_{t,XY}$ for $(X,Y)=(T,C), (C,N)$, and $(N,C)$ when $t=1$, and $(X,Y)=(C,R), (C,N)$, and $(N,C)$ when $t=2$ \cite{SOCA2,EF2}...
-
-
-\chapter{Conclusion}
-\noindent
-We have proposed a novel FD MIMO-CCRN framework providing a reasonable performance improvement compared with the conventional MIMO-CCRN framework...
 %%
 %% 참고문헌 시작
 %% bibliography
 %% It can be changed but should include sufficient information.
 \begin{thebibliography}{00}
 
-\bibitem{FD1} 박상우, \underline{동시 송수신 안테나를 두 개 쓰는 협력 인지 무선통신망에 알맞은 전 이중 통신}, 한국과학기술원 석사 학위 논문, 2016.
-
-\bibitem{RVP1} 송익호, 박철훈, 김광순, 박소령, \underline{확률변수와 확률과정}, 자유아카데미, 2014.
-
-\bibitem{ML1} 송익호, 안태훈, 민황기, \underline{인지 무선에서의 광대역 주파수 검출 방법 및 장치}, 특허등록번호 10-1494966, 2015년 2월 12일.
-
-\bibitem{SOCA1} 호우위시, 이원주, 이승원, 안태훈, 이선영, 민황기, 송익호, “선형 판별 분석에서 부류안 분산 행렬의 영 공간 재공식화,” \underline{한국통신학회 2012년도 추계종합학술발표회}, 대한민국 고려대학교, 242-243쪽, 2012년 11월.
-
-\bibitem{EF1} 민황기, 안태훈, 이승원, 이성로, 송익호, “비간섭 전력 부하 감시용 고차 적률 특징을 갖는 전력 신호 인식,” \underline{한국통신학회논문지}, 제39C권, 제7호, 608-614쪽, 2014년 7월.
-
-
-
-\bibitem{FD2} S. Park, \textit{Full-Duplex Communication for Cooperative Cognitive Radio Networks with Two Simultaneous Transmit and Receive Antennas}, Master Thesis, Korea Adv. Inst. Science, Techn., Daejeon, Republic of Korea, 2016.
-
-\bibitem{RVP2}  I. Song, J. Bae, and S. Y. Kim, \textit{Advanced Theory of Signal Detection: Weak Signal Detection in Generalized Observations}, Springer-Verlag, 2002.
-
-\bibitem{ML2} I. Song, T. An, and J. Oh, \textit{Near ML decoding method based on metric-first search and branch length threshold,} registration no. US 8018828 B2, Sep. 13, 2011, USA. 
-
-\bibitem{SOCA2} H.-K. Min, T. An, S. Lee, and I. Song, “Non-intrusive appliance load monitoring with feature extraction from higher order moments,” in \textit{Proc. 6th IEEE Int. Conf. Service Oriented Computing, Appl.,} Kauai, HI, USA, pp. 348-350, Dec. 2013.
-
-\bibitem{EF2} I. Song and S. Lee, “Explicit formulae for product moments of multivariate Gaussian random variables,” \textit{Statistics, Probability Lett.,} vol. 100, pp. 27-34, May 2015.
-
+% TODO: reference
 
 \end{thebibliography}
 
@@ -327,9 +238,8 @@ We have proposed a novel FD MIMO-CCRN framework providing a reasonable performan
 %% It is optional.
 
 \acknowledgment[4]
-    언제나 저를 바른 길로 이끌어 주시는 송익호 교수님께 큰 고마움을 느낍니다.
-    끝으로 오늘의 제가 있을 수 있도록 사랑으로 키워 주신 가족들에게 감사드립니다.
-    저의 이 작은 결실이 그분들께 조금이나마 보답이 되기를 바랍니다.
+% TODO: ack
+악
 
 %%
 %% 약력 시작
@@ -341,38 +251,38 @@ We have proposed a novel FD MIMO-CCRN framework providing a reasonable performan
 %% It is optional and you can change form of this in the class file if you want.
 \curriculumvitae[4]
 
-    % @environment personaldata 개인정보
-    % @command     name         이름
-    %              dateofbirth  생년월일
-    %              birthplace   출생지
-    %              domicile     본적지
-    %              address      주소지
-    %              email        E-mail 주소
-    % - 위 6개의 기본 필드 중에 이력서에 적고 싶은 정보를 입력
-    % input data only you want
-    \begin{personaldata}
-        \name       {박 상 우}
-        \dateofbirth{19xx}{xx}{xx}
-        \birthplace {...}
-        \address    {...}
-    \end{personaldata}
+  % @environment personaldata 개인정보
+  % @command     name         이름
+  %              dateofbirth  생년월일
+  %              birthplace   출생지
+  %              domicile     본적지
+  %              address      주소지
+  %              email        E-mail 주소
+  % - 위 6개의 기본 필드 중에 이력서에 적고 싶은 정보를 입력
+  % input data only you want
+  \begin{personaldata}
+    \name       {신 원 호}
+    \dateofbirth{1999}{06}{05}
+  \end{personaldata}
 
-    % @environment education 학력
-    % @options [default: (none)] - 수학기간을 입력
-    \begin{education}
-        \item[2008. 3.\ --\ 2010. 2.] 고등학교 (2년 수료)
-        \item[2010. 2.\ --\ 2014. 2.] 한국과학기술원 물리학과 (학사)
-        \item[2014. 3.\ --\ 2016. 2.] 한국과학기술원 전기및전자공학부 (석사)
-    \end{education}
+  % @environment education 학력
+  % @options [default: (none)] - 수학기간을 입력
+  \begin{education}
+    \item[2015. 3.\ --\ 2018. 2.] 고등학교 (3년 졸업)
+    \item[2018. 2.\ --\ 2023. 2.] 한국과학기술원 전산학부 (학사)
+    \item[2023. 3.\ --\ 2025. 2.] 한국과학기술원 전산학부 (석사)
+  \end{education}
 
-    % @environment career 경력
-    % @options [default: (none)] - 해당기간을 입력
-    \begin{career}
-        \item[2015. 3.\ --\ 2016. 2.] 한국과학기술원 전기및전자공학부 조교
-    \end{career}
+  % @environment career 경력
+  % @options [default: (none)] - 해당기간을 입력
+  \begin{career}
+    % TODO
+    \item[2023. 3.\ --\ 2025. 2.] 한국과학기술원 전산학부 조교
+    \item[2024. 10.\ --\ 2024. 10.] 한국과학기술원 홍재민 박사 결혼식 참석
+  \end{career}
 
-    % @environment activity 학회활동
-    % @options [default: (none)] - 활동내용을 입력
+  % @environment activity 학회활동
+  % @options [default: (none)] - 활동내용을 입력
 %%    \begin{activity}
 %%        \item J. Choi, \textbf{Yong-Hyun Kim}, K.J. Chang, and D. Tomanek,
 %%             \textit{Occurrence of itinerant ferromagnetism in C/BN superlattice
@@ -380,16 +290,17 @@ We have proposed a novel FD MIMO-CCRN framework providing a reasonable performan
 %%             Structure Calculations, Seoul (Korea), October., 2002.
 %%    \end{activity}
 
-    % @environment publication 연구업적
-    % @options [default: (none)] - 출판내용을 입력
-    \begin{publication}
-        %\item \textbf{Yong-Hyun Kim}, J. Choi, K.J. Chang, and D. Tomanek,
-        %     \textit{Magnetic instability in partly opened C$_{60}$ isomers},
-        %     in preparation.
-        \item H.-K. Min, Y. Hou, {\bf S. Park}, and I. Song,
+  % @environment publication 연구업적
+  % @options [default: (none)] - 출판내용을 입력
+  \begin{publication}
+    % TODO
+    %\item \textbf{Yong-Hyun Kim}, J. Choi, K.J. Chang, and D. Tomanek,
+    %     \textit{Magnetic instability in partly opened C$_{60}$ isomers},
+    %     in preparation.
+    \item H.-K. Min, Y. Hou, {\bf S. Park}, and I. Song,
 ``A computationally efficient scheme for feature extraction with kernel discriminant analysis,"
 \textit{Patt. Recogn.}, vol.~50, no.~2, pp.~45-55, Feb. 2016 (to be published).
-    \end{publication}
+  \end{publication}
 
   \label{paperlastpagelabel}     % <-- 추가 부분: 마지막 페이지 위치 지정	
 %% 본문 끝
