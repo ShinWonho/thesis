@@ -95,7 +95,7 @@
   \hline
   (w, \al (\epsilon, \mu, n, c)) \leadsto& (w, \wasm (n, c)) \\
 %
-% Enter-instr
+% Al-instr
 \newline \\
   \hline
   (w, \al (i_0 ~ \seq{i_1}, \mu, n, c)) \leadsto& \sem{i_0}(w, \al (\seq{i_1}, \mu, n, c)) \\
@@ -186,13 +186,21 @@ NOTE: input cont is always \al
 \newline \\
   v_1 = \sem{e_1}(\mu, w) \quad& v_2 = \sem{e_2}(\mu, w) \\
   \hline
-  \sem{\textbf{Enter} (e_1, e_2, \seq i)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i_0}, \mu, n, c))
+  \sem{\textbf{Enter} (e_1, e_2)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i_0}, \mu, n, c))
   =&
   ((v_1 ~ \seq{wv}, \text{to\_list}(v_2) ~ \seq{wi}, sto), \wasm (n+1, \al (\seq{i_0}, \mu, n, c))) \\
 %
-% Push
+% Push-ctx
 \newline \\
-  v =& \sem{e}(\mu, w) \\
+  v = \sem{e}(\mu, w) \quad& \text{is\_context}(v) \\
+  \hline
+  \sem{\textbf{Push} e}((\seq{wv}, \seq{wi}, sto), \al(\seq i, \mu, n, c))
+  =&
+  ((v ~ \seq{wv}, \seq{wi}, sto), \al(\seq i, \mu, n+1, c)) \\
+%
+% Push-ctx
+\newline \\
+  v = \sem{e}(\mu, w) \quad& \text{is\_not\_context}(v) \\
   \hline
   \sem{\textbf{Push} e}((\seq{wv}, \seq{wi}, sto), c) =& ((v ~ \seq{wv}, \seq{wi}, sto), c) \\
 %
