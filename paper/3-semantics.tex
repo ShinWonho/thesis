@@ -314,11 +314,16 @@ NOTE: an input of is\_context (WasmValue sequence) contains at least one context
 \newline \\
   \text{execute}(v, c) =& \exe(v, c) \\
 %
-% exit_cont-wasm
+% exit_cont-wasm_0
 \newline \\
 \text{
   NOTE: input cont of exit }&\text{is either \al ~ or \wasm
 } \\
+  \text{exit}_{Cont}(\wasm (0, c)) =& \wasm(0, \text{exit}_{Cont}(c)) \\
+%
+% exit_cont-wasm_nonzero
+  n >& 0 \\
+  \hline
   \text{exit}_{Cont}(\wasm (n, c)) =& \wasm(n-1, c) \\
 %
 % exit_cont-al
