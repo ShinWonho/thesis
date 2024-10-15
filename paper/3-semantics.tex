@@ -224,7 +224,7 @@ NOTE: input cont is always \al
 %
 % PopAll
 \newline \\
-  \seq{wv_0}, \seq{wv_1} = \text{pop\_all}(wv) \quad& \mu' = \text{assign}(\mu, e, \textbf{ListV} ~ \seq{wv_0}) \\
+  \seq{wv_0}, \seq{wv_1} = \text{split\_ctx}(wv) \quad& \mu' = \text{assign}(\mu, e, \textbf{ListV} ~ \seq{wv_0}) \\
   \hline
   \sem{\textbf{PopAll} e}(\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
   =&
@@ -286,12 +286,13 @@ NOTE: input cont is always \al
 %
 % Exit
 \newline \\
-  \seq{wv_1}, \seq{wv_2} = \text{pop\_all}(\seq{wv_0}) \quad&
-  c' = \text{exit}(c)\\
+  \seq{wv'} = \text{exit}_{WasmValue}(\seq{wv}) \quad
+  c' =& \text{exit}_{Cont}(c) \quad
+  \seq{wi'} = \text{exit}_{WasmInstr}(\seq{wi}) \\
   \hline
-  \sem{\textbf{Exit}}((\seq{wv_0}, \seq{wi}, sto), c)
+  \sem{\textbf{Exit}}((\seq{wv}, \seq{wi}, sto), c)
   =&
-  ((\text{tail}(\seq{wv_2}), \seq{wi}, sto), c') \\
+  ((\seq{wv'}, \seq{wi'}, sto), c') \\
 \end{align*}
 TODO: Replace, Append, FieldwiseAppend
 
@@ -302,26 +303,42 @@ NOTE: an input of is\_context (WasmValue sequence) contains at least one context
 \newline \\
   \text{is\_context}&(\text{hd}(\seq{wv})) \\
   \hline
-  \text{pop\_all}(\seq{wv}) =& \epsilon, \seq{wv} \\
+  \text{split\_ctx}(\seq{wv}) =& \epsilon, \seq{wv} \\
 %
 % pop_all-val
-  \text{is\_not\_context}(wv_0) \quad& \seq{wv_2}, \seq{wv_3} = \text{pop\_all}(\seq{wv_1}) \\
+  \text{is\_not\_context}(wv_0) \quad& \seq{wv_2}, \seq{wv_3} = \text{split\_ctx}(\seq{wv_1}) \\
   \hline
-  \text{pop\_all}(wv_0 ~ \seq{wv_1}) =& wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
+  \text{split\_ctx}(wv_0 ~ \seq{wv_1}) =& wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
 %
 % execute
 \newline \\
   \text{execute}(v, c) =& \exe(v, c) \\
 %
-% exit-wasm
+% exit_cont-wasm
 \newline \\
 \text{
   NOTE: input cont of exit }&\text{is either \al ~ or \wasm
 } \\
-  \text{exit}(\wasm (n, c)) =& \wasm(n-1, c) \\
+  \text{exit}_{Cont}(\wasm (n, c)) =& \wasm(n-1, c) \\
 %
-% exit-al
-  \text{exit}(\al (\seq i, \mu, n, c)) =& \al (\seq i, \mu, n, \text{exit}(c)) \\
+% exit_cont-al
+  \text{exit}_{Cont}(\al (\seq i, \mu, n, c)) =& \al (\seq i, \mu, n, \text{exit}(c)) \\
+%
+% exit_wasm_instr-end
+\newline \\
+  \text{is\_end}&(wi) \\
+  \hline
+  \text{exit}_{WasmInstr}(wi ~ \seq{wi'}) =& \seq{wi'} \\
+%
+% exit_wasm_instr-normal_instr
+  \text{is\_not\_end}&(wi) \\
+  \hline
+  \text{exit}_{WasmInstr}(wi ~ \seq{wi'}) =& \text{exit}_{WasmInstr}(\seq{wi'}) \\
+%
+% exit_wasm_value
+  \seq{wv_1}, \seq{wv_2} =& \text{split\_ctx}(\seq{wv_0}) \\
+  \hline
+  \text{exit}_{WasmValue}(\seq{wv_0}) =& \text{tail}(\seq{wv_2}) \\
 \end{align*}
 
 
