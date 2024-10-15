@@ -46,6 +46,22 @@
 % kaist.cls 에서는 기본으로 dhucs, ifpdf, graphicx 패키지가 로드됩니다.
 % 추가로 필요한 패키지가 있다면 주석을 풀고 적어넣으십시오,
 %\usepackage{...}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\allowdisplaybreaks
+
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+% 3-semantics
+\newcommand{\sem}[1]{[\![#1]\!]}
+\newcommand{\mt}{\textbf{Empty}}
+\newcommand{\call}{\textbf{Call}}
+\newcommand{\al}{\textbf{Al}}
+\newcommand{\enter}{\textbf{Enter}}
+\newcommand{\wasm}{\textbf{Wasm}}
+\newcommand{\exe}{\textbf{Execute}}
+\newcommand{\ret}{\textbf{Return}}
+\newcommand{\seq}[1]{#1^*}
 
 
 % @command title 논문 제목(title of thesis)
@@ -283,20 +299,20 @@
 
   % @environment activity 학회활동
   % @options [default: (none)] - 활동내용을 입력
-%%    \begin{activity}
-%%        \item J. Choi, \textbf{Yong-Hyun Kim}, K.J. Chang, and D. Tomanek,
-%%             \textit{Occurrence of itinerant ferromagnetism in C/BN superlattice
-%%             nanotubes}, 5th Asian Workshop on First-Principles Electronic
-%%             Structure Calculations, Seoul (Korea), October., 2002.
-%%    \end{activity}
+%%  \begin{activity}
+%%    \item J. Choi, \textbf{Yong-Hyun Kim}, K.J. Chang, and D. Tomanek,
+%%      \textit{Occurrence of itinerant ferromagnetism in C/BN superlattice
+%%      nanotubes}, 5th Asian Workshop on First-Principles Electronic
+%%      Structure Calculations, Seoul (Korea), October., 2002.
+%%  \end{activity}
 
   % @environment publication 연구업적
   % @options [default: (none)] - 출판내용을 입력
   \begin{publication}
     % TODO
     %\item \textbf{Yong-Hyun Kim}, J. Choi, K.J. Chang, and D. Tomanek,
-    %     \textit{Magnetic instability in partly opened C$_{60}$ isomers},
-    %     in preparation.
+    %   \textit{Magnetic instability in partly opened C$_{60}$ isomers},
+    %   in preparation.
     \item H.-K. Min, Y. Hou, {\bf S. Park}, and I. Song,
 ``A computationally efficient scheme for feature extraction with kernel discriminant analysis,"
 \textit{Patt. Recogn.}, vol.~50, no.~2, pp.~45-55, Feb. 2016 (to be published).

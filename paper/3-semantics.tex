@@ -3,3 +3,320 @@
 \chapter{Semantics}
 \label{ch:semantics}
 \noindent
+
+
+% AL semantics formalize
+%
+%
+% Prose notation:
+% - Implicit when to exit:
+%   • Returning from a function
+%     When the end of a function is reached without a jump (i.e., return) or trap aborting it, then the following steps are performed.
+%
+%   • Exiting with label
+%     When the end of a block is reached without a jump or trap aborting it, then the following steps are performed.
+%
+%   ! end of function/label is defined verbally, not in algorithmic notation
+%
+% - Separate context and instructions:
+%   • Push ctx \& Jump instrs
+%
+%
+% abstract machine of prose notation: vm
+% 1. state: stack, store
+% 2. cosumes sequence of WebAssembly instruction
+% 3. mutate state
+%
+% - store
+%   - instantiate -> alloc
+%   - invoke -> use
+% - stack contains value \& context
+%   - value
+%     ex: binop
+%   - context
+%     1) label: allow structured control flow (continuation)
+%     2) frame: store call information (local variable, module instance)
+%     - enter \& exit
+%     - ex: loop, invoke
+%     - ex: br, implicit exit
+%
+%
+% - wrong interpretation of "end" in AL interpreter \red{(How long does it occur?)}
+% - example
+
+
+
+% Syntax
+
+\begin{align*}
+%
+  \\
+  s \in S =& W \times Cont \\
+  w \in W =& \seq{WasmValue} \times \seq{WasmInstr} \times Store \\
+  wv \in WasmValue =& V \\
+  wi \in WasmInstr =& V \\
+  sto \in Store =& String \mapsto \seq V \\
+  c \in Cont =& ~ \mt \\
+    | & ~ \call ~ String \times \seq V \times Cont \\
+    | & ~ \al ~ \seq I \times Env \times \mathbb N \times Cont \\
+    | & ~ \wasm ~ \mathbb N \times Cont \\
+    | & ~ \exe ~ wi \times Cont \\
+    | & ~ \ret ~ V \\
+  \mu \in Env =& String \mapsto V \\
+  i \in I =& ... \\
+  e \in E =& ... \\
+  v \in V =& ... \\
+\end{align*}
+
+
+
+% Step
+
+\newpage
+
+\begin{align*}
+\newline \\
+  S \leadsto& S
+%
+% Call
+\newline \\
+  \seq e, \seq i = \text{lookup}(str) \quad& \mu = \text{asign}(\seq e, \seq v) \\
+  \hline
+  (w, \call (str, \seq v, c)) \leadsto& (w, \al (\seq i, \mu, c)) \\
+%
+% Al-empty_zero
+\newline \\
+  \hline
+  (w, \al (\epsilon, \mu, 0, c)) \leadsto& (w, c) \\
+%
+% Al-empty_nonzero
+\newline \\
+  n >& 0 \\
+  \hline
+  (w, \al (\epsilon, \mu, n, c)) \leadsto& (w, \wasm (n, c)) \\
+%
+% Enter-instr
+\newline \\
+  \hline
+  (w, \al (i_0 ~ \seq{i_1}, \mu, n, c)) \leadsto& \sem{i_0}(w, \al (\seq{i_1}, \mu, n, c)) \\
+%
+% Wasm-zero
+\newline \\
+  \hline
+  (w, \wasm (0, c)) \leadsto& (w, c) \\
+%
+% Wasm-value
+\newline \\
+  n > 0 \quad \text{is\_wasm\_va}&\text{lue\_instr}(wi) \\
+  \hline
+  ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm (n, c))
+  \leadsto&
+  ((\seq{wi'}, wi ~ \seq{wv}, sto), \wasm (n, c)) \\
+%
+% Wasm-instr
+\newline \\
+  n > 0 \quad \text{is\_not\_wasm}&\text{\_value\_instr}(wi) \\
+  \textbf{CaseV} (str, \seq v) = wi \quad
+  \seq e, \seq i =& \text{lookup}(str) \quad
+  \mu = \text{assign}(\epsilon, \seq e, \seq v) \\
+  \hline
+  ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm (n, c))
+  \leadsto&
+  ((\seq{wi'}, \seq{wv}, sto), \al (\seq i, \seq v, \wasm (n, c))) \\
+%
+% Execute-value
+\newline \\
+  \text{is\_wasm\_value}&\text{\_instr}(wi') \\
+  \hline
+  ((\seq{wi}, \seq{wv}, sto), \exe (wi', c))
+  \leadsto&
+  ((\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
+%
+% Execute-instr
+\newline \\
+  \text{is\_not\_wasm\_val}&\text{ue\_instr}(wi') \\
+  \textbf{CaseV} (str, \seq v) = wi \quad
+  \seq e, \seq i =& \text{lookup}(str) \quad
+  \mu = \text{assign}(\epsilon, \seq e, \seq v) \\
+  \hline
+  (w, \exe (wi', c)) \leadsto& (w, \al (\seq i, \seq v, c)) \\
+\end{align*}
+
+
+
+% AL Instr
+
+\newpage
+
+NOTE: input cont is always \al
+\begin{align*}
+  \sem{i} : State \mapsto& State \\
+%
+% If-true
+\newline \\
+  v = \sem{e}(\mu, w) \quad& \text{is\_true}(v) \\
+  \hline
+  \sem{\textbf{If} (e, \seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
+  =&
+  (w, \al (\seq{i_1} \seq{i_0}, \mu, n, c)) \\
+%
+% If-false
+\newline \\
+  v = \sem{e}(\mu, w) \quad& \text{is\_not\_true}(v) \\
+  \hline
+  \sem{\textbf{If} (e, \seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
+  =&
+  (w, \al (\seq{i_2} \seq{i_0}, \mu, n, c)) \\
+%
+% Either-1
+\newline \\
+  \hline
+  \sem{\textbf{Either} (\seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
+  =&
+  (w, \al (\seq{i_1} \seq{i_0}, \mu, n, c)) \\
+%
+% Either-2
+\newline \\
+  \hline
+  \sem{\textbf{Either} (\seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
+  =&
+  (w, \al (\seq{i_2} \seq{i_0}, \mu, n, c')) \\
+%
+% Enter
+\newline \\
+  v_1 = \sem{e_1}(\mu, w) \quad& v_2 = \sem{e_2}(\mu, w) \\
+  \hline
+  \sem{\textbf{Enter} (e_1, e_2, \seq i)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i_0}, \mu, n, c))
+  =&
+  ((v_1 ~ \seq{wv}, \text{to\_list}(v_2) ~ \seq{wi}, sto), \wasm (n+1, \al (\seq{i_0}, \mu, n, c))) \\
+%
+% Push
+\newline \\
+  v =& \sem{e}(\mu, w) \\
+  \hline
+  \sem{\textbf{Push} e}((\seq{wv}, \seq{wi}, sto), c) =& ((v ~ \seq{wv}, \seq{wi}, sto), c) \\
+%
+% Pop-iter
+\newline \\
+  \textbf{IterE}(e_1, (\textbf{ListN}(e_2, \textbf{None}), \_))=e \quad&
+  \sem{e_2}(\mu, w) = \textbf{NumV} ~ n \quad
+  \mu' = \text{assign}(\mu, e, \textbf{ListV} ~ wv^n) \\
+  \hline
+  \sem{\textbf{Pop} e}((wv^n ~ \seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  =&
+  ((\seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
+%
+% Pop-val
+\newline \\
+  \mu' =& \text{assign}(\mu, e, wv) \\
+  \hline
+  \sem{\textbf{Pop} e}((wv ~ \seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  =&
+  ((\seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
+%
+% PopAll
+\newline \\
+  \seq{wv_0}, \seq{wv_1} = \text{pop\_all}(wv) \quad& \mu' = \text{assign}(\mu, e, \textbf{ListV} ~ \seq{wv_0}) \\
+  \hline
+  \sem{\textbf{PopAll} e}(\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  =&
+  ((\seq{wv_1}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
+%
+% Let
+\newline \\
+  v = \sem{e_2}(\mu, w) \quad& \mu' = \text{asign}(\mu, e_1, v) \\
+  \hline
+  \sem{\textbf{Let}(e_1, e_2)}(w, \al (\seq{i}, \mu, n, c))
+  =&
+  (w, \al (\seq{i}, \mu', n, c)) \\
+%
+% Trap
+\newline \\
+  \hline
+  \sem{\textbf{Trap}}(w, c) =& (w, \ret ~ \textbf{TrapV}) \\
+%
+% Throw
+\newline \\
+  \hline
+  \sem{\textbf{Throw} ~ e}(w, c) =& (w, \ret ~ \textbf{ThrowV}) \\
+%
+% Return-none
+\newline \\
+  \hline
+  \sem{\textbf{Return}}(w, \al (\seq{i}, \mu, n, c)) =& (w, c) \\
+%
+% Return-some
+\newline \\
+  \sem{e}(\mu, w) =& v \\
+  \hline
+  \sem{\textbf{Return} ~ e}(w, \al (\seq{i}, \mu, n, c)) =& (w, \ret ~ v) \\
+%
+% Execute
+\newline \\
+  \sem{e}(\mu, w) =& v \\
+  \hline
+  \sem{\textbf{Execute} ~ e}(w, \al (\seq{i}, \mu, n, c))
+  =&
+  (w, \exe (v, \al (\seq{i}, \mu, n, c))) \\
+%
+% ExecuteSeq
+\newline \\
+  \sem{e}(\mu, w) = v \quad
+  c' =& \text{fold\_right}(\text{execute}, \text{to\_list}(v), c) \\
+  \hline
+  \sem{\textbf{ExecuteSeq} ~ e}(w, \al (\seq{i}, \mu, n, c))
+  =&
+  (w, \exe (v, c')) \\
+%
+% Perform
+\newline \\
+  \seq v =& \seq{\sem{e}}(\mu, w) \\
+  \hline
+  \sem{\textbf{Perform} ~ (str, \seq e)}(w, \al (\seq{i}, \mu, n, c))
+  =&
+  (w, \call (str, \seq v, \al (\seq{i}, \mu, n, c))) \\
+%
+% Exit
+\newline \\
+  \seq{wv_1}, \seq{wv_2} = \text{pop\_all}(\seq{wv_0}) \quad&
+  c' = \text{exit}(c)\\
+  \hline
+  \sem{\textbf{Exit}}((\seq{wv_0}, \seq{wi}, sto), c)
+  =&
+  ((\text{tail}(\seq{wv_2}), \seq{wi}, sto), c') \\
+\end{align*}
+TODO: Replace, Append, FieldwiseAppend
+
+NOTE: an input of is\_context (WasmValue sequence) contains at least one context
+\begin{align*}
+%
+% pop_all-ctx
+\newline \\
+  \text{is\_context}&(\text{hd}(\seq{wv})) \\
+  \hline
+  \text{pop\_all}(\seq{wv}) =& \epsilon, \seq{wv} \\
+%
+% pop_all-val
+  \text{is\_not\_context}(wv_0) \quad& \seq{wv_2}, \seq{wv_3} = \text{pop\_all}(\seq{wv_1}) \\
+  \hline
+  \text{pop\_all}(wv_0 ~ \seq{wv_1}) =& wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
+%
+% execute
+\newline \\
+  \text{execute}(v, c) =& \exe(v, c) \\
+%
+% exit-wasm
+\newline \\
+\text{
+  NOTE: input cont of exit }&\text{is either \al ~ or \wasm
+} \\
+  \text{exit}(\wasm (n, c)) =& \wasm(n-1, c) \\
+%
+% exit-al
+  \text{exit}(\al (\seq i, \mu, n, c)) =& \al (\seq i, \mu, n, \text{exit}(c)) \\
+\end{align*}
+
+
+
+
+
