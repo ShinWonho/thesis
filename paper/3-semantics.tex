@@ -270,7 +270,7 @@ NOTE: input cont is always \al
 % ExecuteSeq
 \newline \\
   \sem{e}(\mu, w) = v \quad
-  c' =& \text{fold\_right}(\text{execute}, \text{to\_list}(v), c) \\
+  c' =& \text{fold\_right}(\text{execute}, \text{to\_list}(v), \al (\seq{i}, \mu, n, c)) \\
   \hline
   \sem{\textbf{ExecuteSeq} ~ e}(w, \al (\seq{i}, \mu, n, c))
   =&
