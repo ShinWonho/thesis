@@ -44,6 +44,10 @@
 % - wrong interpretation of "end" in AL interpreter \red{(How long does it occur?)}
 % - example
 
+
+
+%% Symbol definition
+
 % Continuation
 \newcommand{\mt}{\textbf{Empty}}
 \newcommand{\call}{\textbf{Call}}
@@ -140,23 +144,37 @@
 \newcommand{\fnamev}{\textbf{FnameV}}
 \newcommand{\trapv}{\textbf{TrapV}}
 
-% Syntax
+
+
+
+
+%% Syntax
 
 \begin{align*}
 %
-  \\
+% State
   s \in S =& W \times Cont \\
+%
+% Wasm state
   w \in W =& \seq{WasmValue} \times \seq{WasmInstr} \times Store \\
   wv \in WasmValue =& V \\
   wi \in WasmInstr =& V \\
+%
+% Store
   sto \in Store =& String \mapsto \seq V \\
+%
+% Continuation
   c \in Cont =& ~ \mt \\
     | & ~ \call ~ String \times \seq V \times Cont \\
     | & ~ \al ~ \seq I \times Env \times \mathbb N \times Cont \\
     | & ~ \wasm ~ \mathbb N \times Cont \\
     | & ~ \exe ~ wi \times Cont \\
     | & ~ \ret ~ V \\
+%
+% Environment
   \mu \in Env =& String \mapsto V \\
+%
+% Instruction
   i \in I =& ~ \ifi ~ E \times \seq I \times \seq I \\
     | & ~ \eitheri ~ \seq I \times \seq I \\
     | & ~ \enteri ~ E \times E \times \seq I \\
@@ -198,6 +216,8 @@
     | & ~ \contextkinde ~ String \\
     | & ~ \matche ~ E \times E \\
     | & ~ \hastypee ~ E \times String \\
+%
+% Operator
   unop \in Unop =& ~ \notop ~ | ~ \minusop \\
   binop \in Binop =& ~ \addop \\
     | & ~ \subop \\
@@ -215,8 +235,13 @@
     | & ~ \gtop \\
     | & ~ \leop \\
     | & ~ \geop \\
+%
+% Path
   p \in P =& ~ \idxp ~ E ~ | ~ \slicep ~ E \times E ~ | ~ \dotp ~ String \\
+%
+% Iter
   iter \in Iter =& ~ \listiter ~ | ~ \listniter ~ E ~|~ \listidxiter ~ String \times E \\
+%
 % Value
   v \in V =& ~ \numv ~ \mathbb N \\
     | & ~ \boolv ~ \mathbb B \\
@@ -229,7 +254,7 @@
 
 
 
-% Step
+%% Step
 
 \newpage
 
@@ -275,7 +300,7 @@
 % Wasm-instr
 \newline \\
   n > 0 \quad \text{is\_not\_wasm}&\text{\_value\_instr}(wi) \\
-  \textbf{CaseV} (str, \seq v) = wi \quad
+  \casev (str, \seq v) = wi \quad
   \seq e, \seq i =& \text{lookup}(str) \quad
   \mu = \text{assign}(\epsilon, \seq e, \seq v) \\
   \hline
@@ -294,7 +319,7 @@
 % Execute-instr
 \newline \\
   \text{is\_not\_wasm\_val}&\text{ue\_instr}(wi') \\
-  \textbf{CaseV} (str, \seq v) = wi \quad
+  \casev (str, \seq v) = wi \quad
   \seq e, \seq i =& \text{lookup}(str) \quad
   \mu = \text{assign}(\epsilon, \seq e, \seq v) \\
   \hline
@@ -303,7 +328,7 @@
 
 
 
-% AL Instr
+%% AL Instr
 
 \newpage
 
