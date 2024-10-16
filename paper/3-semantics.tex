@@ -44,7 +44,101 @@
 % - wrong interpretation of "end" in AL interpreter \red{(How long does it occur?)}
 % - example
 
+% Continuation
+\newcommand{\mt}{\textbf{Empty}}
+\newcommand{\call}{\textbf{Call}}
+\newcommand{\al}{\textbf{Al}}
+\newcommand{\enter}{\textbf{Enter}}
+\newcommand{\wasm}{\textbf{Wasm}}
+\newcommand{\exe}{\textbf{Execute}}
+\newcommand{\ret}{\textbf{Return}}
 
+% Instruction
+\newcommand{\ifi}{\textbf{IfI}}
+\newcommand{\eitheri}{\textbf{EitherI}}
+\newcommand{\enteri}{\textbf{EnterI}}
+\newcommand{\asserti}{\textbf{AssertI}}
+\newcommand{\pushi}{\textbf{PushI}}
+\newcommand{\popi}{\textbf{PopI}}
+\newcommand{\popalli}{\textbf{PopAllI}}
+\newcommand{\leti}{\textbf{LetI}}
+\newcommand{\trapi}{\textbf{TrapI}}
+\newcommand{\nopi}{\textbf{NopI}}
+\newcommand{\returni}{\textbf{ReturnI}}
+\newcommand{\executei}{\textbf{ExecuteI}}
+\newcommand{\executeseqi}{\textbf{ExecuteSeqI}}
+\newcommand{\performi}{\textbf{PerformI}}
+\newcommand{\exiti}{\textbf{ExitI}}
+\newcommand{\replacei}{\textbf{ReplaceI}}
+\newcommand{\appendi}{\textbf{AppendI}}
+
+% Expression
+\newcommand{\vare}{\textbf{VarE}}
+\newcommand{\nume}{\textbf{NumE}}
+\newcommand{\boole}{\textbf{BoolE}}
+\newcommand{\fnamee}{\textbf{FnameE}}
+\newcommand{\une}{\textbf{UnE}}
+\newcommand{\bine}{\textbf{BinE}}
+\newcommand{\acce}{\textbf{AccE}}
+\newcommand{\upde}{\textbf{UpdE}}
+\newcommand{\stre}{\textbf{StrE}}
+\newcommand{\compe}{\textbf{CompE}}
+\newcommand{\cate}{\textbf{CatE}}
+\newcommand{\meme}{\textbf{MemE}}
+\newcommand{\lene}{\textbf{LenE}}
+\newcommand{\tupe}{\textbf{TupE}}
+\newcommand{\casee}{\textbf{CaseE}}
+\newcommand{\calle}{\textbf{CallE}}
+\newcommand{\itere}{\textbf{IterE}}
+\newcommand{\liste}{\textbf{ListE}}
+\newcommand{\getcurcontexte}{\textbf{GetCurContextE}}
+\newcommand{\choosee}{\textbf{ChooseE}}
+\newcommand{\iscaseofe}{\textbf{IsCaseOfE}}
+\newcommand{\contextkinde}{\textbf{ContextKindE}}
+\newcommand{\matche}{\textbf{MatchE}}
+\newcommand{\hastypee}{\textbf{HasTypeE}}
+
+% Unary operator
+\newcommand{\notop}{\textbf{NotOp}}
+\newcommand{\minusop}{\textbf{MinusOp}}
+
+% Binary operator
+\newcommand{\addop}{\textbf{AddOp}}
+\newcommand{\subop}{\textbf{SubOp}}
+\newcommand{\mulop}{\textbf{MulOp}}
+\newcommand{\divop}{\textbf{DivOp}}
+\newcommand{\modop}{\textbf{ModOp}}
+\newcommand{\expop}{\textbf{ExpOp}}
+\newcommand{\implop}{\textbf{ImplOp}}
+\newcommand{\equivop}{\textbf{EquivOp}}
+\newcommand{\andop}{\textbf{AndOp}}
+\newcommand{\orop}{\textbf{OrOp}}
+\newcommand{\eqop}{\textbf{EqOp}}
+\newcommand{\neop}{\textbf{NeOp}}
+\newcommand{\ltop}{\textbf{LtOp}}
+\newcommand{\gtop}{\textbf{GtOp}}
+\newcommand{\leop}{\textbf{LeOp}}
+\newcommand{\geop}{\textbf{GeOp}}
+
+% Path
+\newcommand{\idxp}{\textbf{Idx}}
+\newcommand{\slicep}{\textbf{Slice}}
+\newcommand{\dotp}{\textbf{Dot}}
+
+% Iter
+\newcommand{\listiter}{\textbf{List}}
+\newcommand{\listniter}{\textbf{ListN}}
+\newcommand{\listidxiter}{\textbf{Index}}
+
+% Value
+\newcommand{\numv}{\textbf{NumV}}
+\newcommand{\boolv}{\textbf{BoolV}}
+\newcommand{\listv}{\textbf{ListV}}
+\newcommand{\strv}{\textbf{StrV}}
+\newcommand{\casev}{\textbf{CaseV}}
+\newcommand{\tupv}{\textbf{TupV}}
+\newcommand{\fnamev}{\textbf{FnameV}}
+\newcommand{\trapv}{\textbf{TrapV}}
 
 % Syntax
 
@@ -63,9 +157,74 @@
     | & ~ \exe ~ wi \times Cont \\
     | & ~ \ret ~ V \\
   \mu \in Env =& String \mapsto V \\
-  i \in I =& ... \\
-  e \in E =& ... \\
-  v \in V =& ... \\
+  i \in I =& \ifi ~ E \times \seq I \times \seq I \\
+    | & ~ \eitheri ~ \seq I \times \seq I \\
+    | & ~ \enteri ~ E \times E \times \seq I \\
+    | & ~ \pushi ~ E \\
+    | & ~ \popi ~ E \\
+    | & ~ \popalli ~ E \\
+    | & ~ \leti ~ E \times E \\
+    | & ~ \trapi \\
+    | & ~ \returni ~ E_{\bot} \\
+    | & ~ \executei ~ E \\
+    | & ~ \executeseqi ~ E \\
+    | & ~ \performi ~ String \times \seq String \\
+    | & ~ \exiti ~ String \\
+    | & ~ \replacei ~ E \times P \times E \\
+    | & ~ \appendi ~ E \times E \\
+%
+% Expression
+  e \in E =& \vare ~ String \\
+    | & ~ \nume ~ \mathbb N \\
+    | & ~ \boole ~ \mathbb B \\
+    | & ~ \fnamee ~ String \\
+    | & ~ \une ~ Unop \times E \\
+    | & ~ \bine ~ Binop \times E \times E \\
+    | & ~ \acce ~ E \times P \\
+    | & ~ \upde ~ E \times \seq P \times E \\
+    | & ~ \stre ~ String \mapsto E \\
+    | & ~ \compe ~ E \times E \\
+    | & ~ \cate ~ E \times E \\
+    | & ~ \meme ~ E \times E \\
+    | & ~ \lene ~ E \\
+    | & ~ \tupe ~ \seq E \\
+    | & ~ \casee ~ String \times \seq E \\
+    | & ~ \calle ~ String \times \seq E \\
+    | & ~ \itere ~ E \times Iter \times \seq{String} \\
+    | & ~ \liste ~ \seq E \\
+    | & ~ \getcurcontexte ~ String \\
+    | & ~ \choosee ~ E \\
+    | & ~ \iscaseofe ~ E \times String \\
+    | & ~ \contextkinde ~ String \\
+    | & ~ \matche ~ E \times E \\
+    | & ~ \hastypee ~ E \times String \\
+  unop \in Unop =& ~ \notop ~ | ~ \minusop \\
+  binop \in Binop =& \addop \\
+    | & ~ \subop \\
+    | & ~ \mulop \\
+    | & ~ \divop \\
+    | & ~ \modop \\
+    | & ~ \expop \\
+    | & ~ \implop \\
+    | & ~ \equivop \\
+    | & ~ \andop \\
+    | & ~ \orop \\
+    | & ~ \eqop \\
+    | & ~ \neop \\
+    | & ~ \ltop \\
+    | & ~ \gtop \\
+    | & ~ \leop \\
+    | & ~ \geop \\
+  p \in P =& ~ \idxp ~ E ~ | ~ \slicep ~ E \times E ~ | ~ \dotp ~ String \\
+  iter \in Iter =& ~ \listiter ~ | ~ \listniter ~ E ~|~ \listidxiter ~ String \times E \\
+% Value
+  v \in V =& ~ \numv ~ \mathbb N \\
+    | & ~ \boolv ~ \mathbb B \\
+    | & ~ \listv ~ \seq V \\
+    | & ~ \strv ~ String \times \mapsto V \\
+    | & ~ \casev ~ String \times \seq V \\
+    | & ~ \tupv ~ \seq V \\
+    | & ~ \fnamev String \\
 \end{align*}
 
 
@@ -156,7 +315,7 @@ NOTE: input cont is always \al
 \newline \\
   v = \sem{e}(\mu, w) \quad& \text{is\_true}(v) \\
   \hline
-  \sem{\textbf{If} (e, \seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
+  \sem{\ifi (e, \seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
   =&
   (w, \al (\seq{i_1} \seq{i_0}, \mu, n, c)) \\
 %
@@ -164,21 +323,21 @@ NOTE: input cont is always \al
 \newline \\
   v = \sem{e}(\mu, w) \quad& \text{is\_not\_true}(v) \\
   \hline
-  \sem{\textbf{If} (e, \seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
+  \sem{\ifi (e, \seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
   =&
   (w, \al (\seq{i_2} \seq{i_0}, \mu, n, c)) \\
 %
 % Either-1
 \newline \\
   \hline
-  \sem{\textbf{Either} (\seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
+  \sem{\eitheri (\seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
   =&
   (w, \al (\seq{i_1} \seq{i_0}, \mu, n, c)) \\
 %
 % Either-2
 \newline \\
   \hline
-  \sem{\textbf{Either} (\seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
+  \sem{\eitheri (\seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
   =&
   (w, \al (\seq{i_2} \seq{i_0}, \mu, n, c')) \\
 %
@@ -186,7 +345,7 @@ NOTE: input cont is always \al
 \newline \\
   v_1 = \sem{e_1}(\mu, w) \quad& v_2 = \sem{e_2}(\mu, w) \\
   \hline
-  \sem{\textbf{Enter} (e_1, e_2)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i_0}, \mu, n, c))
+  \sem{\enteri (e_1, e_2)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i_0}, \mu, n, c))
   =&
   ((v_1 ~ \seq{wv}, \text{to\_list}(v_2) ~ \seq{wi}, sto), \wasm (n+1, \al (\seq{i_0}, \mu, n, c))) \\
 %
@@ -194,7 +353,7 @@ NOTE: input cont is always \al
 \newline \\
   v = \sem{e}(\mu, w) \quad& \text{is\_context}(v) \\
   \hline
-  \sem{\textbf{Push} e}((\seq{wv}, \seq{wi}, sto), \al(\seq i, \mu, n, c))
+  \sem{\pushi e}((\seq{wv}, \seq{wi}, sto), \al(\seq i, \mu, n, c))
   =&
   ((v ~ \seq{wv}, \seq{wi}, sto), \al(\seq i, \mu, n+1, c)) \\
 %
@@ -202,15 +361,15 @@ NOTE: input cont is always \al
 \newline \\
   v = \sem{e}(\mu, w) \quad& \text{is\_not\_context}(v) \\
   \hline
-  \sem{\textbf{Push} e}((\seq{wv}, \seq{wi}, sto), c) =& ((v ~ \seq{wv}, \seq{wi}, sto), c) \\
+  \sem{\pushi e}((\seq{wv}, \seq{wi}, sto), c) =& ((v ~ \seq{wv}, \seq{wi}, sto), c) \\
 %
 % Pop-iter
 \newline \\
-  \textbf{IterE}(e_1, (\textbf{ListN}(e_2, \textbf{None}), \_))=e \quad&
-  \sem{e_2}(\mu, w) = \textbf{NumV} ~ n \quad
-  \mu' = \text{assign}(\mu, e, \textbf{ListV} ~ wv^n) \\
+  \itere(e_1, (\listniter(e_2), \_))=e \quad&
+  \sem{e_2}(\mu, w) = \numv ~ n \quad
+  \mu' = \text{assign}(\mu, e, \listv ~ wv^n) \\
   \hline
-  \sem{\textbf{Pop} e}((wv^n ~ \seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  \sem{\popi e}((wv^n ~ \seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
   =&
   ((\seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
 %
@@ -218,15 +377,15 @@ NOTE: input cont is always \al
 \newline \\
   \mu' =& \text{assign}(\mu, e, wv) \\
   \hline
-  \sem{\textbf{Pop} e}((wv ~ \seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  \sem{\popi e}((wv ~ \seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
   =&
   ((\seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
 %
 % PopAll
 \newline \\
-  \seq{wv_0}, \seq{wv_1} = \text{split\_ctx}(wv) \quad& \mu' = \text{assign}(\mu, e, \textbf{ListV} ~ \seq{wv_0}) \\
+  \seq{wv_0}, \seq{wv_1} = \text{split\_ctx}(wv) \quad& \mu' = \text{assign}(\mu, e, \listv ~ \seq{wv_0}) \\
   \hline
-  \sem{\textbf{PopAll} e}(\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  \sem{\popalli e}(\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
   =&
   ((\seq{wv_1}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
 %
@@ -234,36 +393,31 @@ NOTE: input cont is always \al
 \newline \\
   v = \sem{e_2}(\mu, w) \quad& \mu' = \text{asign}(\mu, e_1, v) \\
   \hline
-  \sem{\textbf{Let}(e_1, e_2)}(w, \al (\seq{i}, \mu, n, c))
+  \sem{\leti(e_1, e_2)}(w, \al (\seq{i}, \mu, n, c))
   =&
   (w, \al (\seq{i}, \mu', n, c)) \\
 %
 % Trap
 \newline \\
   \hline
-  \sem{\textbf{Trap}}(w, c) =& (w, \ret ~ \textbf{TrapV}) \\
-%
-% Throw
-\newline \\
-  \hline
-  \sem{\textbf{Throw} ~ e}(w, c) =& (w, \ret ~ \textbf{ThrowV}) \\
+  \sem{\trapi}(w, c) =& (w, \ret ~ \trapv) \\
 %
 % Return-none
 \newline \\
   \hline
-  \sem{\textbf{Return}}(w, \al (\seq{i}, \mu, n, c)) =& (w, c) \\
+  \sem{\returni}(w, \al (\seq{i}, \mu, n, c)) =& (w, c) \\
 %
 % Return-some
 \newline \\
   \sem{e}(\mu, w) =& v \\
   \hline
-  \sem{\textbf{Return} ~ e}(w, \al (\seq{i}, \mu, n, c)) =& (w, \ret ~ v) \\
+  \sem{\returni ~ e}(w, \al (\seq{i}, \mu, n, c)) =& (w, \ret ~ v) \\
 %
 % Execute
 \newline \\
   \sem{e}(\mu, w) =& v \\
   \hline
-  \sem{\textbf{Execute} ~ e}(w, \al (\seq{i}, \mu, n, c))
+  \sem{\executei ~ e}(w, \al (\seq{i}, \mu, n, c))
   =&
   (w, \exe (v, \al (\seq{i}, \mu, n, c))) \\
 %
@@ -272,7 +426,7 @@ NOTE: input cont is always \al
   \sem{e}(\mu, w) = v \quad
   c' =& \text{fold\_right}(\text{execute}, \text{to\_list}(v), \al (\seq{i}, \mu, n, c)) \\
   \hline
-  \sem{\textbf{ExecuteSeq} ~ e}(w, \al (\seq{i}, \mu, n, c))
+  \sem{\executeseqi ~ e}(w, \al (\seq{i}, \mu, n, c))
   =&
   (w, c') \\
 %
@@ -280,7 +434,7 @@ NOTE: input cont is always \al
 \newline \\
   \seq v =& \seq{\sem{e}}(\mu, w) \\
   \hline
-  \sem{\textbf{Perform} ~ (str, \seq e)}(w, \al (\seq{i}, \mu, n, c))
+  \sem{\performi ~ (str, \seq e)}(w, \al (\seq{i}, \mu, n, c))
   =&
   (w, \call (str, \seq v, \al (\seq{i}, \mu, n, c))) \\
 %
@@ -290,7 +444,7 @@ NOTE: input cont is always \al
   c' =& \text{exit}_{Cont}(c) \quad
   \seq{wi'} = \text{exit}_{WasmInstr}(\seq{wi}) \\
   \hline
-  \sem{\textbf{Exit}}((\seq{wv}, \seq{wi}, sto), c)
+  \sem{\exiti}((\seq{wv}, \seq{wi}, sto), c)
   =&
   ((\seq{wv'}, \seq{wi'}, sto), c') \\
 \end{align*}
