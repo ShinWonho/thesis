@@ -157,7 +157,7 @@
     | & ~ \exe ~ wi \times Cont \\
     | & ~ \ret ~ V \\
   \mu \in Env =& String \mapsto V \\
-  i \in I =& \ifi ~ E \times \seq I \times \seq I \\
+  i \in I =& ~ \ifi ~ E \times \seq I \times \seq I \\
     | & ~ \eitheri ~ \seq I \times \seq I \\
     | & ~ \enteri ~ E \times E \times \seq I \\
     | & ~ \pushi ~ E \\
@@ -174,7 +174,7 @@
     | & ~ \appendi ~ E \times E \\
 %
 % Expression
-  e \in E =& \vare ~ String \\
+  e \in E =& ~ \vare ~ String \\
     | & ~ \nume ~ \mathbb N \\
     | & ~ \boole ~ \mathbb B \\
     | & ~ \fnamee ~ String \\
@@ -199,7 +199,7 @@
     | & ~ \matche ~ E \times E \\
     | & ~ \hastypee ~ E \times String \\
   unop \in Unop =& ~ \notop ~ | ~ \minusop \\
-  binop \in Binop =& \addop \\
+  binop \in Binop =& ~ \addop \\
     | & ~ \subop \\
     | & ~ \mulop \\
     | & ~ \divop \\
