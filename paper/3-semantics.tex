@@ -49,125 +49,134 @@
 
 %% Symbol definition
 
+\renewcommand{\symbol}[1]{\textbf{#1}}
+
 % Continuation
-\newcommand{\mt}{\textbf{Empty}}
-\newcommand{\call}{\textbf{Call}}
-\newcommand{\al}{\textbf{Al}}
-\newcommand{\enter}{\textbf{Enter}}
-\newcommand{\wasm}{\textbf{Wasm}}
-\newcommand{\exe}{\textbf{Execute}}
-\newcommand{\ret}{\textbf{Return}}
+\newcommand{\mt}{\symbol{Empty}}
+\newcommand{\call}{\symbol{Call}}
+\newcommand{\al}{\symbol{Al}}
+\newcommand{\enter}{\symbol{Enter}}
+\newcommand{\wasm}{\symbol{Wasm}}
+\newcommand{\exe}{\symbol{Execute}}
+\newcommand{\ret}{\symbol{Return}}
 
 % Instruction
-\newcommand{\ifi}{\textbf{IfI}}
-\newcommand{\eitheri}{\textbf{EitherI}}
-\newcommand{\enteri}{\textbf{EnterI}}
-\newcommand{\pushctxi}{\textbf{PushCtxI}}
-\newcommand{\pushi}{\textbf{PushI}}
-\newcommand{\popi}{\textbf{PopI}}
-\newcommand{\popni}{\textbf{PopNI}}
-\newcommand{\popalli}{\textbf{PopAllI}}
-\newcommand{\leti}{\textbf{LetI}}
-\newcommand{\trapi}{\textbf{TrapI}}
-\newcommand{\nopi}{\textbf{NopI}}
-\newcommand{\returni}{\textbf{ReturnI}}
-\newcommand{\executei}{\textbf{ExecuteI}}
-\newcommand{\executeseqi}{\textbf{ExecuteSeqI}}
-\newcommand{\performi}{\textbf{PerformI}}
-\newcommand{\exiti}{\textbf{ExitI}}
-\newcommand{\replacei}{\textbf{ReplaceI}}
+\newcommand{\ifi}{\symbol{IfI}}
+\newcommand{\eitheri}{\symbol{EitherI}}
+\newcommand{\enteri}{\symbol{EnterI}}
+\newcommand{\pushctxi}{\symbol{PushCtxI}}
+\newcommand{\pushi}{\symbol{PushI}}
+\newcommand{\popi}{\symbol{PopI}}
+\newcommand{\popni}{\symbol{PopNI}}
+\newcommand{\popalli}{\symbol{PopAllI}}
+\newcommand{\leti}{\symbol{LetI}}
+\newcommand{\trapi}{\symbol{TrapI}}
+\newcommand{\nopi}{\symbol{NopI}}
+\newcommand{\returni}{\symbol{ReturnI}}
+\newcommand{\executei}{\symbol{ExecuteI}}
+\newcommand{\executeseqi}{\symbol{ExecuteSeqI}}
+\newcommand{\performi}{\symbol{PerformI}}
+\newcommand{\exiti}{\symbol{ExitI}}
+\newcommand{\replacei}{\symbol{ReplaceI}}
 
 % Expression
-\newcommand{\vare}{\textbf{VarE}}
-\newcommand{\nume}{\textbf{NumE}}
-\newcommand{\boole}{\textbf{BoolE}}
-\newcommand{\fnamee}{\textbf{FnameE}}
-\newcommand{\une}{\textbf{UnE}}
-\newcommand{\bine}{\textbf{BinE}}
-\newcommand{\acce}{\textbf{AccE}}
-\newcommand{\upde}{\textbf{UpdE}}
-\newcommand{\stre}{\textbf{StrE}}
-\newcommand{\compe}{\textbf{CompE}}
-\newcommand{\cate}{\textbf{CatE}}
-\newcommand{\meme}{\textbf{MemE}}
-\newcommand{\lene}{\textbf{LenE}}
-\newcommand{\tupe}{\textbf{TupE}}
-\newcommand{\casee}{\textbf{CaseE}}
-\newcommand{\calle}{\textbf{CallE}}
-\newcommand{\itere}{\textbf{IterE}}
-\newcommand{\liste}{\textbf{ListE}}
-\newcommand{\getcurcontexte}{\textbf{GetCurContextE}}
-\newcommand{\choosee}{\textbf{ChooseE}}
-\newcommand{\iscaseofe}{\textbf{IsCaseOfE}}
-\newcommand{\contextkinde}{\textbf{ContextKindE}}
-\newcommand{\matche}{\textbf{MatchE}}
-\newcommand{\hastypee}{\textbf{HasTypeE}}
+\newcommand{\vare}{\symbol{VarE}}
+\newcommand{\nume}{\symbol{NumE}}
+\newcommand{\boole}{\symbol{BoolE}}
+\newcommand{\fnamee}{\symbol{FnameE}}
+\newcommand{\une}{\symbol{UnE}}
+\newcommand{\bine}{\symbol{BinE}}
+\newcommand{\acce}{\symbol{AccE}}
+\newcommand{\upde}{\symbol{UpdE}}
+\newcommand{\stre}{\symbol{StrE}}
+\newcommand{\compe}{\symbol{CompE}}
+\newcommand{\cate}{\symbol{CatE}}
+\newcommand{\meme}{\symbol{MemE}}
+\newcommand{\lene}{\symbol{LenE}}
+\newcommand{\tupe}{\symbol{TupE}}
+\newcommand{\casee}{\symbol{CaseE}}
+\newcommand{\calle}{\symbol{CallE}}
+\newcommand{\itere}{\symbol{IterE}}
+\newcommand{\liste}{\symbol{ListE}}
+\newcommand{\getcurcontexte}{\symbol{GetCurContextE}}
+\newcommand{\choosee}{\symbol{ChooseE}}
+\newcommand{\iscaseofe}{\symbol{IsCaseOfE}}
+\newcommand{\contextkinde}{\symbol{ContextKindE}}
+\newcommand{\matche}{\symbol{MatchE}}
+\newcommand{\hastypee}{\symbol{HasTypeE}}
 
 % Unary operator
-\newcommand{\notop}{\textbf{NotOp}}
-\newcommand{\minusop}{\textbf{MinusOp}}
+\newcommand{\notop}{\symbol{NotOp}}
+\newcommand{\minusop}{\symbol{MinusOp}}
 
 % Binary operator
-\newcommand{\addop}{\textbf{AddOp}}
-\newcommand{\subop}{\textbf{SubOp}}
-\newcommand{\mulop}{\textbf{MulOp}}
-\newcommand{\divop}{\textbf{DivOp}}
-\newcommand{\modop}{\textbf{ModOp}}
-\newcommand{\expop}{\textbf{ExpOp}}
-\newcommand{\implop}{\textbf{ImplOp}}
-\newcommand{\equivop}{\textbf{EquivOp}}
-\newcommand{\andop}{\textbf{AndOp}}
-\newcommand{\orop}{\textbf{OrOp}}
-\newcommand{\eqop}{\textbf{EqOp}}
-\newcommand{\neop}{\textbf{NeOp}}
-\newcommand{\ltop}{\textbf{LtOp}}
-\newcommand{\gtop}{\textbf{GtOp}}
-\newcommand{\leop}{\textbf{LeOp}}
-\newcommand{\geop}{\textbf{GeOp}}
+\newcommand{\addop}{\symbol{AddOp}}
+\newcommand{\subop}{\symbol{SubOp}}
+\newcommand{\mulop}{\symbol{MulOp}}
+\newcommand{\divop}{\symbol{DivOp}}
+\newcommand{\modop}{\symbol{ModOp}}
+\newcommand{\expop}{\symbol{ExpOp}}
+\newcommand{\implop}{\symbol{ImplOp}}
+\newcommand{\equivop}{\symbol{EquivOp}}
+\newcommand{\andop}{\symbol{AndOp}}
+\newcommand{\orop}{\symbol{OrOp}}
+\newcommand{\eqop}{\symbol{EqOp}}
+\newcommand{\neop}{\symbol{NeOp}}
+\newcommand{\ltop}{\symbol{LtOp}}
+\newcommand{\gtop}{\symbol{GtOp}}
+\newcommand{\leop}{\symbol{LeOp}}
+\newcommand{\geop}{\symbol{GeOp}}
 
 % Path
-\newcommand{\idxp}{\textbf{Idx}}
-\newcommand{\slicep}{\textbf{Slice}}
-\newcommand{\dotp}{\textbf{Dot}}
+\newcommand{\idxp}{\symbol{Idx}}
+\newcommand{\slicep}{\symbol{Slice}}
+\newcommand{\dotp}{\symbol{Dot}}
 
 % Iter
-\newcommand{\listiter}{\textbf{List}}
-\newcommand{\listniter}{\textbf{ListN}}
-\newcommand{\listidxiter}{\textbf{Index}}
+\newcommand{\listiter}{\symbol{List}}
+\newcommand{\listniter}{\symbol{ListN}}
+\newcommand{\listidxiter}{\symbol{Index}}
 
 % Value
-\newcommand{\numv}{\textbf{NumV}}
-\newcommand{\boolv}{\textbf{BoolV}}
-\newcommand{\listv}{\textbf{ListV}}
-\newcommand{\strv}{\textbf{StrV}}
-\newcommand{\casev}{\textbf{CaseV}}
-\newcommand{\tupv}{\textbf{TupV}}
-\newcommand{\fnamev}{\textbf{FnameV}}
-\newcommand{\trapv}{\textbf{TrapV}}
+\newcommand{\numv}{\symbol{NumV}}
+\newcommand{\boolv}{\symbol{BoolV}}
+\newcommand{\listv}{\symbol{ListV}}
+\newcommand{\strv}{\symbol{StrV}}
+\newcommand{\casev}{\symbol{CaseV}}
+\newcommand{\tupv}{\symbol{TupV}}
+\newcommand{\fnamev}{\symbol{FnameV}}
+\newcommand{\trapv}{\symbol{TrapV}}
+
+
+
+
+%% Helper function
+
+\newcommand{\helper}[1]{\text{#1}}
 
 % Helper function
-\newcommand{\lookup}{\text{lookup}}
-\newcommand{\assign}{\text{assign}}
-\newcommand{\getenv}{\text{get\_env}}
-\newcommand{\setenv}{\text{set\_env}}
-\newcommand{\iswasmvalueinstr}{\text{is\_wasm\_value\_instr}}
-\newcommand{\isnotwasmvalueinstr}{\text{is\_not\_wasm\_value\_instr}}
-\newcommand{\istrue}{\text{is\_true}}
-\newcommand{\isfalse}{\text{is\_false}}
-\newcommand{\prependinstr}{\text{prepend\_instr}}
-\newcommand{\tolist}{\text{tolist}}
-\newcommand{\push}{\text{push}}
-\newcommand{\pop}{\text{pop}}
-\newcommand{\popn}{\text{popn}}
-\newcommand{\increasectxcnt}{\text{increase\_ctx\_cnt}}
-\newcommand{\splitctx}{\text{split\_ctx}}
-\newcommand{\foldright}{\text{fold\_right}}
-\newcommand{\execute}{\text{execute}}
-\newcommand{\exit}{\text{exit}}
-\newcommand{\isframe}{\text{is\_frame}}
-\newcommand{\isstore}{\text{is\_store}}
-\newcommand{\updatecurframe}{\text{update\_cur\_frame}}
-\newcommand{\updatestore}{\text{update\_store}}
+\newcommand{\lookup}{\helper{lookup}}
+\newcommand{\assign}{\helper{assign}}
+\newcommand{\getenv}{\helper{get\_env}}
+\newcommand{\setenv}{\helper{set\_env}}
+\newcommand{\iswasmvalueinstr}{\helper{is\_wasm\_value\_instr}}
+\newcommand{\isnotwasmvalueinstr}{\helper{is\_not\_wasm\_value\_instr}}
+\newcommand{\istrue}{\helper{is\_true}}
+\newcommand{\isfalse}{\helper{is\_false}}
+\newcommand{\prependinstr}{\helper{prepend\_instr}}
+\newcommand{\tolist}{\helper{tolist}}
+\newcommand{\push}{\helper{push}}
+\newcommand{\pop}{\helper{pop}}
+\newcommand{\popn}{\helper{popn}}
+\newcommand{\increasectxcnt}{\helper{increase\_ctx\_cnt}}
+\newcommand{\splitctx}{\helper{split\_ctx}}
+\newcommand{\foldright}{\helper{fold\_right}}
+\newcommand{\execute}{\helper{execute}}
+\newcommand{\exit}{\helper{exit}}
+\newcommand{\isframe}{\helper{is\_frame}}
+\newcommand{\isstore}{\helper{is\_store}}
+\newcommand{\updatecurframe}{\helper{update\_cur\_frame}}
+\newcommand{\updatestore}{\helper{update\_store}}
 
 
 
