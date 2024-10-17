@@ -145,6 +145,30 @@
 \newcommand{\fnamev}{\textbf{FnameV}}
 \newcommand{\trapv}{\textbf{TrapV}}
 
+% Helper function
+\newcommand{\lookup}{\text{lookup}}
+\newcommand{\assign}{\text{assign}}
+\newcommand{\getenv}{\text{get\_env}}
+\newcommand{\setenv}{\text{set\_env}}
+\newcommand{\iswasmvalueinstr}{\text{is\_wasm\_value\_instr}}
+\newcommand{\isnotwasmvalueinstr}{\text{is\_not\_wasm\_value\_instr}}
+\newcommand{\istrue}{\text{is\_true}}
+\newcommand{\isfalse}{\text{is\_false}}
+\newcommand{\prependinstr}{\text{prepend\_instr}}
+\newcommand{\tolist}{\text{tolist}}
+\newcommand{\push}{\text{push}}
+\newcommand{\pop}{\text{pop}}
+\newcommand{\popn}{\text{popn}}
+\newcommand{\increasectxcnt}{\text{increase\_ctx\_cnt}}
+\newcommand{\splitctx}{\text{split\_ctx}}
+\newcommand{\foldright}{\text{fold\_right}}
+\newcommand{\execute}{\text{execute}}
+\newcommand{\exit}{\text{exit}}
+\newcommand{\isframe}{\text{is\_frame}}
+\newcommand{\isstore}{\text{is\_store}}
+\newcommand{\updatecurframe}{\text{update\_cur\_frame}}
+\newcommand{\updatestore}{\text{update\_store}}
+
 
 
 
@@ -266,7 +290,7 @@
 %
 % Call
 \newline \\
-  \seq e, \seq i = \text{lookup}(str) \quad \mu = \text{asign}(\seq e, \seq v) \\
+  \seq e, \seq i = \lookup(str) \quad \mu = \assign(\seq e, \seq v) \\
   \hline
   (w, \call (str, \seq v, c)) \leadsto (w, \al (\seq i, \mu, c)) \\
 %
@@ -293,7 +317,7 @@
 %
 % Wasm-value
 \newline \\
-  n > 0 \quad \text{is\_wasm\_va}\text{lue\_instr}(wi) \\
+  n > 0 \quad \iswasmvalueinstr(wi) \\
   \hline
   ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm (n, c))
   \leadsto
@@ -301,10 +325,10 @@
 %
 % Wasm-instr
 \newline \\
-  n > 0 \quad \text{is\_not\_wasm}\text{\_value\_instr}(wi) \\
+  n > 0 \quad \isnotwasmvalueinstr(wi) \\
   \casev (str, \seq v) = wi \quad
-  \seq e, \seq i = \text{lookup}(str) \quad
-  \mu = \text{assign}(\epsilon, \seq e, \seq v) \\
+  \seq e, \seq i = \lookup(str) \quad
+  \mu = \assign(\epsilon, \seq e, \seq v) \\
   \hline
   ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm (n, c))
   \leadsto
@@ -312,7 +336,7 @@
 %
 % Execute-value
 \newline \\
-  \text{is\_wasm\_value}\text{\_instr}(wi') \\
+  \iswasmvalueinstr(wi') \\
   \hline
   ((\seq{wi}, \seq{wv}, sto), \exe (wi', c))
   \leadsto
@@ -320,10 +344,10 @@
 %
 % Execute-instr
 \newline \\
-  \text{is\_not\_wasm\_val}\text{ue\_instr}(wi') \\
+  \isnotwasmvalueinstr(wi') \\
   \casev (str, \seq v) = wi \quad
-  \seq e, \seq i = \text{lookup}(str) \quad
-  \mu = \text{assign}(\epsilon, \seq e, \seq v) \\
+  \seq e, \seq i = \lookup(str) \quad
+  \mu = \assign(\epsilon, \seq e, \seq v) \\
   \hline
   (w, \exe (wi', c)) \leadsto (w, \al (\seq i, \seq v, c)) \\
 \end{gather*}
@@ -341,86 +365,86 @@
 %
 % If-true
 \newline \\
-  \mu = \text{get\_env}(c) \quad v = \sem{e}(\mu, w) \quad
-  \text{is\_true}(v) \quad c' = \text{prepend\_instr}(c, \seq{i_1}) \\
+  \mu = \getenv(c) \quad v = \sem{e}(\mu, w) \quad
+  \istrue(v) \quad c' = \prependinstr(c, \seq{i_1}) \\
   \hline
   \sem{\ifi ~ (e, \seq{i_1}, \seq{i_2})}(w, c) = (w, c') \\
 %
 % If-false
 \newline \\
-  \mu = \text{get\_env}(c) \quad v = \sem{e}(\mu, w) \quad
-  \text{is\_false}(v) \quad c' = \text{prepend\_instr}(c, \seq{i_2}) \\
+  \mu = \getenv(c) \quad v = \sem{e}(\mu, w) \quad
+  \isfalse(v) \quad c' = \prependinstr(c, \seq{i_2}) \\
   \hline
   \sem{\ifi ~ (e, \seq{i_1}, \seq{i_2})}(w, c) = (w, c') \\
 %
 % Either-1
 \newline \\
   \hline
-  \sem{\eitheri ~ (\seq{i_1}, \seq{i_2})}(w, c) = (w, \text{prepend\_instr}(c, \seq{i_1})) \\
+  \sem{\eitheri ~ (\seq{i_1}, \seq{i_2})}(w, c) = (w, \prependinstr(c, \seq{i_1})) \\
 %
 % Either-2
 \newline \\
   \hline
-  \sem{\eitheri ~ (\seq{i_1}, \seq{i_2})}(w, c) = (w, \text{prepend\_instr}(c, \seq{i_2})) \\
+  \sem{\eitheri ~ (\seq{i_1}, \seq{i_2})}(w, c) = (w, \prependinstr(c, \seq{i_2})) \\
 %
 % Enter
 \newline \\
-  \mu = \text{get\_env}(c) \quad v_1 = \sem{e_1}(\mu, w) \quad v_2 = \sem{e_2}(\mu, w) \\
+  \mu = \getenv(c) \quad v_1 = \sem{e_1}(\mu, w) \quad v_2 = \sem{e_2}(\mu, w) \\
   \hline
   \sem{\enteri ~ (e_1, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   =
-  ((v_1 ~ \seq{wv}, \text{to\_list}(v_2) ~ \seq{wi}, sto), \wasm (n+1, c)) \\
+  ((v_1 ~ \seq{wv}, \tolist(v_2) ~ \seq{wi}, sto), \wasm (n+1, c)) \\
 %
 % PushCtx
 \newline \\
-  \mu = \text{get\_env}(c) \quad v = \sem{e}(\mu, w) \\
+  \mu = \getenv(c) \quad v = \sem{e}(\mu, w) \\
   \hline
   \sem{\pushctxi ~ e}(w, c)
   =
-  (\text{push}_{WasmValue}(w, v), \text{increase\_ctx\_count}(c)) \\
+  (\push_{WasmValue}(w, v), \increasectxcnt(c)) \\
 %
 % Push
 \newline \\
   v = \sem{e}(\mu, w) \\
   \hline
-  \sem{\pushi ~ e}(w, c) = (\text{push}_{WasmValue}(w, v), c) \\
+  \sem{\pushi ~ e}(w, c) = (\push_{WasmValue}(w, v), c) \\
 %
 % Pop
 \newline \\
-  \mu = \text{get\_env}(c) \quad
-  wv, w' = \text{pop}_{WasmValue}(w) \quad
-  \mu' = \text{assign}(\mu, e, wv) \\
+  \mu = \getenv(c) \quad
+  wv, w' = \pop_{WasmValue}(w) \quad
+  \mu' = \assign(\mu, e, wv) \\
   \hline
-  \sem{\popi ~ e}(w, c) = (w', \text{set\_env}(c, \mu')) \\
+  \sem{\popi ~ e}(w, c) = (w', \setenv(c, \mu')) \\
 %
 % PopN
 \newline \\
-  \mu = \text{get\_env}(c) \quad
+  \mu = \getenv(c) \quad
   \sem{e_2}(\mu, w) = \numv ~ n \quad
-  wv^n, w' = \text{popn}_{WasmValue}(w, n) \quad
-  \mu' = \text{assign}(\mu, e_1, \listv ~ wv^n) \\
+  wv^n, w' = \popn_{WasmValue}(w, n) \quad
+  \mu' = \assign(\mu, e_1, \listv ~ wv^n) \\
   \hline
-  \sem{\popni ~ (e_1, e_2)}(w, c) = (w', \text{set\_env}(c, \mu')) \\
+  \sem{\popni ~ (e_1, e_2)}(w, c) = (w', \setenv(c, \mu')) \\
 %
 % PopAll
 \newline \\
-  \mu = \text{get\_env}(c) \quad
-  \seq{wv_0}, \seq{wv_1} = \text{split\_ctx}(wv) \quad
-  \mu' = \text{assign}(\mu, e, \listv ~ \seq{wv_0}) \\
+  \mu = \getenv(c) \quad
+  \seq{wv_0}, \seq{wv_1} = \splitctx(wv) \quad
+  \mu' = \assign(\mu, e, \listv ~ \seq{wv_0}) \\
   \hline
   \sem{\popalli ~ e}(\seq{wv}, \seq{wi}, sto), c)
   =
-  ((\seq{wv_1}, \seq{wi}, sto), \text{set\_env}(c, \mu')) \\
+  ((\seq{wv_1}, \seq{wi}, sto), \setenv(c, \mu')) \\
 %
 % Let
 \newline \\
-  \mu = \text{get\_env}(c) \quad
+  \mu = \getenv(c) \quad
   v = \sem{e_2}(\mu, w) \quad
-  \mu' = \text{asign}(\mu, e_1, v) \\
+  \mu' = \assign(\mu, e_1, v) \\
   \hline
   \sem{\leti ~ (e_1, e_2)}(w, c)
   =
-  (w, \text{set\_env}(c, \mu')) \\
+  (w, \setenv(c, \mu')) \\
 %
 % Trap
 \newline \\
@@ -440,31 +464,31 @@
 %
 % Execute
 \newline \\
-  \mu = \text{get\_env}(c) \quad
+  \mu = \getenv(c) \quad
   \sem{e}(\mu, w) = v \\
   \hline
   \sem{\executei ~ e}(w, c) = (w, \exe (v, c)) \\
 %
 % ExecuteSeq
 \newline \\
-  \mu = \text{get\_env}(c) \quad
+  \mu = \getenv(c) \quad
   \sem{e}(\mu, w) = v \quad
-  c' = \text{fold\_right}(\text{execute}, \text{to\_list}(v), c) \\
+  c' = \foldright(\execute, \tolist(v), c) \\
   \hline
   \sem{\executeseqi ~ e}(w, c) = (w, c') \\
 %
 % Perform
 \newline \\
-  \mu = \text{get\_env}(c) \quad
+  \mu = \getenv(c) \quad
   \seq v = \seq{\sem{e}}(\mu, w) \\
   \hline
   \sem{\performi ~ (str, \seq e)}(w, c) = (w, \call (str, \seq v, c)) \\
 %
 % Exit
 \newline \\
-  \seq{wv'} = \text{exit}_{WasmValue}(\seq{wv}) \quad
-  c' = \text{exit}_{Cont}(c) \quad
-  \seq{wi'} = \text{exit}_{WasmInstr}(\seq{wi}) \\
+  \seq{wv'} = \exit_{WasmValue}(\seq{wv}) \quad
+  c' = \exit_{Cont}(c) \quad
+  \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \\
   \hline
   \sem{\exiti}((\seq{wv}, \seq{wi}, sto), c)
   =
@@ -473,20 +497,20 @@
 % Replace-frame
 \newline \\
 \text{NOTE: $e_1$ is either store or current frame} \\
-  \text{is\_frame}(e_1) \quad
-  \mu = \text{get\_env}(c) \quad
+  \isframe(e_1) \quad
+  \mu = \getenv(c) \quad
   v_2 = \sem{e_2}(\mu, w) \quad
-  \seq{wv'} = \text{update\_current\_frame}(\seq{wv}, \seq p, v_2) \\
+  \seq{wv'} = \updatecurframe(\seq{wv}, \seq p, v_2) \\
   \hline
   \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   = ((\seq{wv'}, \seq{wi}, sto), c) \\
 %
 % Replace-store
 \newline \\
-  \text{is\_store}(e_1) \quad
-  \mu = \text{get\_env}(c) \quad
+  \isstore(e_1) \quad
+  \mu = \getenv(c) \quad
   v_2 = \sem{e_2}(\mu, w) \quad
-  sto' = \text{update\_store}(sto, \seq p, v_2) \\
+  sto' = \updatestore(sto, \seq p, v_2) \\
   \hline
   \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   = ((\seq{wv}, \seq{wi}, sto'), c) \\
@@ -505,45 +529,45 @@
 \newline \\
   \text{is\_context}(\text{hd}(\seq{wv})) \\
   \hline
-  \text{split\_ctx}(\seq{wv}) = \epsilon, \seq{wv} \\
+  \splitctx(\seq{wv}) = \epsilon, \seq{wv} \\
 %
 % pop_all-val
-  \text{is\_not\_context}(wv_0) \quad \seq{wv_2}, \seq{wv_3} = \text{split\_ctx}(\seq{wv_1}) \\
+  \text{is\_not\_context}(wv_0) \quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1}) \\
   \hline
-  \text{split\_ctx}(wv_0 ~ \seq{wv_1}) = wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
+  \splitctx(wv_0 ~ \seq{wv_1}) = wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
 %
 % execute
 \newline \\
-  \text{execute}(v, c) = \exe(v, c) \\
+  \execute(v, c) = \exe(v, c) \\
 %
 % exit_cont-wasm_0
 \newline \\
 \text{NOTE: input cont of exit is either \al ~ or \wasm} \\
-  \text{exit}_{Cont}(\wasm (0, c)) = \wasm(0, \text{exit}_{Cont}(c)) \\
+  \exit_{Cont}(\wasm (0, c)) = \wasm(0, \exit_{Cont}(c)) \\
 %
 % exit_cont-wasm_nonzero
   n > 0 \\
   \hline
-  \text{exit}_{Cont}(\wasm (n, c)) = \wasm(n-1, c) \\
+  \exit_{Cont}(\wasm (n, c)) = \wasm(n-1, c) \\
 %
 % exit_cont-al
-  \text{exit}_{Cont}(\al (\seq i, \mu, n, c)) = \al (\seq i, \mu, n, \text{exit}(c)) \\
+  \exit_{Cont}(\al (\seq i, \mu, n, c)) = \al (\seq i, \mu, n, \exit(c)) \\
 %
 % exit_wasm_instr-end
 \newline \\
   \text{is\_end}(wi) \\
   \hline
-  \text{exit}_{WasmInstr}(wi ~ \seq{wi'}) = \seq{wi'} \\
+  \exit_{WasmInstr}(wi ~ \seq{wi'}) = \seq{wi'} \\
 %
 % exit_wasm_instr-normal_instr
   \text{is\_not\_end}(wi) \\
   \hline
-  \text{exit}_{WasmInstr}(wi ~ \seq{wi'}) = \text{exit}_{WasmInstr}(\seq{wi'}) \\
+  \exit_{WasmInstr}(wi ~ \seq{wi'}) = \exit_{WasmInstr}(\seq{wi'}) \\
 %
 % exit_wasm_value
-  \seq{wv_1}, \seq{wv_2} = \text{split\_ctx}(\seq{wv_0}) \\
+  \seq{wv_1}, \seq{wv_2} = \splitctx(\seq{wv_0}) \\
   \hline
-  \text{exit}_{WasmValue}(\seq{wv_0}) = \text{tail}(\seq{wv_2}) \\
+  \exit_{WasmValue}(\seq{wv_0}) = \text{tail}(\seq{wv_2}) \\
 \end{gather*}
 
 
