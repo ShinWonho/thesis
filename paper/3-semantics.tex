@@ -74,7 +74,6 @@
 \newcommand{\performi}{\textbf{PerformI}}
 \newcommand{\exiti}{\textbf{ExitI}}
 \newcommand{\replacei}{\textbf{ReplaceI}}
-\newcommand{\appendi}{\textbf{AppendI}}
 
 % Expression
 \newcommand{\vare}{\textbf{VarE}}
@@ -188,8 +187,7 @@
     | & ~ \executeseqi ~ E \\
     | & ~ \performi ~ String \times \seq{E} \\
     | & ~ \exiti ~ String \\
-    | & ~ \replacei ~ E \times P \times E \\
-    | & ~ \appendi ~ E \times E \\
+    | & ~ \replacei ~ E \times \seq P \times E \\
 %
 % Expression
   e \in E =& ~ \vare ~ String \\
@@ -472,6 +470,26 @@ NOTE: input cont is always \al
   \sem{\exiti}((\seq{wv}, \seq{wi}, sto), c)
   =&
   ((\seq{wv'}, \seq{wi'}, sto), c') \\
+%
+% Replace-frame
+\newline \\
+\text{NOTE: $e_1$ is either }&\text{store or current frame} \\
+  \text{is\_frame}(e_1) \quad
+  v_2 = \sem{e_2}(\mu, w) \quad&
+  \seq{wv'} = \text{update\_current\_frame}(\seq{wv}, \seq p, v_2) \\
+  \hline
+  \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  =& ((\seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c)) \\
+%
+% Replace-store
+\newline \\
+  \text{is\_store}(e_1) \quad
+  v_2 = \sem{e_2}(\mu, w) \quad&
+  sto' = \text{update\_store}(sto, \seq p, v_2) \\
+  \hline
+  \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  =& ((\seq{wv}, \seq{wi}, sto'), \al (\seq{i}, \mu, n, c)) \\
+\newline \\
 \end{align*}
 TODO: Replace, Append, FieldwiseAppend
 
