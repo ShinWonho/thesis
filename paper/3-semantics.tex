@@ -64,6 +64,7 @@
 \newcommand{\asserti}{\textbf{AssertI}}
 \newcommand{\pushi}{\textbf{PushI}}
 \newcommand{\popi}{\textbf{PopI}}
+\newcommand{\popni}{\textbf{PopNI}}
 \newcommand{\popalli}{\textbf{PopAllI}}
 \newcommand{\leti}{\textbf{LetI}}
 \newcommand{\trapi}{\textbf{TrapI}}
@@ -179,6 +180,7 @@
     | & ~ \enteri ~ E \times E \times \seq I \\
     | & ~ \pushi ~ E \\
     | & ~ \popi ~ E \\
+    | & ~ \popni ~ E \times E \\
     | & ~ \popalli ~ E \\
     | & ~ \leti ~ E \times E \\
     | & ~ \trapi \\
@@ -336,89 +338,78 @@ NOTE: input cont is always \al
 %
 % If-true
 \newline \\
-  v = \sem{e}(\mu, w) \quad& \text{is\_true}(v) \\
+  \mu = \text{get\_env}(c) \quad v = \sem{e}(\mu, w) \quad
+  \text{is\_true}&(v) \quad c' = \text{prepend\_instr}(c, \seq{i_1}) \\
   \hline
-  \sem{\ifi (e, \seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
-  =&
-  (w, \al (\seq{i_1} \seq{i_0}, \mu, n, c)) \\
+  \sem{\ifi ~ (e, \seq{i_1}, \seq{i_2})}(w, c) =& (w, c') \\
 %
 % If-false
 \newline \\
-  v = \sem{e}(\mu, w) \quad& \text{is\_not\_true}(v) \\
+  \mu = \text{get\_env}(c) \quad v = \sem{e}(\mu, w) \quad
+  \text{is\_false}&(v) \quad c' = \text{prepend\_instr}(c, \seq{i_2}) \\
   \hline
-  \sem{\ifi (e, \seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
-  =&
-  (w, \al (\seq{i_2} \seq{i_0}, \mu, n, c)) \\
+  \sem{\ifi ~ (e, \seq{i_1}, \seq{i_2})}(w, c) =& (w, c') \\
 %
 % Either-1
 \newline \\
   \hline
-  \sem{\eitheri (\seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
-  =&
-  (w, \al (\seq{i_1} \seq{i_0}, \mu, n, c)) \\
+  \sem{\eitheri ~ (\seq{i_1}, \seq{i_2})}(w, c) =& (w, \text{prepend\_instr}(c, \seq{i_1})) \\
 %
 % Either-2
 \newline \\
   \hline
-  \sem{\eitheri (\seq{i_1}, \seq{i_2})}(w, \al (\seq{i_0}, \mu, n, c))
-  =&
-  (w, \al (\seq{i_2} \seq{i_0}, \mu, n, c')) \\
+  \sem{\eitheri ~ (\seq{i_1}, \seq{i_2})}(w, c) =& (w, \text{prepend\_instr}(c, \seq{i_2})) \\
 %
 % Enter
 \newline \\
-  v_1 = \sem{e_1}(\mu, w) \quad& v_2 = \sem{e_2}(\mu, w) \\
+  \mu = \text{get\_env}(c) \quad v_1 =& \sem{e_1}(\mu, w) \quad v_2 = \sem{e_2}(\mu, w) \\
   \hline
-  \sem{\enteri (e_1, e_2)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i_0}, \mu, n, c))
+  \sem{\enteri ~ (e_1, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   =&
-  ((v_1 ~ \seq{wv}, \text{to\_list}(v_2) ~ \seq{wi}, sto), \wasm (n+1, \al (\seq{i_0}, \mu, n, c))) \\
+  ((v_1 ~ \seq{wv}, \text{to\_list}(v_2) ~ \seq{wi}, sto), \wasm (n+1, c)) \\
 %
-% Push-ctx
+% Push
 \newline \\
-  v = \sem{e}(\mu, w) \quad& \text{is\_context}(v) \\
+  v =& \sem{e}(\mu, w) \\
   \hline
-  \sem{\pushi e}((\seq{wv}, \seq{wi}, sto), \al(\seq i, \mu, n, c))
-  =&
-  ((v ~ \seq{wv}, \seq{wi}, sto), \al(\seq i, \mu, n+1, c)) \\
+  \sem{\pushi ~ e}(w, c) =& (\text{push}_{WasmValue}(w, v), c) \\
 %
-% Push-ctx
+% Pop
 \newline \\
-  v = \sem{e}(\mu, w) \quad& \text{is\_not\_context}(v) \\
+  \mu = \text{get\_env}(c) \quad
+  wv, w' =& \text{pop}_{WasmValue}(w) \quad
+  \mu' = \text{assign}(\mu, e, wv) \\
   \hline
-  \sem{\pushi e}((\seq{wv}, \seq{wi}, sto), c) =& ((v ~ \seq{wv}, \seq{wi}, sto), c) \\
+  \sem{\popi ~ e}(w, c) =& (w', \text{set\_env}(c, \mu')) \\
 %
-% Pop-iter
+% PopN
 \newline \\
-  \itere(e_1, (\listniter(e_2), \_))=e \quad&
+  \mu = \text{get\_env}(c) \quad
   \sem{e_2}(\mu, w) = \numv ~ n \quad
-  \mu' = \text{assign}(\mu, e, \listv ~ wv^n) \\
+  wv^n, w' =& \text{popn}_{WasmValue}(w, n) \quad
+  \mu' = \text{assign}(\mu, e_1, \listv ~ wv^n) \\
   \hline
-  \sem{\popi e}((wv^n ~ \seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
-  =&
-  ((\seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
-%
-% Pop-val
-\newline \\
-  \mu' =& \text{assign}(\mu, e, wv) \\
-  \hline
-  \sem{\popi e}((wv ~ \seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
-  =&
-  ((\seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
+  \sem{\popni ~ (e_1, e_2)}(w, c) =& (w', \text{set\_env}(c, \mu')) \\
 %
 % PopAll
 \newline \\
-  \seq{wv_0}, \seq{wv_1} = \text{split\_ctx}(wv) \quad& \mu' = \text{assign}(\mu, e, \listv ~ \seq{wv_0}) \\
+  \mu = \text{get\_env}(c) \quad
+  \seq{wv_0}, \seq{wv_1} =& \text{split\_ctx}(wv) \quad
+  \mu' = \text{assign}(\mu, e, \listv ~ \seq{wv_0}) \\
   \hline
-  \sem{\popalli e}(\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
+  \sem{\popalli ~ e}(\seq{wv}, \seq{wi}, sto), c)
   =&
-  ((\seq{wv_1}, \seq{wi}, sto), \al (\seq{i}, \mu', n, c)) \\
+  ((\seq{wv_1}, \seq{wi}, sto), \text{set\_env}(c, \mu')) \\
 %
 % Let
 \newline \\
-  v = \sem{e_2}(\mu, w) \quad& \mu' = \text{asign}(\mu, e_1, v) \\
+  \mu = \text{get\_env}(c) \quad
+  v =& \sem{e_2}(\mu, w) \quad
+  \mu' = \text{asign}(\mu, e_1, v) \\
   \hline
-  \sem{\leti(e_1, e_2)}(w, \al (\seq{i}, \mu, n, c))
+  \sem{\leti ~ (e_1, e_2)}(w, c)
   =&
-  (w, \al (\seq{i}, \mu', n, c)) \\
+  (w, \text{set\_env}(c, \mu')) \\
 %
 % Trap
 \newline \\
@@ -438,28 +429,25 @@ NOTE: input cont is always \al
 %
 % Execute
 \newline \\
-  \sem{e}(\mu, w) =& v \\
+  \mu = \text{get\_env}(c) \quad&
+  \sem{e}(\mu, w) = v \\
   \hline
-  \sem{\executei ~ e}(w, \al (\seq{i}, \mu, n, c))
-  =&
-  (w, \exe (v, \al (\seq{i}, \mu, n, c))) \\
+  \sem{\executei ~ e}(w, c) =& (w, \exe (v, c)) \\
 %
 % ExecuteSeq
 \newline \\
-  \sem{e}(\mu, w) = v \quad
-  c' =& \text{fold\_right}(\text{execute}, \text{to\_list}(v), \al (\seq{i}, \mu, n, c)) \\
+  \mu = \text{get\_env}(c) \quad
+  \sem{e}(\mu, w) = v \quad&
+  c' = \text{fold\_right}(\text{execute}, \text{to\_list}(v), c) \\
   \hline
-  \sem{\executeseqi ~ e}(w, \al (\seq{i}, \mu, n, c))
-  =&
-  (w, c') \\
+  \sem{\executeseqi ~ e}(w, c) =& (w, c') \\
 %
 % Perform
 \newline \\
-  \seq v =& \seq{\sem{e}}(\mu, w) \\
+  \mu = \text{get\_env}(c) \quad&
+  \seq v = \seq{\sem{e}}(\mu, w) \\
   \hline
-  \sem{\performi ~ (str, \seq e)}(w, \al (\seq{i}, \mu, n, c))
-  =&
-  (w, \call (str, \seq v, \al (\seq{i}, \mu, n, c))) \\
+  \sem{\performi ~ (str, \seq e)}(w, c) =& (w, \call (str, \seq v, c)) \\
 %
 % Exit
 \newline \\
@@ -475,20 +463,22 @@ NOTE: input cont is always \al
 \newline \\
 \text{NOTE: $e_1$ is either }&\text{store or current frame} \\
   \text{is\_frame}(e_1) \quad
+  \mu = \text{get\_env}(c) \quad
   v_2 = \sem{e_2}(\mu, w) \quad&
   \seq{wv'} = \text{update\_current\_frame}(\seq{wv}, \seq p, v_2) \\
   \hline
-  \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
-  =& ((\seq{wv'}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c)) \\
+  \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), c)
+  =& ((\seq{wv'}, \seq{wi}, sto), c) \\
 %
 % Replace-store
 \newline \\
   \text{is\_store}(e_1) \quad
-  v_2 = \sem{e_2}(\mu, w) \quad&
+  \mu = \text{get\_env}(c) \quad
+  v_2 =& \sem{e_2}(\mu, w) \quad
   sto' = \text{update\_store}(sto, \seq p, v_2) \\
   \hline
-  \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), \al (\seq{i}, \mu, n, c))
-  =& ((\seq{wv}, \seq{wi}, sto'), \al (\seq{i}, \mu, n, c)) \\
+  \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), c)
+  =& ((\seq{wv}, \seq{wi}, sto'), c) \\
 \newline \\
 \end{align*}
 TODO: Replace, Append, FieldwiseAppend
