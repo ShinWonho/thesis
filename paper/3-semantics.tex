@@ -175,8 +175,9 @@
 \newcommand{\exit}{\helper{exit}}
 \newcommand{\isframe}{\helper{is\_frame}}
 \newcommand{\isstore}{\helper{is\_store}}
-\newcommand{\updatecurframe}{\helper{update\_cur\_frame}}
-\newcommand{\updatestore}{\helper{update\_store}}
+\newcommand{\update}{\helper{update}}
+\newcommand{\getcurframe}{\helper{get\_cur\_frame}}
+\newcommand{\setcurframe}{\helper{set\_cur\_frame}}
 
 
 
@@ -509,17 +510,18 @@
   \isframe(e_1) \quad
   \mu = \getenv(c) \quad
   v_2 = \sem{e_2}(\mu, w) \quad
-  \seq{wv'} = \updatecurframe(\seq{wv}, \seq p, v_2) \\
+  v_{frame} = \getcurframe(w) \quad
+  v_{frame}' = \update(v_{frame}, \seq p, v_2) \\
   \hline
-  \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), c)
-  = ((\seq{wv'}, \seq{wi}, sto), c) \\
+  \sem{\replacei ~ (e_1, \seq p, e_2)}(w, c)
+  = (\setcurframe(w, v_{frame}', c) \\
 %
 % Replace-store
 \newline \\
   \isstore(e_1) \quad
   \mu = \getenv(c) \quad
   v_2 = \sem{e_2}(\mu, w) \quad
-  sto' = \updatestore(sto, \seq p, v_2) \\
+  sto' = \update(sto, \seq p, v_2) \\
   \hline
   \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   = ((\seq{wv}, \seq{wi}, sto'), c) \\
