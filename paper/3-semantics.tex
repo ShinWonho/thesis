@@ -61,7 +61,7 @@
 \newcommand{\ifi}{\textbf{IfI}}
 \newcommand{\eitheri}{\textbf{EitherI}}
 \newcommand{\enteri}{\textbf{EnterI}}
-\newcommand{\asserti}{\textbf{AssertI}}
+\newcommand{\pushctxi}{\textbf{PushCtxI}}
 \newcommand{\pushi}{\textbf{PushI}}
 \newcommand{\popi}{\textbf{PopI}}
 \newcommand{\popni}{\textbf{PopNI}}
@@ -177,7 +177,8 @@
 % Instruction
   i \in I =& ~ \ifi ~ E \times \seq I \times \seq I \\
     | & ~ \eitheri ~ \seq I \times \seq I \\
-    | & ~ \enteri ~ E \times E \times \seq I \\
+    | & ~ \enteri ~ E \times E \\
+    | & ~ \pushctxi ~ E \\
     | & ~ \pushi ~ E \\
     | & ~ \popi ~ E \\
     | & ~ \popni ~ E \times E \\
@@ -367,6 +368,14 @@ NOTE: input cont is always \al
   \sem{\enteri ~ (e_1, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   =&
   ((v_1 ~ \seq{wv}, \text{to\_list}(v_2) ~ \seq{wi}, sto), \wasm (n+1, c)) \\
+%
+% PushCtx
+\newline \\
+  \mu = \text{get\_env}(c) \quad& v = \sem{e}(\mu, w) \\
+  \hline
+  \sem{\pushctxi ~ e}(w, c)
+  =&
+  (\text{push}_{WasmValue}(w, v), \text{increase\_ctx\_count}(c)) \\
 %
 % Push
 \newline \\
