@@ -598,7 +598,7 @@
 %
 % Str
 \newline \\
-  \seq v = \seq{\sem{e}}(\mu, w) \\
+  \seq{(str, v)} = [ ~ str, \sem{e}(\mu, w) ~ | ~  (str, e) \leftarrow \seq{(str, e)} ~ ] \\
   \hline
   \sem{\stre ~ \seq{(str, e)}}(\mu, w) = \strv ~ \seq{(str, v)} \\
 %
@@ -631,19 +631,19 @@
 %
 % Tup
 \newline \\
-  \seq{v} = \seq{\sem{e}}(\mu, w) \\
+  \seq{v} = [ ~ \sem{e}(\mu, w) ~ | ~ e \leftarrow \seq e ~ ] \\
   \hline
   \sem{\tupe ~ \seq{e}}(\mu, w) = \tupv ~ \seq{v} \\
 %
 % Case
 \newline \\
-  \seq{v} = \seq{\sem{e}}(\mu, w) \\
+  \seq{v} = [ ~ \sem{e}(\mu, w) ~ | ~ e \leftarrow \seq e ~ ] \\
   \hline
   \sem{\casee ~ (str, \seq{e})}(\mu, w) = \casev ~ (str, \seq{v}) \\
 %
 % Call
 \newline \\
-  \seq{v} = \seq{\sem{e}}(\mu, w) \quad
+  \seq{v} = [ ~ \sem{e}(\mu, w) ~ | ~ e \leftarrow \seq e ~ ] \quad
   (w, \call ~ (str, \seq v, \mt)) \seq{\leadsto} (w, \ret ~ v') \\
   \hline
   \sem{\calle ~ (str, \seq{e})}(\mu, w) = v' \\
@@ -694,7 +694,7 @@
 %
 % List
 \newline \\
-  \seq{v} = \seq{\sem{e}}(\mu, w) \\
+  \seq{v} = [ ~ \sem{e}(\mu, w) ~ | ~ e \leftarrow \seq e ~ ] \\
   \hline
   \sem{\liste ~ \seq{e}}(\mu, w) = \listv ~ \seq{v} \\
 %
