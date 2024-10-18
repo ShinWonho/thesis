@@ -190,6 +190,8 @@
 \newcommand{\isvalid}{\helper{is\_valid}}
 \newcommand{\match}{\helper{match}}
 \newcommand{\hastype}{\helper{has\_type}}
+\newcommand{\zip}{\helper{zip}}
+\newcommand{\duplicateenv}{\helper{duplicate\_env}}
 
 
 
@@ -648,26 +650,28 @@
 %
 % Iter-
 \newline \\
-todo \\
+  f =
+    (\lambda ~ str ~ acc. ~
+      \listv ~ \seq v = \mu(str); ~
+      [ ~ \mu_1[str \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
+    )
+  \\
+  \seq{\mu_2} = \fold(f, \seq{str}, \duplicateenv(\mu, \seq{str})) \quad
+  \seq{v'} = [ ~ \sem{e}(\mu_3, w) ~ | ~ \mu_3 \leftarrow \seq {\mu_2} ~ ] \\
   \hline
   \sem{\itere ~ (e, \listiter, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
 %
 % Iter-n
 \newline \\
-  \numv ~ n = \sem{e_2}(\mu, w) \quad
-  f_i = (\lambda ~ x ~ acc. ~ \listv ~ \seq v = \mu(x); ~ acc[x \mapsto \seq v[i]]) \\
-  \seq{\mu_1} =
-    [ ~
-      \fold(
-        f_i,
-        \seq{str},
-        \mu
-      )
-    ~ | ~
-      i \leftarrow [0 ~ .. ~ n-1]
-    ~ ]
-  \quad
-  \seq{v'} = [ ~ \sem{e_1}(\mu_2, w) ~ | ~ \mu_2 \leftarrow \seq {\mu_1} ~ ] \\
+  \numv ~ n = \sem{e_2}(\mu, w) \\
+  f_i =
+    (\lambda ~ x ~ acc. ~
+      \listv ~ \seq v = \mu(x); ~
+      [ ~ \mu_1[str \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
+    )
+  \\
+  \seq{\mu_2} = \fold(f, \seq{str}, \mu^n) \quad
+  \seq{v'} = [ ~ \sem{e_1}(\mu_3, w) ~ | ~ \mu_3 \leftarrow \seq {\mu_2} ~ ] \\
   \hline
   \sem{\itere ~ (e_1, \listniter ~ e_2, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
 %
@@ -790,6 +794,10 @@ todo \\
   \seq{wv_1}, \seq{wv_2} = \splitctx(\seq{wv_0}) \\
   \hline
   \exit_{WasmValue}(\seq{wv_0}) = \text{tail}(\seq{wv_2}) \\
+%
+% duplicate_env
+  \duplicateenv(\mu, epsilon) = \mu \\
+  \duplicateenv(\mu, str \cat \seq{str'}) = \listv ~ \seq v = \mu(str); ~ \mu^{|\seq v|}
 \end{gather*}
 
 
