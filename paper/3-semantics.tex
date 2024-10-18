@@ -104,7 +104,7 @@
 \newcommand{\choosee}{\symbol{ChooseE}}
 \newcommand{\iscaseofe}{\symbol{IsCaseOfE}}
 \newcommand{\isvalide}{\symbol{IsValidE}}
-\newcommand{\ctxkinde}{\symbol{ContextKindE}}
+\newcommand{\ctxkinde}{\symbol{CtxKindE}}
 \newcommand{\matche}{\symbol{MatchE}}
 \newcommand{\hastypee}{\symbol{HasTypeE}}
 
@@ -313,64 +313,64 @@
 \newline \\
   \seq e, \seq i = \lookup(str) \quad \mu = \assign(\seq e, \seq v) \\
   \hline
-  (w, \call (str, \seq v, c)) \leadsto (w, \al (\seq i, \mu, c)) \\
+  (w, \call ~ (str, \seq v, c)) \leadsto (w, \al ~ (\seq i, \mu, c)) \\
 %
 % Al-empty_zero
 \newline \\
   \hline
-  (w, \al (\epsilon, \mu, 0, c)) \leadsto (w, c) \\
+  (w, \al ~ (\epsilon, \mu, 0, c)) \leadsto (w, c) \\
 %
 % Al-empty_nonzero
 \newline \\
   n > 0 \\
   \hline
-  (w, \al (\epsilon, \mu, n, c)) \leadsto (w, \wasm (n, c)) \\
+  (w, \al ~ (\epsilon, \mu, n, c)) \leadsto (w, \wasm ~ (n, c)) \\
 %
 % Al-instr
 \newline \\
   \hline
-  (w, \al (i_0 ~ \seq{i_1}, \mu, n, c)) \leadsto \sem{i_0}(w, \al (\seq{i_1}, \mu, n, c)) \\
+  (w, \al ~ (i_0 ~ \seq{i_1}, \mu, n, c)) \leadsto \sem{i_0}(w, \al ~ (\seq{i_1}, \mu, n, c)) \\
 %
 % Wasm-zero
 \newline \\
   \hline
-  (w, \wasm (0, c)) \leadsto (w, c) \\
+  (w, \wasm ~ (0, c)) \leadsto (w, c) \\
 %
 % Wasm-value
 \newline \\
   n > 0 \quad \iswasmvalueinstr(wi) \\
   \hline
-  ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm (n, c))
+  ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
   \leadsto
-  ((\seq{wi'}, wi ~ \seq{wv}, sto), \wasm (n, c)) \\
+  ((\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (n, c)) \\
 %
 % Wasm-instr
 \newline \\
   n > 0 \quad \isnotwasmvalueinstr(wi) \\
-  \casev (str, \seq v) = wi \quad
+  \casev ~ (str, \seq v) = wi \quad
   \seq e, \seq i = \lookup(str) \quad
   \mu = \assign(\epsilon, \seq e, \seq v) \\
   \hline
-  ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm (n, c))
+  ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
   \leadsto
-  ((\seq{wi'}, \seq{wv}, sto), \al (\seq i, \seq v, \wasm (n, c))) \\
+  ((\seq{wi'}, \seq{wv}, sto), \al ~ (\seq i, \seq v, \wasm ~ (n, c))) \\
 %
 % Execute-value
 \newline \\
   \iswasmvalueinstr(wi') \\
   \hline
-  ((\seq{wi}, \seq{wv}, sto), \exe (wi', c))
+  ((\seq{wi}, \seq{wv}, sto), \exe ~ (wi', c))
   \leadsto
   ((\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
 %
 % Execute-instr
 \newline \\
   \isnotwasmvalueinstr(wi') \\
-  \casev (str, \seq v) = wi \quad
+  \casev ~ (str, \seq v) = wi \quad
   \seq e, \seq i = \lookup(str) \quad
   \mu = \assign(\epsilon, \seq e, \seq v) \\
   \hline
-  (w, \exe (wi', c)) \leadsto (w, \al (\seq i, \seq v, c)) \\
+  (w, \exe ~ (wi', c)) \leadsto (w, \al ~ (\seq i, \seq v, c)) \\
 \end{gather*}
 
 
@@ -475,13 +475,13 @@
 % Return-none
 \newline \\
   \hline
-  \sem{\returni}(w, \al (\seq{i}, \mu, n, c)) = (w, c) \\
+  \sem{\returni}(w, \al~ (\seq{i}, \mu, n, c)) = (w, c) \\
 %
 % Return-some
 \newline \\
   \sem{e}(\mu, w) = v \\
   \hline
-  \sem{\returni ~ e}(w, \al (\seq{i}, \mu, n, c)) = (w, \ret ~ v) \\
+  \sem{\returni ~ e}(w, \al ~ (\seq{i}, \mu, n, c)) = (w, \ret ~ v) \\
 %
 % Execute
 \newline \\
@@ -641,7 +641,7 @@
 % Call
 \newline \\
   \seq{v} = \seq{\sem{e}}(\mu, w) \quad
-  (w, \call ~ (str, \seq v, \mt)) \seq{\leadsto} (w, \ret v') \\
+  (w, \call ~ (str, \seq v, \mt)) \seq{\leadsto} (w, \ret ~ v') \\
   \hline
   \sem{\calle ~ (str, \seq{e})}(\mu, w) = v' \\
 %
