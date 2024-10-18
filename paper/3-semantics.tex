@@ -158,40 +158,37 @@
 \newcommand{\helper}[1]{\text{#1}}
 
 % Helper function
-\newcommand{\lookup}{\helper{lookup}}
-\newcommand{\assign}{\helper{assign}}
+\newcommand{\execute}{\helper{execute}}
 \newcommand{\getenv}{\helper{get\_env}}
 \newcommand{\setenv}{\helper{set\_env}}
-\newcommand{\iswasmvalueinstr}{\helper{is\_wasm\_value\_instr}}
-\newcommand{\isnotwasmvalueinstr}{\helper{is\_not\_wasm\_value\_instr}}
-\newcommand{\istrue}{\helper{is\_true}}
-\newcommand{\isfalse}{\helper{is\_false}}
 \newcommand{\prependinstr}{\helper{prepend\_instr}}
+\newcommand{\increasectxcnt}{\helper{increase\_ctx\_cnt}}
 \newcommand{\push}{\helper{push}}
 \newcommand{\pop}{\helper{pop}}
 \newcommand{\popn}{\helper{popn}}
-\newcommand{\increasectxcnt}{\helper{increase\_ctx\_cnt}}
+\newcommand{\exit}{\helper{exit}}
 \newcommand{\splitctx}{\helper{split\_ctx}}
+\newcommand{\getcurctx}{\helper{get\_cur\_ctx}}
+\newcommand{\getcurframe}{\helper{get\_cur\_frame}}
+\newcommand{\setcurframe}{\helper{set\_cur\_frame}}
+\newcommand{\istrue}{\helper{is\_true}}
+\newcommand{\duplicateenv}{\helper{duplicate\_env}}
+% TODO
+\newcommand{\lookup}{\helper{lookup}}
+\newcommand{\assign}{\helper{assign}}
+\newcommand{\iswasmvalueinstr}{\helper{is\_wasm\_value\_instr}}
 \newcommand{\foldright}{\helper{fold\_right}}
 \newcommand{\fold}{\helper{fold}}
-\newcommand{\execute}{\helper{execute}}
-\newcommand{\exit}{\helper{exit}}
 \newcommand{\isframe}{\helper{is\_frame}}
 \newcommand{\isstore}{\helper{is\_store}}
 \newcommand{\update}{\helper{update}}
-\newcommand{\getcurframe}{\helper{get\_cur\_frame}}
-\newcommand{\setcurframe}{\helper{set\_cur\_frame}}
-\newcommand{\updatecurframe}{\helper{update\_cur\_frame}}
-\newcommand{\updatestore}{\helper{update\_store}}
 \newcommand{\unop}{\helper{unop}}
 \newcommand{\binop}{\helper{binop}}
 \newcommand{\access}{\helper{access}}
-\newcommand{\getcurctx}{\helper{get\_cur\_ctx}}
 \newcommand{\isvalid}{\helper{is\_valid}}
 \newcommand{\match}{\helper{match}}
 \newcommand{\hastype}{\helper{has\_type}}
 \newcommand{\zip}{\helper{zip}}
-\newcommand{\duplicateenv}{\helper{duplicate\_env}}
 
 
 
@@ -349,7 +346,7 @@
 %
 % Wasm-instr
 \newline \\
-  n > 0 \quad \isnotwasmvalueinstr(wi) \\
+  n > 0 \quad \neg \iswasmvalueinstr(wi) \\
   \casev ~ (str, \seq v) = wi \quad
   \seq e, \seq i = \lookup(str) \quad
   \mu = \assign(\epsilon, \seq e, \seq v) \\
@@ -368,7 +365,7 @@
 %
 % Execute-instr
 \newline \\
-  \isnotwasmvalueinstr(wi') \\
+  \neg \iswasmvalueinstr(wi') \\
   \casev ~ (str, \seq v) = wi \quad
   \seq e, \seq i = \lookup(str) \quad
   \mu = \assign(\epsilon, \seq e, \seq v) \\
@@ -397,7 +394,7 @@
 % If-false
 \newline \\
   \mu = \getenv(c) \quad v = \sem{e}(\mu, w) \quad
-  \isfalse(v) \quad c' = \prependinstr(c, \seq{i_2}) \\
+  \neg \istrue(v) \quad c' = \prependinstr(c, \seq{i_2}) \\
   \hline
   \sem{\ifi ~ (e, \seq{i_1}, \seq{i_2})}(w, c) = (w, c') \\
 %
@@ -607,14 +604,14 @@
   \strv ~ \seq{(str_1, v_1)} = \sem{e_1}(\mu, w) \quad
   \strv ~ \seq{(str_2, v_2)} = \sem{e_2}(\mu, w) \\
   \hline
-  \sem{\compe ~ (e_1, e_2)}(\mu, w) = \strv ~ (\seq{(str_1, v_1)} \cat \seq{(str_2, v_2)}) \\
+  \sem{\compe ~ (e_1, e_2)}(\mu, w) = \strv ~ (\seq{(str_1, v_1)} ~ \seq{(str_2, v_2)}) \\
 %
 % Cat
 \newline \\
   \listv ~ \seq{v_1} = \sem{e_1}(\mu, w) \quad
   \listv ~ \seq{v_2} = \sem{e_2}(\mu, w) \\
   \hline
-  \sem{\cate ~ (e_1, e_2)}(\mu, w) = \listv ~ (\seq{v_1} \cat \seq{v_1}) \\
+  \sem{\cate ~ (e_1, e_2)}(\mu, w) = \listv ~ (\seq{v_1} ~ \seq{v_1}) \\
 %
 % Mem
 \newline \\
@@ -748,57 +745,127 @@
 
 %% Helper functions
 
-\begin{gather*}
-\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
+\begin{align*}
+&\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
 %
 % pop_all-ctx
 \newline \\
-  \text{is\_ctx}(\text{hd}(\seq{wv})) \\
+  &\text{is\_ctx}(\text{hd}(\seq{wv})) \\
   \hline
-  \splitctx(\seq{wv}) = \epsilon, \seq{wv} \\
+  &\splitctx(\seq{wv}) = \epsilon, \seq{wv} \\
 %
 % pop_all-val
-  \text{is\_not\_ctx}(wv_0) \quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1}) \\
+  &\text{is\_not\_ctx}(wv_0) \quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1}) \\
   \hline
-  \splitctx(wv_0 ~ \seq{wv_1}) = wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
+  &\splitctx(wv_0 ~ \seq{wv_1}) = wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
 %
 % execute
 \newline \\
-  \execute(v, c) = \exe(v, c) \\
+  &\execute(v, c) = \exe(v, c) \\
 %
 % exit_cont-wasm_0
 \newline \\
-\text{NOTE: input cont of exit is either \al ~ or \wasm} \\
-  \exit_{Cont}(\wasm (0, c)) = \wasm(0, \exit_{Cont}(c)) \\
+&\text{NOTE: input cont of exit is either \al ~ or \wasm} \\
+  &\exit_{Cont}(\wasm (0, c)) = \wasm(0, \exit_{Cont}(c)) \\
 %
 % exit_cont-wasm_nonzero
-  n > 0 \\
+  &n > 0 \\
   \hline
-  \exit_{Cont}(\wasm (n, c)) = \wasm(n-1, c) \\
+  &\exit_{Cont}(\wasm (n, c)) = \wasm(n-1, c) \\
 %
 % exit_cont-al
-  \exit_{Cont}(\al (\seq i, \mu, n, c)) = \al (\seq i, \mu, n, \exit(c)) \\
+  &\exit_{Cont}(\al (\seq i, \mu, n, c)) = \al (\seq i, \mu, n, \exit(c)) \\
 %
 % exit_wasm_instr-end
 \newline \\
-  \text{is\_end}(wi) \\
+  &\text{is\_end}(wi) \\
   \hline
-  \exit_{WasmInstr}(wi ~ \seq{wi'}) = \seq{wi'} \\
+  &\exit_{WasmInstr}(wi ~ \seq{wi'}) = \seq{wi'} \\
 %
 % exit_wasm_instr-normal_instr
-  \text{is\_not\_end}(wi) \\
+  &\text{is\_not\_end}(wi) \\
   \hline
-  \exit_{WasmInstr}(wi ~ \seq{wi'}) = \exit_{WasmInstr}(\seq{wi'}) \\
+  &\exit_{WasmInstr}(wi ~ \seq{wi'}) = \exit_{WasmInstr}(\seq{wi'}) \\
 %
 % exit_wasm_value
-  \seq{wv_1}, \seq{wv_2} = \splitctx(\seq{wv_0}) \\
+  &\seq{wv_1}, \seq{wv_2} = \splitctx(\seq{wv_0}) \\
   \hline
-  \exit_{WasmValue}(\seq{wv_0}) = \text{tail}(\seq{wv_2}) \\
+  &\exit_{WasmValue}(\seq{wv_0}) = \text{tail}(\seq{wv_2}) \\
 %
-% duplicate_env
-  \duplicateenv(\mu, epsilon) = \mu \\
-  \duplicateenv(\mu, str \cat \seq{str'}) = \listv ~ \seq v = \mu(str); ~ \mu^{|\seq v|}
-\end{gather*}
+% duplicate_env-empty
+\newline \\
+  &\duplicateenv(\mu, epsilon) = \mu \\
+%
+% duplicate_env-nonempty
+  &\listv ~ \seq v = \mu(str) \\
+  \hline
+  &\duplicateenv(\mu, str ~ \seq{str'}) = \mu^{|\seq v|} \\
+%
+% get_env
+\newline \\
+  &\getenv(\al ~ (\seq i, \mu, n, c)) = \mu \\
+%
+% set_env
+\newline \\
+  &\setenv(\al ~ (\seq i, \mu, n, c), \mu') = \al ~ (\seq i, \mu', n, c) \\
+%
+% prepend_instr
+\newline \\
+  &\prependinstr(\al ~ (\seq i, \mu, n, c), \seq{i'}) = \al ~ (\seq{i'} ~ \seq i, \mu, n, c) \\
+%
+% increase_ctx_cnt
+\newline \\
+  &\increasectxcnt(\al ~ (\seq i, \mu, n, c)) = \al ~ (\seq i, \mu, n + 1, c) \\
+%
+% push
+\newline \\
+  &\push((\seq{wv}, \seq{wi}, sto), wv') = wv' ~ \seq{wv}, \seq{wi}, sto \\
+%
+% pop
+\newline \\
+  &\pop((wv ~ \seq{wv'}, \seq{wi}, sto)) = \seq{wv'}, \seq{wi}, sto \\
+%
+% popn
+\newline \\
+  &\popn((wv^n ~ \seq{wv'}, \seq{wi}, sto), n) = \seq{wv'}, \seq{wi}, sto \\
+%
+% get_cur_ctx
+\newline \\
+  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \\
+  \hline
+  &\getcurctx((\seq{wv}, \seq{wi}, sto)) = wv_{ctx} \\
+%
+% get_cur_frame-frame
+\newline \\
+  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \isframe(wv_{ctx}) \\
+  \hline
+  &\getcurframe((\seq{wv}, \seq{wi}, sto)) = wv_{ctx} \\
+% get_cur_frame-other
+  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
+  \hline
+  &\getcurframe((\seq{wv}, \seq{wi}, sto)) = \getcurframe(\seq{wv_2}) \\
+%
+% set_cur_frame-frame
+\newline \\
+  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \isframe(wv_{ctx}) \\
+  \hline
+  &\setcurframe((\seq{wv}, \seq{wi}, sto), v_{frame})
+  =
+  \seq{wv_1} ~ v_{frame} ~ \seq{wv_2}, \seq{wi}, sto \\
+%
+% set_cur_frame-other
+\newline \\
+  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
+  \hline
+  &\setcurframe((\seq{wv}, \seq{wi}, sto), v_{frame})
+  =
+  \seq{wv_1} ~ wv_{ctx} ~ \setcurframe(\seq{wv_2}, v_{frame}), \seq{wi}, sto \\
+%
+% is_true
+\newline \\
+  &\istrue(\boolv ~ b) = b \\
+  &\istrue(\listv ~ \seq v) = \forall v' \in \seq v. \istrue (v') \\
+\end{align*}
 
 
 
