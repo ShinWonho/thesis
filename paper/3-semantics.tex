@@ -173,6 +173,7 @@
 \newcommand{\increasectxcnt}{\helper{increase\_ctx\_cnt}}
 \newcommand{\splitctx}{\helper{split\_ctx}}
 \newcommand{\foldright}{\helper{fold\_right}}
+\newcommand{\fold}{\helper{fold}}
 \newcommand{\execute}{\helper{execute}}
 \newcommand{\exit}{\helper{exit}}
 \newcommand{\isframe}{\helper{is\_frame}}
@@ -645,11 +646,47 @@
   \hline
   \sem{\calle ~ (str, \seq{e})}(\mu, w) = v' \\
 %
-% Iter
+% Iter-
 \newline \\
-  [|str \leftarrow \seq{str}; v \leftarrow \mu(str)] TODO \\
+todo \\
   \hline
-  \sem{\itere ~ (e, iter, \seq{str})}(\mu, w) = \casev ~ (str, \seq{v}) \\
+  \sem{\itere ~ (e, \listiter, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
+%
+% Iter-n
+\newline \\
+  \numv ~ n = \sem{e_2}(\mu, w) \quad
+  f_i = (\lambda ~ x ~ acc. ~ \listv ~ \seq v = \mu(x); ~ acc[x \mapsto \seq v[i]]) \\
+  \seq{\mu_1} =
+    [ ~
+      \fold(
+        f_i,
+        \seq{str},
+        \mu
+      )
+    ~ | ~
+      i \leftarrow [0 ~ .. ~ n-1]
+    ~ ]
+  \quad
+  \seq{v'} = [ ~ \sem{e_1}(\mu_2, w) ~ | ~ \mu_2 \leftarrow \seq {\mu_1} ~ ] \\
+  \hline
+  \sem{\itere ~ (e_1, \listniter ~ e_2, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
+%
+% Iter-idx
+\newline \\
+  \seq{\mu_1} =
+    [ ~
+      \fold(
+        (\lambda ~ x ~ acc. ~ acc[x \mapsto \numv ~ i]),
+        \seq{str},
+        \mu
+      )
+    ~ | ~
+      i \leftarrow [0 ~ .. ~ n-1]
+    ~ ]
+  \quad
+  \seq{v'} = [ ~ \sem{e_1}(\mu_2, w) ~ | ~ \mu_2 \leftarrow \seq {\mu_1} ~ ] \\
+  \hline
+  \sem{\itere ~ (e_1, \listidxiter ~ e_2, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
 %
 % List
 \newline \\
