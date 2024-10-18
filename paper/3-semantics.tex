@@ -45,6 +45,8 @@
 % - example
 
 
+\newcommand{\cat}{\texttt{++}}
+
 
 
 %% Symbol definition
@@ -98,10 +100,11 @@
 \newcommand{\calle}{\symbol{CallE}}
 \newcommand{\itere}{\symbol{IterE}}
 \newcommand{\liste}{\symbol{ListE}}
-\newcommand{\getcurcontexte}{\symbol{GetCurContextE}}
+\newcommand{\getcurctxe}{\symbol{GetCurContextE}}
 \newcommand{\choosee}{\symbol{ChooseE}}
 \newcommand{\iscaseofe}{\symbol{IsCaseOfE}}
-\newcommand{\contextkinde}{\symbol{ContextKindE}}
+\newcommand{\isvalide}{\symbol{IsValidE}}
+\newcommand{\ctxkinde}{\symbol{ContextKindE}}
 \newcommand{\matche}{\symbol{MatchE}}
 \newcommand{\hastypee}{\symbol{HasTypeE}}
 
@@ -164,7 +167,6 @@
 \newcommand{\istrue}{\helper{is\_true}}
 \newcommand{\isfalse}{\helper{is\_false}}
 \newcommand{\prependinstr}{\helper{prepend\_instr}}
-\newcommand{\tolist}{\helper{tolist}}
 \newcommand{\push}{\helper{push}}
 \newcommand{\pop}{\helper{pop}}
 \newcommand{\popn}{\helper{popn}}
@@ -178,6 +180,15 @@
 \newcommand{\update}{\helper{update}}
 \newcommand{\getcurframe}{\helper{get\_cur\_frame}}
 \newcommand{\setcurframe}{\helper{set\_cur\_frame}}
+\newcommand{\updatecurframe}{\helper{update\_cur\_frame}}
+\newcommand{\updatestore}{\helper{update\_store}}
+\newcommand{\unop}{\helper{unop}}
+\newcommand{\binop}{\helper{binop}}
+\newcommand{\access}{\helper{access}}
+\newcommand{\getcurctx}{\helper{get\_cur\_ctx}}
+\newcommand{\isvalid}{\helper{is\_valid}}
+\newcommand{\match}{\helper{match}}
+\newcommand{\hastype}{\helper{has\_type}}
 
 
 
@@ -235,7 +246,7 @@
     | & ~ \bine ~ Binop \times E \times E \\
     | & ~ \acce ~ E \times P \\
     | & ~ \upde ~ E \times \seq P \times E \\
-    | & ~ \stre ~ String \mapsto E \\
+    | & ~ \stre ~ \seq{(String \times E)} \\
     | & ~ \compe ~ E \times E \\
     | & ~ \cate ~ E \times E \\
     | & ~ \meme ~ E \times E \\
@@ -245,10 +256,10 @@
     | & ~ \calle ~ String \times \seq E \\
     | & ~ \itere ~ E \times Iter \times \seq{String} \\
     | & ~ \liste ~ \seq E \\
-    | & ~ \getcurcontexte ~ String \\
+    | & ~ \getcurctxe ~ String \\
     | & ~ \choosee ~ E \\
     | & ~ \iscaseofe ~ E \times String \\
-    | & ~ \contextkinde ~ String \\
+    | & ~ \ctxkinde ~ String \\
     | & ~ \matche ~ E \times E \\
     | & ~ \hastypee ~ E \times String \\
 %
@@ -281,7 +292,7 @@
   v \in V =& ~ \numv ~ \mathbb N \\
     | & ~ \boolv ~ \mathbb B \\
     | & ~ \listv ~ \seq V \\
-    | & ~ \strv ~ String \times \mapsto V \\
+    | & ~ \strv ~ \seq{(String \times V)} \\
     | & ~ \casev ~ String \times \seq V \\
     | & ~ \tupv ~ \seq V \\
     | & ~ \fnamev String \\
@@ -399,11 +410,11 @@
 %
 % Enter
 \newline \\
-  \mu = \getenv(c) \quad v_1 = \sem{e_1}(\mu, w) \quad v_2 = \sem{e_2}(\mu, w) \\
+  \mu = \getenv(c) \quad v_1 = \sem{e_1}(\mu, w) \quad \listv ~ \seq{v_2} = \sem{e_2}(\mu, w) \\
   \hline
   \sem{\enteri ~ (e_1, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   =
-  ((v_1 ~ \seq{wv}, \tolist(v_2) ~ \seq{wi}, sto), \wasm (n+1, c)) \\
+  ((v_1 ~ \seq{wv}, \seq{v_2} ~ \seq{wi}, sto), \wasm ~ (n+1, c)) \\
 %
 % PushCtx
 \newline \\
@@ -477,13 +488,13 @@
   \mu = \getenv(c) \quad
   \sem{e}(\mu, w) = v \\
   \hline
-  \sem{\executei ~ e}(w, c) = (w, \exe (v, c)) \\
+  \sem{\executei ~ e}(w, c) = (w, \exe ~ (v, c)) \\
 %
 % ExecuteSeq
 \newline \\
   \mu = \getenv(c) \quad
-  \sem{e}(\mu, w) = v \quad
-  c' = \foldright(\execute, \tolist(v), c) \\
+  \sem{e}(\mu, w) = \listv ~ \seq v \quad
+  c' = \foldright(\execute, \seq v, c) \\
   \hline
   \sem{\executeseqi ~ e}(w, c) = (w, c') \\
 %
@@ -492,7 +503,7 @@
   \mu = \getenv(c) \quad
   \seq v = \seq{\sem{e}}(\mu, w) \\
   \hline
-  \sem{\performi ~ (str, \seq e)}(w, c) = (w, \call (str, \seq v, c)) \\
+  \sem{\performi ~ (str, \seq e)}(w, c) = (w, \call ~ (str, \seq v, c)) \\
 %
 % Exit
 \newline \\
@@ -521,7 +532,7 @@
   \isstore(e_1) \quad
   \mu = \getenv(c) \quad
   v_2 = \sem{e_2}(\mu, w) \quad
-  sto' = \update(sto, \seq p, v_2) \\
+  sto' = \update_{Sto}(sto, \seq p, v_2) \\
   \hline
   \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   = ((\seq{wv}, \seq{wi}, sto'), c) \\
@@ -531,19 +542,182 @@
 
 
 
+
+%% Expression
+
+\begin{gather*}
+  \sem{e} : Env \times W \rightarrow V \\
+%
+% Var
+\newline \\
+  v = \mu(str) \\
+  \hline
+  \sem{\vare ~ str}(\mu, w) = v \\
+%
+% Num
+\newline \\
+  \hline
+  \sem{\nume ~ n}(\mu, w) = \numv ~ n \\
+%
+% Bool
+\newline \\
+  \hline
+  \sem{\boole ~ b}(\mu, w) = \boolv ~ b \\
+%
+% Fname
+\newline \\
+  \hline
+  \sem{\fnamee ~ str}(\mu, w) = \fnamev ~ str \\
+%
+% Un
+\newline \\
+  v = \sem{e}(\mu, w) \\
+  \hline
+  \sem{\une ~ (unop, e)}(\mu, w) = \unop(unop, v) \\
+%
+% Bin
+\newline \\
+  v_1 = \sem{e_1}(\mu, w) \quad v_2 = \sem{e_2}(\mu, w) \\
+  \hline
+  \sem{\bine ~ (binop, e_1, e_2)}(\mu, w) = \binop(binop, v_1, v_2) \\
+%
+% Acc
+\newline \\
+  v = \sem{e}(\mu, w) \\
+  \hline
+  \sem{\acce ~ (e, p)}(\mu, w) = \access(v, p) \\
+%
+% Upd
+\newline \\
+  v_1 = \sem{e_1}(\mu, w) \quad v_2 = \sem{e_2}(\mu, w) \\
+  \hline
+  \sem{\upde ~ (e_1, \seq p, e_2)}(\mu, w) = \update(v_1, \seq p, v_2) \\
+%
+% Str
+\newline \\
+  \seq v = \seq{\sem{e}}(\mu, w) \\
+  \hline
+  \sem{\stre ~ \seq{(str, e)}}(\mu, w) = \strv ~ \seq{(str, v)} \\
+%
+% Comp
+\newline \\
+  \strv ~ \seq{(str_1, v_1)} = \sem{e_1}(\mu, w) \quad
+  \strv ~ \seq{(str_2, v_2)} = \sem{e_2}(\mu, w) \\
+  \hline
+  \sem{\compe ~ (e_1, e_2)}(\mu, w) = \strv ~ (\seq{(str_1, v_1)} \cat \seq{(str_1, v_1)}) \\
+%
+% Cat
+\newline \\
+  \listv ~ \seq{v_1} = \sem{e_1}(\mu, w) \quad
+  \listv ~ \seq{v_2} = \sem{e_2}(\mu, w) \\
+  \hline
+  \sem{\cate ~ (e_1, e_2)}(\mu, w) = \listv ~ (\seq{v_1} \cat \seq{v_1}) \\
+%
+% Mem
+\newline \\
+  v_1 = \sem{e_1}(\mu, w) \quad
+  \listv ~ \seq{v_2} = \sem{e_2}(\mu, w) \\
+  \hline
+  \sem{\meme ~ (e_1, e_2)}(\mu, w) = \boolv ~ (v_1 \in \seq{v_2}) \\
+%
+% Len
+\newline \\
+  \listv ~ \seq{v} = \sem{e}(\mu, w) \\
+  \hline
+  \sem{\lene ~ e}(\mu, w) = \numv ~ |\seq v| \\
+%
+% Tup
+\newline \\
+  \seq{v} = \seq{\sem{e}}(\mu, w) \\
+  \hline
+  \sem{\tupe ~ \seq{e}}(\mu, w) = \tupv ~ \seq{v} \\
+%
+% Case
+\newline \\
+  \seq{v} = \seq{\sem{e}}(\mu, w) \\
+  \hline
+  \sem{\casee ~ (str, \seq{e})}(\mu, w) = \casev ~ (str, \seq{v}) \\
+%
+% Call
+\newline \\
+  \seq{v} = \seq{\sem{e}}(\mu, w) \quad
+  (w, \call ~ (str, \seq v, \mt)) \seq{\leadsto} (w, \ret v') \\
+  \hline
+  \sem{\calle ~ (str, \seq{e})}(\mu, w) = v' \\
+%
+% Iter
+\newline \\
+  [|str \leftarrow \seq{str}; v \leftarrow \mu(str)] TODO \\
+  \hline
+  \sem{\itere ~ (e, iter, \seq{str})}(\mu, w) = \casev ~ (str, \seq{v}) \\
+%
+% List
+\newline \\
+  \seq{v} = \seq{\sem{e}}(\mu, w) \\
+  \hline
+  \sem{\liste ~ \seq{e}}(\mu, w) = \listv ~ \seq{v} \\
+%
+% GetCurCtx
+\newline \\
+  v_{ctx} = \getcurctx(w, str) \\
+  \hline
+  \sem{\getcurctxe ~ str}(\mu, w) = v_{ctx} \\
+%
+% Choose
+\newline \\
+  \listv ~ \seq{v} = \sem{e}(\mu, w) \quad
+  v' \in \seq{v} \\
+  \hline
+  \sem{\choosee ~ e}(\mu, w) = v' \\
+%
+% IsCaseOf
+\newline \\
+  \casev ~ (str', \seq{v}) = \sem{e}(\mu, w) \\
+  \hline
+  \sem{\iscaseofe ~ (e, str)}(\mu, w) = \boolv (str = str') \\
+%
+% IsValid
+\newline \\
+  v = \sem{e}(\mu, w) \\
+  \hline
+  \sem{\isvalide ~ e}(\mu, w) = \boolv (\isvalid(v)) \\
+%
+% CtxKind
+\newline \\
+  \casev (str', \seq v) = \getcurctx(w, str) \\
+  \hline
+  \sem{\ctxkinde ~ str}(\mu, w) = \boolv (str = str') \\
+%
+% Match
+\newline \\
+  v_1 = \sem{e_1}(\mu, w) \quad
+  v_2 = \sem{e_2}(\mu, w) \\
+  \hline
+  \sem{\matche ~ (e_1, e_2)}(\mu, w) = \boolv (\match(v_1, v_2)) \\
+%
+% HasType
+\newline \\
+  v_= \sem{e}(\mu, w) \\
+  \hline
+  \sem{\hastypee ~ (e, str)}(\mu, w) = \boolv (\hastype(v, str)) \\
+\end{gather*}
+
+
+
+
 %% Helper functions
 
 \begin{gather*}
-\text{NOTE: an input of is\_context (WasmValue sequence) contains at least one context} \\
+\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
 %
 % pop_all-ctx
 \newline \\
-  \text{is\_context}(\text{hd}(\seq{wv})) \\
+  \text{is\_ctx}(\text{hd}(\seq{wv})) \\
   \hline
   \splitctx(\seq{wv}) = \epsilon, \seq{wv} \\
 %
 % pop_all-val
-  \text{is\_not\_context}(wv_0) \quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1}) \\
+  \text{is\_not\_ctx}(wv_0) \quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1}) \\
   \hline
   \splitctx(wv_0 ~ \seq{wv_1}) = wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
 %
