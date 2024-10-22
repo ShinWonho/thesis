@@ -201,10 +201,10 @@
 \begin{align*}
 %
 % State
-  s \in S =& \seq P \times W \times Cont \\
+  s \in S =& \seq A \times W \times Cont \\
 %
-% Program
-  p \in P =& str \times \seq E \times \seq I \\
+% Algorithm
+  a \in A =& str \times \seq E \times \seq I \\
 %
 % Wasm state
   w \in W =& \seq{WasmValue} \times \seq{WasmInstr} \times Store \\
@@ -321,66 +321,66 @@
 \newline \\
   \seq e, \seq i = \lookup(p, str) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (p, w, \call ~ (str, \seq v, c)) \leadsto (p, w, \al ~ (\seq i, \mu, c)) \\
+  (a, w, \call ~ (str, \seq v, c)) \leadsto (a, w, \al ~ (\seq i, \mu, c)) \\
 %
 % Al-empty_zero
 \newline \\
   \hline
-  (p, w, \al ~ (\epsilon, \mu, 0, c)) \leadsto (p, w, c) \\
+  (a, w, \al ~ (\epsilon, \mu, 0, c)) \leadsto (a, w, c) \\
 %
 % Al-empty_nonzero
 \newline \\
   n > 0 \\
   \hline
-  (p, w, \al ~ (\epsilon, \mu, n, c)) \leadsto (p, w, \wasm ~ (n, c)) \\
+  (a, w, \al ~ (\epsilon, \mu, n, c)) \leadsto (a, w, \wasm ~ (n, c)) \\
 %
 % Al-instr
 \newline \\
   \hline
-  (p, w, \al ~ (i_0 ~ \seq{i_1}, \mu, n, c))
+  (a, w, \al ~ (i_0 ~ \seq{i_1}, \mu, n, c))
   \leadsto
-  \sem{i_0}(p, w, \al ~ (\seq{i_1}, \mu, n, c)) \\
+  \sem{i_0}(a, w, \al ~ (\seq{i_1}, \mu, n, c)) \\
 %
 % Wasm-zero
 \newline \\
   \hline
-  (p, w, \wasm ~ (0, c)) \leadsto (p, w, c) \\
+  (a, w, \wasm ~ (0, c)) \leadsto (a, w, c) \\
 %
 % Wasm-value
 \newline \\
   n > 0 \quad \iswasmvalueinstr(wi) \\
   \hline
-  (p, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
+  (a, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
   \leadsto
-  (p, (\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (n, c)) \\
+  (a, (\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (n, c)) \\
 %
 % Wasm-instr
 \newline \\
   n > 0 \quad \neg \iswasmvalueinstr(wi) \\
   \casev ~ (str, \seq v) = wi \quad
-  \seq e, \seq i = \lookup(p, str) \quad
+  \seq e, \seq i = \lookup(a, str) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (p, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
+  (a, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
   \leadsto
-  (p, (\seq{wi'}, \seq{wv}, sto), \al ~ (\seq i, \seq v, \wasm ~ (n, c))) \\
+  (a, (\seq{wi'}, \seq{wv}, sto), \al ~ (\seq i, \seq v, \wasm ~ (n, c))) \\
 %
 % Execute-value
 \newline \\
   \iswasmvalueinstr(wi') \\
   \hline
-  (p, (\seq{wi}, \seq{wv}, sto), \exe ~ (wi', c))
+  (a, (\seq{wi}, \seq{wv}, sto), \exe ~ (wi', c))
   \leadsto
-  (p, (\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
+  (a, (\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
 %
 % Execute-instr
 \newline \\
   \neg \iswasmvalueinstr(wi') \\
   \casev ~ (str, \seq v) = wi \quad
-  \seq e, \seq i = \lookup(p, str) \quad
+  \seq e, \seq i = \lookup(a, str) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (p, w, \exe ~ (wi', c)) \leadsto (p, w, \al ~ (\seq i, \seq v, c)) \\
+  (a, w, \exe ~ (wi', c)) \leadsto (a, w, \al ~ (\seq i, \seq v, c)) \\
 \end{gather*}
 
 
@@ -962,7 +962,7 @@
 %
 % is_frame
 \newline \\
-  &\isframe(\casev ~ (\text{"FRAME\_"}, \seq v) = true \\
+  &\isframe(\casev ~ (\text{"FRAME\_"}, \seq v)) = true \\
   &otherwise \\
   \hline
   &\isframe(v) = false \\
