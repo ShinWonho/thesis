@@ -149,6 +149,7 @@
 \newcommand{\tupv}{\symbol{TupV}}
 \newcommand{\fnamev}{\symbol{FnameV}}
 \newcommand{\trapv}{\symbol{TrapV}}
+\newcommand{\storev}{\symbol{StoreV}}
 
 
 
@@ -158,37 +159,39 @@
 \newcommand{\helper}[1]{\text{#1}}
 
 % Helper function
+\newcommand{\lookup}{\helper{lookup}}
 \newcommand{\execute}{\helper{execute}}
+\newcommand{\exit}{\helper{exit}}
+\newcommand{\duplicateenv}{\helper{duplicate\_env}}
+\newcommand{\increasectxcnt}{\helper{increase\_ctx\_cnt}}
 \newcommand{\getenv}{\helper{get\_env}}
 \newcommand{\setenv}{\helper{set\_env}}
 \newcommand{\prependinstr}{\helper{prepend\_instr}}
-\newcommand{\increasectxcnt}{\helper{increase\_ctx\_cnt}}
 \newcommand{\push}{\helper{push}}
 \newcommand{\pop}{\helper{pop}}
 \newcommand{\popn}{\helper{popn}}
-\newcommand{\exit}{\helper{exit}}
+\newcommand{\unop}{\helper{unop}}
 \newcommand{\splitctx}{\helper{split\_ctx}}
 \newcommand{\getcurctx}{\helper{get\_cur\_ctx}}
 \newcommand{\getcurframe}{\helper{get\_cur\_frame}}
 \newcommand{\setcurframe}{\helper{set\_cur\_frame}}
+\newcommand{\access}{\helper{access}}
+\newcommand{\update}{\helper{update}}
+\newcommand{\updateidx}{\helper{update\_idx}}
+\newcommand{\updateslice}{\helper{update\_slice}}
+\newcommand{\updatedot}{\helper{update\_dot}}
 \newcommand{\istrue}{\helper{is\_true}}
-\newcommand{\duplicateenv}{\helper{duplicate\_env}}
-% TODO
-\newcommand{\lookup}{\helper{lookup}}
+\newcommand{\isframe}{\helper{is\_frame}}
+\newcommand{\zip}{\helper{zip}}
+\newcommand{\foldright}{\helper{fold\_right}}
+% Hardcode
 \newcommand{\assign}{\helper{assign}}
 \newcommand{\iswasmvalueinstr}{\helper{is\_wasm\_value\_instr}}
-\newcommand{\foldright}{\helper{fold\_right}}
-\newcommand{\fold}{\helper{fold}}
-\newcommand{\isframe}{\helper{is\_frame}}
-\newcommand{\isstore}{\helper{is\_store}}
-\newcommand{\update}{\helper{update}}
-\newcommand{\unop}{\helper{unop}}
 \newcommand{\binop}{\helper{binop}}
-\newcommand{\access}{\helper{access}}
+% Reference interpreter
 \newcommand{\isvalid}{\helper{is\_valid}}
 \newcommand{\match}{\helper{match}}
 \newcommand{\hastype}{\helper{has\_type}}
-\newcommand{\zip}{\helper{zip}}
 
 
 
@@ -198,7 +201,10 @@
 \begin{align*}
 %
 % State
-  s \in S =& W \times Cont \\
+  s \in S =& \seq P \times W \times Cont \\
+%
+% Program
+  p \in P =& str \times \seq E \times \seq I \\
 %
 % Wasm state
   w \in W =& \seq{WasmValue} \times \seq{WasmInstr} \times Store \\
@@ -235,7 +241,7 @@
     | & ~ \executeseqi ~ E \\
     | & ~ \performi ~ String \times \seq{E} \\
     | & ~ \exiti ~ String \\
-    | & ~ \replacei ~ E \times \seq P \times E \\
+    | & ~ \replacei ~ E \times \seq Path \times E \\
 %
 % Expression
   e \in E =& ~ \vare ~ String \\
@@ -244,8 +250,8 @@
     | & ~ \fnamee ~ String \\
     | & ~ \une ~ Unop \times E \\
     | & ~ \bine ~ Binop \times E \times E \\
-    | & ~ \acce ~ E \times P \\
-    | & ~ \upde ~ E \times \seq P \times E \\
+    | & ~ \acce ~ E \times Path \\
+    | & ~ \upde ~ E \times \seq Path \times E \\
     | & ~ \stre ~ \seq{(String \times E)} \\
     | & ~ \compe ~ E \times E \\
     | & ~ \cate ~ E \times E \\
@@ -283,7 +289,7 @@
     | & ~ \geop \\
 %
 % Path
-  p \in P =& ~ \idxp ~ E ~ | ~ \slicep ~ E \times E ~ | ~ \dotp ~ String \\
+  path \in Path =& ~ \idxp ~ E ~ | ~ \slicep ~ E \times E ~ | ~ \dotp ~ String \\
 %
 % Iter
   iter \in Iter =& ~ \listiter ~ | ~ \listniter ~ E ~|~ \listidxiter ~ String \times E \\
@@ -296,6 +302,8 @@
     | & ~ \casev ~ String \times \seq V \\
     | & ~ \tupv ~ \seq V \\
     | & ~ \fnamev String \\
+    | & ~ \trapv \\
+    | & ~ \storev \\
 \end{align*}
 
 
@@ -311,66 +319,68 @@
 %
 % Call
 \newline \\
-  \seq e, \seq i = \lookup(str) \quad \mu = \assign(\seq e, \seq v) \\
+  \seq e, \seq i = \lookup(p, str) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (w, \call ~ (str, \seq v, c)) \leadsto (w, \al ~ (\seq i, \mu, c)) \\
+  (p, w, \call ~ (str, \seq v, c)) \leadsto (p, w, \al ~ (\seq i, \mu, c)) \\
 %
 % Al-empty_zero
 \newline \\
   \hline
-  (w, \al ~ (\epsilon, \mu, 0, c)) \leadsto (w, c) \\
+  (p, w, \al ~ (\epsilon, \mu, 0, c)) \leadsto (p, w, c) \\
 %
 % Al-empty_nonzero
 \newline \\
   n > 0 \\
   \hline
-  (w, \al ~ (\epsilon, \mu, n, c)) \leadsto (w, \wasm ~ (n, c)) \\
+  (p, w, \al ~ (\epsilon, \mu, n, c)) \leadsto (p, w, \wasm ~ (n, c)) \\
 %
 % Al-instr
 \newline \\
   \hline
-  (w, \al ~ (i_0 ~ \seq{i_1}, \mu, n, c)) \leadsto \sem{i_0}(w, \al ~ (\seq{i_1}, \mu, n, c)) \\
+  (p, w, \al ~ (i_0 ~ \seq{i_1}, \mu, n, c))
+  \leadsto
+  \sem{i_0}(p, w, \al ~ (\seq{i_1}, \mu, n, c)) \\
 %
 % Wasm-zero
 \newline \\
   \hline
-  (w, \wasm ~ (0, c)) \leadsto (w, c) \\
+  (p, w, \wasm ~ (0, c)) \leadsto (p, w, c) \\
 %
 % Wasm-value
 \newline \\
   n > 0 \quad \iswasmvalueinstr(wi) \\
   \hline
-  ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
+  (p, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
   \leadsto
-  ((\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (n, c)) \\
+  (p, (\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (n, c)) \\
 %
 % Wasm-instr
 \newline \\
   n > 0 \quad \neg \iswasmvalueinstr(wi) \\
   \casev ~ (str, \seq v) = wi \quad
-  \seq e, \seq i = \lookup(str) \quad
-  \mu = \assign(\epsilon, \seq e, \seq v) \\
+  \seq e, \seq i = \lookup(p, str) \quad
+  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  ((wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
+  (p, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
   \leadsto
-  ((\seq{wi'}, \seq{wv}, sto), \al ~ (\seq i, \seq v, \wasm ~ (n, c))) \\
+  (p, (\seq{wi'}, \seq{wv}, sto), \al ~ (\seq i, \seq v, \wasm ~ (n, c))) \\
 %
 % Execute-value
 \newline \\
   \iswasmvalueinstr(wi') \\
   \hline
-  ((\seq{wi}, \seq{wv}, sto), \exe ~ (wi', c))
+  (p, (\seq{wi}, \seq{wv}, sto), \exe ~ (wi', c))
   \leadsto
-  ((\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
+  (p, (\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
 %
 % Execute-instr
 \newline \\
   \neg \iswasmvalueinstr(wi') \\
   \casev ~ (str, \seq v) = wi \quad
-  \seq e, \seq i = \lookup(str) \quad
-  \mu = \assign(\epsilon, \seq e, \seq v) \\
+  \seq e, \seq i = \lookup(p, str) \quad
+  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (w, \exe ~ (wi', c)) \leadsto (w, \al ~ (\seq i, \seq v, c)) \\
+  (p, w, \exe ~ (wi', c)) \leadsto (p, w, \al ~ (\seq i, \seq v, c)) \\
 \end{gather*}
 
 
@@ -382,7 +392,7 @@
 
 \begin{gather*}
   \text{NOTE: input cont is always \al} \\
-  \sem{i} : State \rightarrow State \\
+  \sem{i} : W \times Cont \rightarrow W \times Cont \\
 %
 % If-true
 \newline \\
@@ -518,23 +528,23 @@
 % Replace-frame
 \newline \\
 \text{NOTE: $e_1$ is either store or current frame} \\
-  \isframe(e_1) \quad
   \mu = \getenv(c) \quad
+  v_1 = \sem{e_1}(\mu, w) \quad
+  \isframe(v_1) \quad
   v_2 = \sem{e_2}(\mu, w) \quad
-  v_{frame} = \getcurframe(w) \quad
-  v_{frame}' = \update(v_{frame}, \seq p, v_2) \\
+  v_3 = \update(v_1, \seq p, v_2) \\
   \hline
-  \sem{\replacei ~ (e_1, \seq p, e_2)}(w, c)
-  = (\setcurframe(w, v_{frame}', c) \\
+  \sem{\replacei ~ (e_1, \seq{path}, e_2)}(w, c)
+  = (\setcurframe(w, v_3), c) \\
 %
 % Replace-store
 \newline \\
-  \isstore(e_1) \quad
+  \storev = \sem{e_1} \quad
   \mu = \getenv(c) \quad
   v_2 = \sem{e_2}(\mu, w) \quad
   sto' = \update_{Sto}(sto, \seq p, v_2) \\
   \hline
-  \sem{\replacei ~ (e_1, \seq p, e_2)}((\seq{wv}, \seq{wi}, sto), c)
+  \sem{\replacei ~ (e_1, \seq path, e_2)}((\seq{wv}, \seq{wi}, sto), c)
   = ((\seq{wv}, \seq{wi}, sto'), c) \\
 \newline \\
 \end{gather*}
@@ -585,13 +595,13 @@
 \newline \\
   v = \sem{e}(\mu, w) \\
   \hline
-  \sem{\acce ~ (e, p)}(\mu, w) = \access(v, p) \\
+  \sem{\acce ~ (e, path)}(\mu, w) = \access(\mu, w, v, path) \\
 %
 % Upd
 \newline \\
   v_1 = \sem{e_1}(\mu, w) \quad v_2 = \sem{e_2}(\mu, w) \\
   \hline
-  \sem{\upde ~ (e_1, \seq p, e_2)}(\mu, w) = \update(v_1, \seq p, v_2) \\
+  \sem{\upde ~ (e_1, \seq path, e_2)}(\mu, w) = \update(v_1, \seq path, v_2) \\
 %
 % Str
 \newline \\
@@ -653,7 +663,7 @@
       [ ~ \mu_1[str \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
     )
   \\
-  \seq{\mu_2} = \fold(f, \seq{str}, \duplicateenv(\mu, \seq{str})) \quad
+  \seq{\mu_2} = \foldright(f, \seq{str}, \duplicateenv(\mu, \seq{str})) \quad
   \seq{v'} = [ ~ \sem{e}(\mu_3, w) ~ | ~ \mu_3 \leftarrow \seq {\mu_2} ~ ] \\
   \hline
   \sem{\itere ~ (e, \listiter, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
@@ -667,7 +677,7 @@
       [ ~ \mu_1[str \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
     )
   \\
-  \seq{\mu_2} = \fold(f, \seq{str}, \mu^n) \quad
+  \seq{\mu_2} = \foldright(f, \seq{str}, \mu^n) \quad
   \seq{v'} = [ ~ \sem{e_1}(\mu_3, w) ~ | ~ \mu_3 \leftarrow \seq {\mu_2} ~ ] \\
   \hline
   \sem{\itere ~ (e_1, \listniter ~ e_2, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
@@ -676,7 +686,7 @@
 \newline \\
   \seq{\mu_1} =
     [ ~
-      \fold(
+      \foldright(
         (\lambda ~ x ~ acc. ~ acc[x \mapsto \numv ~ i]),
         \seq{str},
         \mu
@@ -746,14 +756,21 @@
 %% Helper functions
 
 \begin{align*}
-&\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
+%
+% lookup
+  &str' = str \\
+  \hline
+  &\lookup((str', \seq e, \seq i) ~ \seq{p'}, str) = \seq e, \seq i \\
+  &str' \not= str \\
+  \hline
+  &\lookup((str, \seq e, \seq i) ~ \seq{p'}, str) = \lookup(\seq{p'}, str) \\
 %
 % pop_all-ctx
 \newline \\
+&\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
   &\text{is\_ctx}(\text{hd}(\seq{wv})) \\
   \hline
   &\splitctx(\seq{wv}) = \epsilon, \seq{wv} \\
-%
 % pop_all-val
   &\text{is\_not\_ctx}(wv_0) \quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1}) \\
   \hline
@@ -767,12 +784,10 @@
 \newline \\
 &\text{NOTE: input cont of exit is either \al ~ or \wasm} \\
   &\exit_{Cont}(\wasm (0, c)) = \wasm(0, \exit_{Cont}(c)) \\
-%
 % exit_cont-wasm_nonzero
   &n > 0 \\
   \hline
   &\exit_{Cont}(\wasm (n, c)) = \wasm(n-1, c) \\
-%
 % exit_cont-al
   &\exit_{Cont}(\al (\seq i, \mu, n, c)) = \al (\seq i, \mu, n, \exit(c)) \\
 %
@@ -781,7 +796,6 @@
   &\text{is\_end}(wi) \\
   \hline
   &\exit_{WasmInstr}(wi ~ \seq{wi'}) = \seq{wi'} \\
-%
 % exit_wasm_instr-normal_instr
   &\text{is\_not\_end}(wi) \\
   \hline
@@ -795,7 +809,6 @@
 % duplicate_env-empty
 \newline \\
   &\duplicateenv(\mu, epsilon) = \mu \\
-%
 % duplicate_env-nonempty
   &\listv ~ \seq v = \mu(str) \\
   \hline
@@ -829,6 +842,16 @@
 \newline \\
   &\popn((wv^n ~ \seq{wv'}, \seq{wi}, sto), n) = \seq{wv'}, \seq{wi}, sto \\
 %
+% unop
+\newline \\
+  &\istrue(v) \\
+  \hline
+  &\unop(\notop, v) = \boolv ~ false \\
+  &\neg\istrue(v) \\
+  \hline
+  &\unop(\notop, v) = \boolv ~ true \\
+  &\unop(\minusop, \numv ~ n) = \numv ~ (-n) \\
+%
 % get_cur_ctx
 \newline \\
   &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \\
@@ -852,19 +875,106 @@
   &\setcurframe((\seq{wv}, \seq{wi}, sto), v_{frame})
   =
   \seq{wv_1} ~ v_{frame} ~ \seq{wv_2}, \seq{wi}, sto \\
-%
 % set_cur_frame-other
-\newline \\
   &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
   \hline
   &\setcurframe((\seq{wv}, \seq{wi}, sto), v_{frame})
   =
   \seq{wv_1} ~ wv_{ctx} ~ \setcurframe(\seq{wv_2}, v_{frame}), \seq{wi}, sto \\
 %
+% access-idx
+\newline \\
+  &\numv ~ n = \sem{e}(\mu, w) \quad \listv ~ \seq{v'} = v \\
+  \hline
+  &\access(\mu, w, v, \idxp ~ e) = \seq{v'}[n] \\
+% access-slice
+  &\numv ~ n_1 = \sem{e_1}(\mu, w) \quad
+  \numv ~ n_2 = \sem{e_2}(\mu, w) \quad
+  \listv ~ \seq{v'} = v \\
+  \hline
+  &\access(\mu, w, v, \slicep ~ (e_1, e_2)) = \seq{v'}[n_1: n_2] \\
+% access-dot
+  &\strv ~ ((str_0, v_0) ~ \seq{(str_1, v_1)}) = v \quad
+  str_0 = str \\
+  \hline
+  &\access(\mu, w, v, \dotp ~ str) = v_0 \\
+  &\strv ~ ((str_0, v_0) ~ \seq{(str_1, v_1)}) = v \quad
+  str_0 \not= str \\
+  \hline
+  &\access(\mu, w, v, \dotp ~ str) = \access(\mu, w, \strv ~ \seq{(str_1, v_1)}, \dotp ~ str) \\
+% access-store
+  &\storev = v \\
+  \hline
+  &\access(\mu, (\seq{wv}, \seq{wi}, sto), v, \dotp ~ str) = sto(str) \\
+%
+% update-idx
+\newline \\
+  &\numv ~ n = \sem{e}(\mu, w) \quad
+  \listv ~ \seq{v_3} = v_1 \\
+  \hline
+  &\update(\mu, w, v_1, (\idxp ~ e) ~ \seq{path}, v_2)
+  =
+  \updateidx(v_3, n, \update(\mu, w, \seq{v_3}[n], \seq{path}, v_2)) \\
+% update_idx
+  &\updateidx(v_0 ~ \seq{v_1}, 0, v_2) =  v_2 ~ \seq{v_1} \\
+  &n > 0 \\
+  \hline
+  &\updateidx(v_0 ~ \seq{v_1}, n, v_2) =  v_0 ~ \updateidx(\seq{v_1}, n-1, v_2) \\
+%
+% update-slice
+\newline \\
+  &\numv ~ n_1 = \sem{e_1}(\mu, w) \quad
+  \numv ~ n_2 = \sem{e_2}(\mu, w) \quad
+  \listv ~ \seq{v_3} = v_1 \\
+  \hline
+  &\update(\mu, w, v_1, (\slicep ~ e) ~ \seq{path}, v_2)
+  =
+  \updateslice(v_3, n_1, n_2, \update(\mu, w, \seq{v_3}[n_1: n_2], \seq{path}, v_2)) \\
+% update_slice
+  &\updateslice(v_0^n ~ \seq{v_1}, 0, n, v_2^n) = v_2^n ~ \seq{v_1} \\
+  &m > 0 \\
+  \hline
+  &\updateslice(v_0 ~ \seq{v_1}, m, n, v_2^n) =  v_0 ~ \updateslice(\seq{v_1}, m-1, n, v_2) \\
+%
+% update-dot
+\newline \\
+  &\strv ~ \seq{(str', v')} = v \\
+  \hline
+  &\update(\mu, w, v, (\dotp ~ str) ~ \seq{path}, v_2)
+  =
+  \updatedot(\seq{(str', v')}, str, \update(\mu, w, \access(v, \dotp ~ str), \seq{path}, v_2)) \\
+% update_dot
+  &str_0 = str_2 \\
+  \hline
+  &\updatedot((str_0, v_0) ~ \seq{(str_1, v_1)}, str_2, v_2)
+  =
+  (str_2, v_2) ~ \seq{(str_1, v_1)} \\
+  &str_0 \not= str_2 \\
+  \hline
+  &\updatedot((str_0, v_0) ~ \seq{(str_1, v_1)}, str_2, v_2)
+  =
+  (str_0, v_0) ~ \updatedot(\seq{(str_1, v_1)}, str_2, v_2) \\
+%
 % is_true
 \newline \\
   &\istrue(\boolv ~ b) = b \\
   &\istrue(\listv ~ \seq v) = \forall v' \in \seq v. \istrue (v') \\
+%
+% is_frame
+\newline \\
+  &\isframe(\casev ~ (\text{"FRAME\_"}, \seq v) = true \\
+  &otherwise \\
+  \hline
+  &\isframe(v) = false \\
+%
+% zip
+\newline \\
+  &\zip(eps, eps) = eps \\
+  &\zip(x ~ \seq{x'}, y ~ \seq{y'}) = (x, y) ~ \zip (\seq{x'}, \seq{y'}) \\
+%
+% foldright
+\newline \\
+  &\foldright(f, x^n, acc) = f(x_0, f(x_1, ~ ... ~ f(x_{n-2}, f(x_{n-1}, acc)) ~ ... ~ ))
 \end{align*}
 
 
