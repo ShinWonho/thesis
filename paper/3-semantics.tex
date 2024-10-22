@@ -241,7 +241,7 @@
     | & ~ \executeseqi ~ E \\
     | & ~ \performi ~ String \times \seq{E} \\
     | & ~ \exiti ~ String \\
-    | & ~ \replacei ~ E \times \seq Path \times E \\
+    | & ~ \replacei ~ E \times \seq{Path} \times E \\
 %
 % Expression
   e \in E =& ~ \vare ~ String \\
@@ -301,7 +301,7 @@
     | & ~ \strv ~ \seq{(String \times V)} \\
     | & ~ \casev ~ String \times \seq V \\
     | & ~ \tupv ~ \seq V \\
-    | & ~ \fnamev String \\
+    | & ~ \fnamev ~ String \\
     | & ~ \trapv \\
     | & ~ \storev \\
 \end{align*}
