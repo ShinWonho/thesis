@@ -183,7 +183,9 @@
 \newcommand{\istrue}{\helper{is\_true}}
 \newcommand{\isframe}{\helper{is\_frame}}
 \newcommand{\zip}{\helper{zip}}
-\newcommand{\foldright}{\helper{fold\_right}}
+\newcommand{\fold}{\helper{fold\_right}}
+% How to express?
+\newcommand{\domain}{\helper{domain}}
 % Hardcode
 \newcommand{\assign}{\helper{assign}}
 \newcommand{\iswasmvalueinstr}{\helper{is\_wasm\_value\_instr}}
@@ -504,7 +506,7 @@
 \newline \\
   \mu = \getenv(c) \quad
   \sem{e}(\mu, w) = \listv ~ \seq v \quad
-  c' = \foldright(\execute, \seq v, c) \\
+  c' = \fold(\execute, \seq v, c) \\
   \hline
   \sem{\executeseqi ~ e}(w, c) = (w, c') \\
 %
@@ -648,8 +650,17 @@
   \hline
   \sem{\casee ~ (str, \seq{e})}(\mu, w) = \casev ~ (str, \seq{v}) \\
 %
-% Call
+% Call-fname
 \newline \\
+  \fnamev ~ str' = \mu(str) \quad
+  \seq{v} = [ ~ \sem{e}(\mu, w) ~ | ~ e \leftarrow \seq e ~ ] \quad
+  (w, \call ~ (str', \seq v, \mt)) \seq{\leadsto} (w, \ret ~ v') \\
+  \hline
+  \sem{\calle ~ (str, \seq{e})}(\mu, w) = v' \\
+%
+% Call-normal
+\newline \\
+  str \not\in \domain(\mu) \quad
   \seq{v} = [ ~ \sem{e}(\mu, w) ~ | ~ e \leftarrow \seq e ~ ] \quad
   (w, \call ~ (str, \seq v, \mt)) \seq{\leadsto} (w, \ret ~ v') \\
   \hline
@@ -663,7 +674,7 @@
       [ ~ \mu_1[str \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
     )
   \\
-  \seq{\mu_2} = \foldright(f, \seq{str}, \duplicateenv(\mu, \seq{str})) \quad
+  \seq{\mu_2} = \fold(f, \seq{str}, \duplicateenv(\mu, \seq{str})) \quad
   \seq{v'} = [ ~ \sem{e}(\mu_3, w) ~ | ~ \mu_3 \leftarrow \seq {\mu_2} ~ ] \\
   \hline
   \sem{\itere ~ (e, \listiter, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
@@ -677,7 +688,7 @@
       [ ~ \mu_1[str \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
     )
   \\
-  \seq{\mu_2} = \foldright(f, \seq{str}, \mu^n) \quad
+  \seq{\mu_2} = \fold(f, \seq{str}, \mu^n) \quad
   \seq{v'} = [ ~ \sem{e_1}(\mu_3, w) ~ | ~ \mu_3 \leftarrow \seq {\mu_2} ~ ] \\
   \hline
   \sem{\itere ~ (e_1, \listniter ~ e_2, \seq{str})}(\mu, w) = \listv ~ \seq{v'} \\
@@ -686,7 +697,7 @@
 \newline \\
   \seq{\mu_1} =
     [ ~
-      \foldright(
+      \fold(
         (\lambda ~ x ~ acc. ~ acc[x \mapsto \numv ~ i]),
         \seq{str},
         \mu
@@ -972,9 +983,9 @@
   &\zip(eps, eps) = eps \\
   &\zip(x ~ \seq{x'}, y ~ \seq{y'}) = (x, y) ~ \zip (\seq{x'}, \seq{y'}) \\
 %
-% foldright
+% fold
 \newline \\
-  &\foldright(f, x^n, acc) = f(x_0, f(x_1, ~ ... ~ f(x_{n-2}, f(x_{n-1}, acc)) ~ ... ~ ))
+  &\fold(f, x^n, acc) = f(x_0, f(x_1, ~ ... ~ f(x_{n-2}, f(x_{n-1}, acc)) ~ ... ~ ))
 \end{align*}
 
 
