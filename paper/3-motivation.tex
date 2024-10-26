@@ -7,13 +7,6 @@
 \newcommand{\officialp}{official prose}
 \newcommand{\spectecp}{SpecTec prose}
 
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/loop}}
-    \caption[Enter the caption title here]{\texttt{loop} instruction} \label{loop-fig}
-    \centerline{\includegraphics[width=15cm]{fig/br}}
-    \caption[Enter the caption title here]{\texttt{br} instruction} \label{br-fig}
-\end{figure}
-TODO: remove redundant part in the fig
 
 It might be easy to understand how the \officialp{} explains the control flow
 of WebAssembly, if we assume that a WebAssembly code is loaded on a memory and
@@ -22,25 +15,48 @@ To describe control flow, it uses a structure named \textit{block} which
 consitutes of a instruction sequence.
 When executing the instruction sequence inside the block, it can jump to the
 starting point of the block or the end of the block.
-For example, \cref{loop-fig} is the \officialp{} \texttt{loop} instruction.
-It says that the continuation is the start of the loop and the information is
-stored in a label, which is pushed in the stack when
-entering the block.
-\cref{br-fig} is a \texttt{br} instruction in the \officialp{}.
-According to it, if the \texttt{br} instruction in the block is executed to
-branch out the block, the label is popped in the stack and jumps to the
-continuation of the label, which is the start of the loop instruction.
+
+\textbf{Example 1}
+\begin{verbatim}
+  // infinite loop
+  (loop (result i32) (i32.const 42) (br 0) (unreachable) end)
+\end{verbatim}
+
+Example 1 is a WebAssembly code example that has a \texttt{loop} whose result
+type is \texttt{i32} and has a block of three instructions: \texttt{i32.const},
+\texttt{br}, \texttt{unreachable}.
+\cref{loop-fig} is the \officialp{} of \texttt{loop} instruction.
+It says that the continuation is the start of the loop, the information is
+stored in a label, and it \textit{enters} the block with the label.
+The term enter means that it pushes the label in the stack and makes pc points
+to the first instruction in the block.
+\texttt{i32.const} instruction is executed first, which just pushes the
+value in the stack.
+Then, \texttt{br} instruction is executed.
+\cref{br-fig} is the \officialp{} of \texttt{br} instruction.
+It pops the label from the stack, and makes pc points to the continuation of
+the label, which is the start of the loop instruction.
+As a result, the code example above is a infinite loop pushing a \texttt{i32}
+value \texttt{42} infinitely.
+
+\begin{figure}[h!]
+    \centerline{\includegraphics[width=15cm]{fig/loop}}
+    \caption[Enter the caption title here]{\texttt{loop} instruction} \label{loop-fig}
+    \centerline{\includegraphics[width=15cm]{fig/br}}
+    \caption[Enter the caption title here]{\texttt{br} instruction} \label{br-fig}
+\end{figure}
+TODO: remove redundant part in the fig
 
 TODO: detailed explanation of \spectecp{} w/ fig
 
-However, rather than using the notion like pc, the \spectecp{} assumes that the
-\red{machine} takes WebAssembly instructions one by one, and changes the
-internal state accordingly.
+However, the \spectecp{} assumes that the \red{machine} takes WebAssembly
+instructions one by one, and changes the internal state accordingly without pc.
 This is because the \spectecp{} is generated automatically from the \red{dsl}
-which doesn't model the pc.
+which uses rewrite rule to describe WebAssembly semantics.
 As a result, rather than jump to the start of the loop, \spectecp{} stores the
-\texttt{loop} instruction in the label, and executes it again if \texttt{br}
-instruction is executed.
+\texttt{loop} instruction itself in the label, and executes it again if the
+\texttt{br} instruction is executed.
+Not only that, it doesn't have block structure.
 
 don't remember end!
 
