@@ -13,8 +13,8 @@ of WebAssembly, if we assume that a WebAssembly code is loaded on a memory and
 a pc points to the instruction to execute.
 To describe control flow, it uses a structure named \textit{block} which
 consitutes of a instruction sequence.
-When executing the instruction sequence inside the block, it can jump to the
-starting point of the block or the end of the block.
+When executing the instructions in the block, pc can be changed to the starting
+point of the block or the end of the block.
 
 \textbf{Example 1}
 \begin{verbatim}
@@ -28,16 +28,16 @@ type is \texttt{i32} and has a block of three instructions: \texttt{i32.const},
 \cref{loop-fig} is the \officialp{} of \texttt{loop} instruction.
 It says that the continuation is the start of the loop, the information is
 stored in a label, and it \textit{enters} the block with the label.
-The term enter means that it pushes the label in the stack and makes pc points
-to the first instruction in the block.
+The term \textit{enter} means that it pushes the label in the stack and makes
+pc points to the first instruction in the block.
 \texttt{i32.const} instruction is executed first, which just pushes the
-value in the stack.
+\texttt{i32} value \texttt{42} in the stack.
 Then, \texttt{br} instruction is executed.
 \cref{br-fig} is the \officialp{} of \texttt{br} instruction.
 It pops the label from the stack, and makes pc points to the continuation of
 the label, which is the start of the loop instruction.
-As a result, the code example above is a infinite loop pushing a \texttt{i32}
-value \texttt{42} infinitely.
+As a result, the code example above is a infinite loop pushing \texttt{42}
+forever.
 
 \begin{figure}[h!]
     \centerline{\includegraphics[width=15cm]{fig/loop}}
