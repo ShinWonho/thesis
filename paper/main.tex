@@ -34,10 +34,12 @@
 % - final : 최종판   | draft  : 시험판
 % - pdfdoc : 선택하지 않으면 북마크와 colorlink를 만들지 않습니다.
 
-
 % TODO: This is a draft
 \documentclass[master,english,draft]{kaist-ucs} % 석사과정
 %\documentclass[doctor,english,final]{kaist-ucs} % 박사과정
+% XXX: Show figure in draft mode
+\setkeys{Gin}{draft=false}
+\usepackage{subfig}
 
 
 % If you want make pdf document (include bookmark, colorlink)
@@ -48,6 +50,7 @@
 %\usepackage{...}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage[capitalise,nameinlink]{cleveref}
 
 \allowdisplaybreaks
 
