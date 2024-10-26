@@ -25,15 +25,15 @@ point of the block or the end of the block.
 Example 1 is a WebAssembly code example that has a \texttt{loop} whose result
 type is \texttt{i32} and has a block of three instructions: \texttt{i32.const},
 \texttt{br}, \texttt{unreachable}.
-\cref{loop-fig} is the \officialp{} of \texttt{loop} instruction.
+\cref{loop-fig} is the \officialp{} of the \texttt{loop} instruction.
 It says that the continuation is the start of the loop, the information is
 stored in a label, and it \textit{enters} the block with the label.
 The term \textit{enter} means that it pushes the label in the stack and makes
 pc points to the first instruction in the block.
-\texttt{i32.const} instruction is executed first, which just pushes the
+The \texttt{i32.const} instruction is executed first, which just pushes the
 \texttt{i32} value \texttt{42} in the stack.
-Then, \texttt{br} instruction is executed.
-\cref{br-fig} is the \officialp{} of \texttt{br} instruction.
+Then, The \texttt{br} instruction is executed.
+\cref{br-fig} is the \officialp{} of the \texttt{br} instruction.
 It pops the label from the stack, and makes pc points to the continuation of
 the label, which is the start of the loop instruction.
 As a result, the code example above is a infinite loop pushing \texttt{42}
@@ -46,6 +46,12 @@ forever.
     \caption[Enter the caption title here]{\texttt{br} instruction} \label{br-fig}
 \end{figure}
 TODO: remove redundant part in the fig
+
+Similar to the control flow using the block and the label, there are many other
+control instructions and structures such as a \texttt{call} instruction that
+calls a function with a frame and a \texttt{return} instruction that returns from
+the function with the frame.
+
 
 TODO: detailed explanation of \spectecp{} w/ fig
 
