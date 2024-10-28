@@ -45,7 +45,7 @@ Then, The \texttt{br} instruction is executed.
 It pops the label from the stack, and makes pc points to the continuation of
 the label, which is the start of the loop instruction.
 As a result, the code example above is a infinite loop pushing \texttt{42}
-forever without executing \texttt{unreachable} instruction.
+forever without executing \texttt{unreachable} instructions.
 
 \begin{figure}[h!]
     \centerline{\includegraphics[width=15cm]{fig/loop}}
@@ -58,8 +58,8 @@ forever without executing \texttt{unreachable} instruction.
 % exiting label in official prose
 There is also a special form of a behavior related to the block: an
 \textit{exiting label}.
-\cref{fig:exiting-label} is the \officialp of the exiting label.
-It is special because this behavior is not performed without an explicit
+\cref{fig:exiting-label} is the \officialp{} of the \textit{exiting label}.
+It is special because this behavior is performed without an explicit
 WebAssembly instruction.
 Rather, the behavior is performed when \textbf{the end of a block is reached}
 without control instructions or runtime error.
@@ -79,20 +79,23 @@ the point after the end of the block.
   (loop (result i32) (i32.const 42) end) (f64.const 3.14)
 \end{verbatim}
 
-Example 2 is \texttt{loop} with a block that has only \texttt{i32.const}.
-A label is pushed in the stack when a \texttt{loop} instruction is executed.
+Example 2 is a WebAssembly code example that has \texttt{loop} whose block is
+only \texttt{i32.const}, and \texttt{f32.const}
+When the \texttt{loop} instruction is executed, a label is pushed in the stack,
+and it enters the block.
 After \texttt{i32.const} is executed, the end of the block is reached.
 As a result, exiting label occurs so that the label is popped from the stack,
 pc changes to the point after the end of block: \texttt{f64.const}.
-Therefore, the code example above results in the value 42 and 3.14 pushed to
-the stack.
+As a result, after executing the code, the value 42 and 3.14 pushed to the
+stack.
 
 
 % general control flow structure of official prose
 Similar to the control flow using the block and the label, there are many other
 control instructions and structures such as a \texttt{call} instruction that
-calls a function with a frame and a \texttt{return} instruction that returns from
-the function with the frame.
+calls a function with pushing a frame to stack and a \texttt{return}
+instruction that returns from the function with popping the frame from the
+stack.
 Not only that, there are the special behaviors such as a \textit{returning from
 a function} that corresponds to the exiting label.
 
@@ -100,7 +103,7 @@ a function} that corresponds to the exiting label.
 % control flow structure in SpecTec prose
 However, the \spectecp{} assumes different a model to explain the control flow
 of WebAssembly.
-Rather than using the notion of pc, \spectecp{} assumes that WebAssembly
+Rather than using the notion of a pc, \spectecp{} assumes that WebAssembly
 instructions are just given one by one.
 This is because the \spectecp{} is generated automatically from the
 \red{SpecTec dsl}.
@@ -120,6 +123,7 @@ changing the stack and the store, and inputing new WebAssembly instructions.
 \end{figure}
 
 Consider example 1 above.
+
 \texttt{loop} and \texttt{unreachable} is the input instruction for the model.
 \cref{fig:spectec-loop} is the \spectecp{} of the \texttt{loop} instruction.
 Rather than storing the point to jump as a continuation in the label, it stores
