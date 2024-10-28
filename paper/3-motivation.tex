@@ -108,10 +108,10 @@ instructions are just given one by one.
 This is because the \spectecp{} is generated automatically from the
 \red{SpecTec DSL}.
 \red{SpecTec DSL} uses rewrite rule to describe WebAssembly semantics, and it
-can be seen as consuming a WebAssembly instruction, pushing or poping a control
-structures, and inputing new WebAssembly instructions.
+is interpreted in \spectecp{} as consuming a WebAssembly instruction, pushing
+or poping a control structures, and inputing new WebAssembly instructions.
 It can be expressed in the following form:
-$c^* \vdash i_0, i_1, ..., i_m \leadsto c'^* \vdash i_1, ..., i_m$
+$c^* \vdash i_0, i_1, ..., i_m \leadsto c'^* \vdash i'_0, ...i'_{m'}, i_1, ..., i_m$
 
 
 % challenges in SpecTec prose
@@ -139,31 +139,36 @@ When entering a block, an \texttt{end} is added to express the end of the block.
   &c^*
   \vdash
   loop(i32, ~ [ ~ i32.const ~ 42, ~ br ~ 0, ~ unreachable ~ ]), ~ unreachable
+  \label{eq:loop-1}
 \leadsto \\
   &label(loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
   \vdash
   i32.const ~ 42, ~ br ~ 0, ~ unreachable, ~ end, ~ unreachable
+  \label{eq:loop-2}
 \leadsto \\
   &label(loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
   \vdash
   ~ br ~ 0, ~ unreachable, ~ end, ~ unreachable
+  \label{eq:loop-3}
 \leadsto \\
   &c^*
   \vdash
   loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ]), unreachable \\
+  \label{eq:loop-4}
 \end{align}
 
 Consider example 1 above.
 If we assume some control structure $c^*$ is given, we can express the code
-like (3.1).
+like \cref{eq:loop-1}.
 \cref{fig:spectec-loop} is the \spectecp{} of the \texttt{loop} instruction.
 Rather than storing the point to jump as a continuation in the label, it stores
 the \texttt{loop} instruction itself and \textit{enters} the block.
 Here, \textit{enter} means that it pushes the label in the stack and executes
 the instructions in the block, which means that \texttt{i32.const},
 \texttt{br}, \texttt{unreachable}, \texttt{end} and \texttt{unreachable} become
-the new inputs (3.2).
-When \texttt{i32.const} is excuted, it pushes 42 as \officialp{} does (3.3).
+the new inputs like \cref{eq:loop-2}.
+When \texttt{i32.const} is excuted, it pushes 42 as \officialp{} does
+like \cref{eq:loop-3}.
 The value is omitted for brevity.
 However, \texttt{br} behaves a bit differently.
 \cref{fig:spectec-br} is the \spectecp{} of the \texttt{br} instruction.
@@ -171,8 +176,8 @@ It pops the label from the stack, removes the input instructions until the end
 of the block, considers the loop instruction in the label as a new input
 instruction.
 Consequently, remaining inputs are \texttt{loop}, and \texttt{unreachable}
-again.
-Therefore, it explains the same behavior in different point of view.
+again like \cref{eq:loop-4}.
+Therefore, it explains the same behavior in a different point of view.
 
 
 
