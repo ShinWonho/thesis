@@ -21,7 +21,7 @@ When executing the instructions in the block, pc can be changed to the starting
 point of the block or the end of the block.
 
 
-% an example of Wasm control flow
+% an example of Wasm control flow in official prose
 \textbf{Example 1}
 \begin{verbatim}
   // infinite loop
@@ -55,10 +55,10 @@ forever without executing \texttt{unreachable} instruction.
 \end{figure}
 
 
-% exit label in official prose
+% exiting label in official prose
 There is also a special form of a behavior related to the block: an
-\textit{exit label}.
-\cref{fig:exit-label} is the \officialp of the exit label.
+\textit{exiting label}.
+\cref{fig:exiting-label} is the \officialp of the exiting label.
 It is special because this behavior is not performed without an explicit
 WebAssembly instruction.
 Rather, the behavior is performed when \textbf{the end of a block is reached}
@@ -67,45 +67,88 @@ The behavior is that the label is popped from the stack, and the pc changes to
 the point after the end of the block.
 
 \begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/exit}}
-    \caption[Enter the caption title here]{exit label} \label{fig:exit-label}
+    \centerline{\includegraphics[width=15cm]{fig/exiting}}
+    \caption[Enter the caption title here]{exiting label} \label{fig:exiting-label}
 \end{figure}
 
 
-% an example of exit label
+% an example of exiting label in official prose
 \textbf{Example 2}
 \begin{verbatim}
-  // exit label
+  // exiting label
   (loop (result i32) (i32.const 42) end) (f64.const 3.14)
 \end{verbatim}
 
 Example 2 is \texttt{loop} with a block that has only \texttt{i32.const}.
 A label is pushed in the stack when a \texttt{loop} instruction is executed.
 After \texttt{i32.const} is executed, the end of the block is reached.
-As a result, exit label occurs so that the label is popped from the stack,
+As a result, exiting label occurs so that the label is popped from the stack,
 pc changes to the point after the end of block: \texttt{f64.const}.
 Therefore, the code example above results in the value 42 and 3.14 pushed to
 the stack.
 
+
+% general control flow structure of official prose
 Similar to the control flow using the block and the label, there are many other
 control instructions and structures such as a \texttt{call} instruction that
 calls a function with a frame and a \texttt{return} instruction that returns from
 the function with the frame.
+Not only that, there are the special behaviors such as a \textit{returning from
+a function} that corresponds to the exiting label.
 
 
-TODO: detailed explanation of \spectecp{} w/ fig
+% control flow structure in SpecTec prose
+However, the \spectecp{} assumes different a model to explain the control flow
+of WebAssembly.
+Rather than using the notion of pc, \spectecp{} assumes that WebAssembly
+instructions are just given one by one.
+This is because the \spectecp{} is generated automatically from the
+\red{SpecTec dsl}.
+\red{SpecTec dsl} uses rewrite rule to describe WebAssembly semantics, and it
+can be seen as consuming a WebAssembly instruction and values in the stack,
+changing the stack and the store, and inputing new WebAssembly instructions.
 
-However, the \spectecp{} assumes that the \red{machine} takes WebAssembly
-instructions one by one, and changes the internal state accordingly without pc.
-This is because the \spectecp{} is generated automatically from the \red{dsl}
-which uses rewrite rule to describe WebAssembly semantics.
-As a result, rather than jump to the start of the loop, \spectecp{} stores the
-\texttt{loop} instruction itself in the label, and executes it again if the
-\texttt{br} instruction is executed.
-Not only that, it doesn't have block structure.
 
-don't remember end!
+% an example of Wasm control flow in official prose
+\begin{figure}[h!]
+    \centerline{\includegraphics[width=15cm]{fig/spectec-loop}}
+    \caption[Enter the caption title here]{SpecTec \texttt{loop}} \label{fig:spectec-loop}
+\end{figure}
+\begin{figure}[h!]
+    \centerline{\includegraphics[width=15cm]{fig/spectec-br}}
+    \caption[Enter the caption title here]{SpecTec \texttt{br}} \label{fig:spectec-br}
+\end{figure}
 
+Consider example 1 above.
+\texttt{loop} and \texttt{unreachable} is the input instruction for the model.
+\cref{fig:spectec-loop} is the \spectecp{} of the \texttt{loop} instruction.
+Rather than storing the point to jump as a continuation in the label, it stores
+the \texttt{loop} instruction itself and \textit{enters} the block.
+Here, \textit{enter} means that it pushes the label in the stack and inputs the
+instructions as inputs to execute.
+As a result, after the \texttt{loop} is executed, \texttt{i32.const},
+\texttt{br}, \texttt{unreachable}, and \texttt{unreachable} are remained as
+inputs to the model.
+When \texttt{i32.const} is excuted, it pushes 42 as \officialp{} does.
+However, \texttt{br} behaves a bit differently.
+\cref{fig:spectec-br} is the \spectecp{} of the \texttt{br} instruction.
+It pops the label from the stack, removes the input instructions until the end
+of the block, considers the loop instruction in the label as a new input
+instruction, and executes it again.
+Consequently, remaining inputs are \texttt{loop}, and \texttt{unreachable}.
+Therefore, it explains the behavior in different point of view, but actually
+describes the same thing.
+
+
+% exiting label in SpecTec prose
+However, this viewpoint is challenged by the exiting label.
+As the block structure doesn't remain intact, it is hard to describe
+\textbf{the end of the block}.
+Furthermore, the exiting label is not performed by a specific WebAssembly
+instruction, which makes it hard to model the behavior.
+To handle this problem, an administrative instruction \texttt{end} is
+introduced in \spectecp.
+When entering a block, assume that there is an \texttt{end}
 
 
 
@@ -114,7 +157,7 @@ don't remember end!
 % seems to be pc-based
 % AL from DSL ~ formal notation: no pc
 % AL: instruction sequence input continously
-% device exit semantics for AL
+% device exiting semantics for AL
 % Executable spec passes all wasm testcases
 % weird, maybe not happened in realworld, but valid wasm code
 % wrong!
