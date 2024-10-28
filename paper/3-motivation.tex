@@ -7,7 +7,11 @@
 \newcommand{\officialp}{official prose}
 \newcommand{\spectecp}{SpecTec prose}
 
+\red{TODO: remove redundant part in the fig}
 
+
+
+% control flow structure in official prose
 It might be easy to understand how the \officialp{} explains the control flow
 of WebAssembly, if we assume that a WebAssembly code is loaded on a memory and
 a pc points to the instruction to execute.
@@ -16,16 +20,20 @@ consitutes of a instruction sequence.
 When executing the instructions in the block, pc can be changed to the starting
 point of the block or the end of the block.
 
+
+% an example of Wasm control flow
 \textbf{Example 1}
 \begin{verbatim}
   // infinite loop
-  (loop (result i32) (i32.const 42) (br 0) (unreachable) end)
+  (loop (result i32) (i32.const 42) (br 0) (unreachable) end) (unreachable)
 \end{verbatim}
 
-Example 1 is a WebAssembly code example that has a \texttt{loop} whose result
-type is \texttt{i32} and has a block of three instructions: \texttt{i32.const},
-\texttt{br}, \texttt{unreachable}.
-\cref{loop-fig} is the \officialp{} of the \texttt{loop} instruction.
+Example 1 is a WebAssembly code example that has \texttt{loop} and
+\texttt{unreachable}
+Here, result type of the \texttt{loop} is \texttt{i32} and the \texttt{loop}
+has a block of three instructions: \texttt{i32.const}, \texttt{br}, and
+\texttt{unreachable}.
+\cref{fig:loop} is the \officialp{} of the \texttt{loop} instruction.
 It says that the continuation is the start of the loop, the information is
 stored in a label, and it \textit{enters} the block with the label.
 The term \textit{enter} means that it pushes the label in the stack and makes
@@ -33,19 +41,51 @@ pc points to the first instruction in the block.
 The \texttt{i32.const} instruction is executed first, which just pushes the
 \texttt{i32} value \texttt{42} in the stack.
 Then, The \texttt{br} instruction is executed.
-\cref{br-fig} is the \officialp{} of the \texttt{br} instruction.
+\cref{fig:br} is the \officialp{} of the \texttt{br} instruction.
 It pops the label from the stack, and makes pc points to the continuation of
 the label, which is the start of the loop instruction.
 As a result, the code example above is a infinite loop pushing \texttt{42}
-forever.
+forever without executing \texttt{unreachable} instruction.
 
 \begin{figure}[h!]
     \centerline{\includegraphics[width=15cm]{fig/loop}}
-    \caption[Enter the caption title here]{\texttt{loop} instruction} \label{loop-fig}
+    \caption[Enter the caption title here]{\texttt{loop} instruction} \label{fig:loop}
     \centerline{\includegraphics[width=15cm]{fig/br}}
-    \caption[Enter the caption title here]{\texttt{br} instruction} \label{br-fig}
+    \caption[Enter the caption title here]{\texttt{br} instruction} \label{fig:br}
 \end{figure}
-TODO: remove redundant part in the fig
+
+
+% exit label in official prose
+There is also a special form of a behavior related to the block: an
+\textit{exit label}.
+\cref{fig:exit-label} is the \officialp of the exit label.
+It is special because this behavior is not performed without an explicit
+WebAssembly instruction.
+Rather, the behavior is performed when \textbf{the end of a block is reached}
+without control instructions or runtime error.
+The behavior is that the label is popped from the stack, and the pc changes to
+the point after the end of the block.
+
+\begin{figure}[h!]
+    \centerline{\includegraphics[width=15cm]{fig/exit}}
+    \caption[Enter the caption title here]{exit label} \label{fig:exit-label}
+\end{figure}
+
+
+% an example of exit label
+\textbf{Example 2}
+\begin{verbatim}
+  // exit label
+  (loop (result i32) (i32.const 42) end) (f64.const 3.14)
+\end{verbatim}
+
+Example 2 is \texttt{loop} with a block that has only \texttt{i32.const}.
+A label is pushed in the stack when a \texttt{loop} instruction is executed.
+After \texttt{i32.const} is executed, the end of the block is reached.
+As a result, exit label occurs so that the label is popped from the stack,
+pc changes to the point after the end of block: \texttt{f64.const}.
+Therefore, the code example above results in the value 42 and 3.14 pushed to
+the stack.
 
 Similar to the control flow using the block and the label, there are many other
 control instructions and structures such as a \texttt{call} instruction that
