@@ -10,6 +10,7 @@
 \red{TODO: remove redundant part in the fig}
 
 
+\section{Control flow in official prose}
 
 % control flow structure in official prose
 It might be easy to understand how the \officialp{} explains the control flow
@@ -100,6 +101,8 @@ Not only that, there are the special behaviors such as a \textit{returning from
 a function} that corresponds to the exiting label.
 
 
+\section{Control flow in SpecTec prose}
+
 % control flow structure in SpecTec prose
 However, the \spectecp{} assumes a different model to explain the control flow
 of WebAssembly.
@@ -153,7 +156,7 @@ When entering a block, an \texttt{end} is added to express the end of the block.
 \leadsto \\
   &c^*
   \vdash
-  loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ]), unreachable \\
+  loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ]), unreachable
   \label{eq:loop-4}
 \end{align}
 
