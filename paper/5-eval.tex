@@ -81,7 +81,7 @@ Returning from a function:
   &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~ \wasm ~ (1, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c)))
   \label{eq:resolve-8} \\
   &\leadsto Frame, ~ c^* \vdash \epsilon; ~
-    \al ~ ([ ~ \red{\symbol{PopCtx}} ~ ], ~ 0, ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
+    \al ~ ([ ~ \red{\symbol{PopCtxI}} ~ ], ~ 0, ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-9} \\
   &\leadsto c^* \vdash \epsilon; ~
     \al ~ (\epsilon, ~ 0, ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
