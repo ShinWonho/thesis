@@ -215,13 +215,13 @@ Therefore, it explains the same behavior in a different point of view.
 \begin{align}
   &c^* \vdash call(\$push42), ~ f32.const ~ 3.14 \label{eq:call-1} \\
 &\leadsto
-  Label(\epsilon), ~ Frame(), ~ c^* \vdash i32.const ~ 42, ~ end, ~ f32.const ~ 3.14 \label{eq:call-2} \\
+  Label(\epsilon), ~ Frame, ~ c^* \vdash i32.const ~ 42, ~ end, ~ f32.const ~ 3.14 \label{eq:call-2} \\
 &\leadsto
-  Label(\epsilon), ~ Frame(), ~ c^* \vdash end, ~ f32.const ~ 3.14 \label{eq:call-3} \\
+  Label(\epsilon), ~ Frame, ~ c^* \vdash end, ~ f32.const ~ 3.14 \label{eq:call-3} \\
 &\leadsto
   c^* \vdash f32.const ~ 3.14 \label{eq:call-4} \\
 &\leadsto
-  c^* \label{eq:call-5}
+  c^* \vdash \epsilon \label{eq:call-5}
 \end{align}
 
 Example 3 contains a function definition whose body is \texttt{i32.const}, a
