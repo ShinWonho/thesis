@@ -4,10 +4,92 @@
 \label{ch:eval}
 \noindent
 
-* sem
-  - pass all official test includes wasm 3.0
-  - pass exit semantics testing
-  - faster?
-* type syste
-  - structure aware rule -> type based rule
-  - byte O
+
+% an example of buggy test case
+\textbf{Example 5.1}
+\begin{verbatim}
+  // function definition of $br-returning
+  (func  $brAndReturning (br 0) (unreachable))
+
+  // function call
+  (call $brAndReturning)
+\end{verbatim}
+
+Example 5.1 is the minimul example that produces a wrong result in \spectecp{}.
+It contains a function that has only a \texttt{br} instruction.
+According to the \officialp{}, when the function \texttt{\$brAndReturning} is
+called, a frame is pushed to the stack, and the block of the function
+body is entered with a label.
+When the \texttt{br} is executed, it pops the label from the stack.
+As the end of the function is reached after the execution, returning from a
+function is performed.
+As a result, the frame is popped, so the call actually does nothing.
+
+
+% explaination of the bug in SpecTec prose
+\begin{align}
+  &c^* \vdash call(\$brAndReturning) \label{eq:bug-1} \\
+&\leadsto
+  Label(\epsilon), ~ Frame, ~ c^* \vdash (br ~ 0) ~ (unreachable), ~ end \label{eq:bug-2} \\
+&\leadsto
+  Frame, ~ c^* \vdash \epsilon \label{eq:bug-3}
+\end{align}
+
+In \spectecp{} the call instruction in \cref{eq:bug-1} pushes a frame and
+enters the function body \cref{eq:bug-2}.
+When the \texttt{br} is executed, it pops the label and removes the input
+instructions until the end in \cref{eq:bug-3}.
+As a result, the frame is remained after the executing the call.
+
+
+% simplified version of AL algorithm of call, br, and returning from a function
+\begin{verbatim}
+Call fname:
+  PushCtx Frame
+  Enter get_function_body(fname) with Label(\epsilon)
+
+Br 0:
+  PopCtx Label(instr*)
+  ExecuteSeq instr*
+
+Returning from a function:
+  PopCtx Frame
+\end{verbatim}
+
+
+\red{TODO: Change to array} \\
+\red{TODO: Change naming for $c$}
+\begin{align}
+  &c^* \vdash call(\$brAndReturning); ~ Enter ~ (n, c)
+  \label{eq:resolve-1} \\
+  &\leadsto c^* \vdash \epsilon; ~ Al ~ ([ ~ \pushctxi, \enteri ~ ], 0, ~ Enter ~ (n, c))
+  \label{eq:resolve-2} \\
+  &\leadsto Frame, ~ c^* \vdash \epsilon; ~ Al ~ ([ ~ \enteri ~ ], 1, ~ Enter ~ (n, c))
+  \label{eq:resolve-3} \\
+  &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (br ~ 0), ~ (unreachable), ~ (end ~ 2); ~
+    Enter ~ (2, Al ~ (\epsilon, 0, ~ Enter ~ (n, c)))
+  \label{eq:resolve-4} \\
+  &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (unreachable), ~ (end ~ 2); \\
+  &\quad\quad Al ~ ([ ~ \red{\symbol{PopCtxI}}, ~ \executeseqi ~ ], ~ 0, ~ Enter ~ (2, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+  \label{eq:resolve-5} \\
+  &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~
+    Al ~ ([ ~ \executeseqi ~ ], ~ 0, ~ Enter ~ (1, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+  \label{eq:resolve-6} \\
+  &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~
+    Al ~ (\epsilon, ~ 0, ~ Enter ~ (1, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+  \label{eq:resolve-7} \\
+  &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~ Enter ~ (1, Al ~ (\epsilon, 0, ~ Enter ~ (n, c)))
+  \label{eq:resolve-8} \\
+  &\leadsto Frame, ~ c^* \vdash \epsilon; ~
+    Al ~ ([ ~ \red{\symbol{PopCtx}} ~ ], ~ 0, ~ Enter ~ (0, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+  \label{eq:resolve-9} \\
+  &\leadsto c^* \vdash \epsilon; ~
+    Al ~ (\epsilon, ~ 0, ~ Enter ~ (0, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+  \label{eq:resolve-10} \\
+  &\leadsto c^* \vdash \epsilon; ~ Enter ~ (0, Al ~ (\epsilon, 0, ~ Enter ~ (n, c)))
+  \label{eq:resolve-11} \\
+  &\leadsto c^* \vdash \epsilon; ~ Al ~ (\epsilon, 0, ~ Enter ~ (n, c))
+  \label{eq:resolve-12} \\
+  &\leadsto c^* \vdash \epsilon; ~ Enter ~ (n, c)
+  \label{eq:resolve-13}
+\end{align}
