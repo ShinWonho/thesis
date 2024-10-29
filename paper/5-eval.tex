@@ -60,36 +60,36 @@ Returning from a function:
 \red{TODO: Change to array} \\
 \red{TODO: Change naming for $c$}
 \begin{align}
-  &c^* \vdash call(\$brAndReturning); ~ Enter ~ (n, c)
+  &c^* \vdash call(\$brAndReturning); ~ \wasm ~ (n, ~ c)
   \label{eq:resolve-1} \\
-  &\leadsto c^* \vdash \epsilon; ~ Al ~ ([ ~ \pushctxi, \enteri ~ ], 0, ~ Enter ~ (n, c))
+  &\leadsto c^* \vdash \epsilon; ~ \al ~ ([ ~ \pushctxi, ~ \enteri ~ ], ~ 0, ~ \wasm ~ (n, ~ c))
   \label{eq:resolve-2} \\
-  &\leadsto Frame, ~ c^* \vdash \epsilon; ~ Al ~ ([ ~ \enteri ~ ], 1, ~ Enter ~ (n, c))
+  &\leadsto Frame, ~ c^* \vdash \epsilon; ~ \al ~ ([ ~ \enteri ~ ], ~ 1, ~ \wasm ~ (n, ~ c))
   \label{eq:resolve-3} \\
   &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (br ~ 0), ~ (unreachable), ~ (end ~ 2); ~
-    Enter ~ (2, Al ~ (\epsilon, 0, ~ Enter ~ (n, c)))
+    \wasm ~ (2, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c)))
   \label{eq:resolve-4} \\
   &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (unreachable), ~ (end ~ 2); \\
-  &\quad\quad Al ~ ([ ~ \red{\symbol{PopCtxI}}, ~ \executeseqi ~ ], ~ 0, ~ Enter ~ (2, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+  &\quad\quad \al ~ ([ ~ \red{\symbol{PopCtxI}}, ~ \executeseqi ~ ], ~ 0, ~ \wasm ~ (2, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-5} \\
   &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~
-    Al ~ ([ ~ \executeseqi ~ ], ~ 0, ~ Enter ~ (1, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+    \al ~ ([ ~ \executeseqi ~ ], ~ 0, ~ \wasm ~ (1, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-6} \\
   &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~
-    Al ~ (\epsilon, ~ 0, ~ Enter ~ (1, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+    \al ~ (\epsilon, ~ 0, ~ \wasm ~ (1, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-7} \\
-  &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~ Enter ~ (1, Al ~ (\epsilon, 0, ~ Enter ~ (n, c)))
+  &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~ \wasm ~ (1, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c)))
   \label{eq:resolve-8} \\
   &\leadsto Frame, ~ c^* \vdash \epsilon; ~
-    Al ~ ([ ~ \red{\symbol{PopCtx}} ~ ], ~ 0, ~ Enter ~ (0, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+    \al ~ ([ ~ \red{\symbol{PopCtx}} ~ ], ~ 0, ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-9} \\
   &\leadsto c^* \vdash \epsilon; ~
-    Al ~ (\epsilon, ~ 0, ~ Enter ~ (0, Al ~ (\epsilon, 0, ~ Enter ~ (n, c))))
+    \al ~ (\epsilon, ~ 0, ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-10} \\
-  &\leadsto c^* \vdash \epsilon; ~ Enter ~ (0, Al ~ (\epsilon, 0, ~ Enter ~ (n, c)))
+  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c)))
   \label{eq:resolve-11} \\
-  &\leadsto c^* \vdash \epsilon; ~ Al ~ (\epsilon, 0, ~ Enter ~ (n, c))
+  &\leadsto c^* \vdash \epsilon; ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))
   \label{eq:resolve-12} \\
-  &\leadsto c^* \vdash \epsilon; ~ Enter ~ (n, c)
+  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (n, ~ c)
   \label{eq:resolve-13}
 \end{align}
