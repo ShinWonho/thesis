@@ -194,8 +194,8 @@ The value is omitted for brevity.
 However, \texttt{br} behaves a bit differently.
 \cref{fig:spectec-br} is the \spectecp{} of the \texttt{br} instruction.
 It pops the label from the stack, removes the input instructions until the end
-of the block, considers the loop instruction in the label as a new input
-instruction.
+of the block including the \texttt{end}, considers the loop instruction in the
+label as a new input instruction.
 Consequently, remaining inputs are \texttt{loop}, and \texttt{unreachable}
 again in \cref{eq:loop-4}.
 Therefore, it explains the same behavior in a different point of view.
@@ -254,16 +254,3 @@ However, tests related to the control instruction are failed.
 At that time, there was no explicit model to describe the control flow in
 \spectecp{}, it was hard to define the problem, making it complicated to fix
 the problem.
-
-
-
-
-
-% official spec prose notation control structure
-% seems to be pc-based
-% AL from DSL ~ formal notation: no pc
-% AL: instruction sequence input continously
-% device exiting semantics for AL
-% Executable spec passes all wasm testcases
-% weird, maybe not happened in realworld, but valid wasm code
-% wrong!
