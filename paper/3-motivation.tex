@@ -86,8 +86,7 @@ the point after the end of the block.
 
 Example 2 is a WebAssembly code example that has \texttt{loop} whose block is
 only \texttt{i32.const}, and \texttt{f32.const}
-When the \texttt{loop} instruction is executed, a label is pushed in the stack,
-and it enters the block.
+When the \texttt{loop} instruction is executed, it enters the block with a label.
 After \texttt{i32.const} is executed, the end of the block is reached.
 As a result, exiting label occurs so that the label is popped from the stack,
 pc changes to the point after the end of block: \texttt{f64.const}.
@@ -183,7 +182,8 @@ If we assume some control structure $c^*$ is given, the code can be expressed
 like \cref{eq:loop-1}.
 \cref{fig:spectec-loop} is the \spectecp{} of the \texttt{loop} instruction.
 Rather than storing the point to jump as a continuation in the label, it stores
-the \texttt{loop} instruction itself and \textit{enters} the block.
+the \texttt{loop} instruction itself in the label, and \textit{enters} the
+block.
 Here, \textit{enter} means that it pushes the label in the stack and executes
 the instructions in the block, which means that \texttt{i32.const},
 \texttt{br}, \texttt{unreachable}, \texttt{end} and \texttt{unreachable} become
@@ -227,7 +227,8 @@ Therefore, it explains the same behavior in a different point of view.
 Example 3 contains a function definition whose body is \texttt{i32.const}, a
 \texttt{call} instruction followed by a \texttt{f32.const} instruction, which
 can be expressed in \cref{eq:call-1}.
-By invoking a function, it enters the block in \cref{eq:call-2}.
+By invoking a function, it pushes a frame and enters the block with a label in
+\cref{eq:call-2}.
 After executing the body in \cref{eq:call-3}, an \texttt{end} is executed.
 In this point, this \texttt{end} represent both the end of the block and the
 function.
