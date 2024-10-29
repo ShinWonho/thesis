@@ -91,15 +91,25 @@ As a result, after executing the code, the value 42 and 3.14 pushed to the
 stack.
 
 
-% general control flow structure of official prose
-Similar to the control flow using the block and the label, there are many other
-control instructions and structures such as a \texttt{call} instruction that
-calls a function with pushing a frame to stack and a \texttt{return}
-instruction that returns from the function with popping the frame from the
-stack.
-Not only that, there are the special behaviors such as a \textit{returning from
-a function} that corresponds to the exiting label.
+% control flow structure with function call in official prose
+Similar to the control flow using the block and the label, there is a function
+call with a frame.
+\cref{fig:invoke} is the \officialp{} of the function invocation which takes
+place by a \texttt{call} instruction.
+A frame is pushed to the stack and enters the block of the function body with a
+label.
+There is also a special behavior named returning from a function.
+\cref{fig:returning} is the \officialp{} of the returning from a function.
+When end of function is reached without without control instructions or runtime
+error, The frame is popped from the stack, and the pc points to the next
+instruction of the caller instruction.
 
+\begin{figure}[h!]
+    \centerline{\includegraphics[width=15cm]{fig/invoke}}
+    \caption[Enter the caption title here]{function invocation} \label{fig:invoke}
+    \centerline{\includegraphics[width=15cm]{fig/returning}}
+    \caption[Enter the caption title here]{returning from a function} \label{fig:returning}
+\end{figure}
 
 \section{Control flow in SpecTec prose}
 
@@ -119,13 +129,13 @@ $c^* \vdash i_0, i_1, ..., i_m \leadsto c'^* \vdash i'_0, ...i'_{m'}, i_1, ..., 
 
 % challenges in SpecTec prose
 However, this viewpoint is challenged by the exiting label.
-As the block structure doesn't remain intact in the model, it is hard to
+As the block structure doesn't remain intact in this model, it is hard to
 describe \textbf{the end of the block}.
 Furthermore, the exiting label is not performed by a specific WebAssembly
 instruction, which makes it hard to model the behavior.
 To handle this problem, an administrative instruction \texttt{end} is
 introduced in \spectecp.
-When entering a block, an \texttt{end} is added to express the end of the block.
+When entering a block, an \texttt{end} is appended to the end of the block.
 
 
 % an example of Wasm control flow in official prose
@@ -142,26 +152,26 @@ When entering a block, an \texttt{end} is added to express the end of the block.
   &c^*
   \vdash
   loop(i32, ~ [ ~ i32.const ~ 42, ~ br ~ 0, ~ unreachable ~ ]), ~ unreachable
-  \label{eq:loop-1}
-\leadsto \\
-  &label(loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
+  \label{eq:loop-1} \\
+&\leadsto
+  label(loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
   \vdash
   i32.const ~ 42, ~ br ~ 0, ~ unreachable, ~ end, ~ unreachable
-  \label{eq:loop-2}
-\leadsto \\
-  &label(loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
+  \label{eq:loop-2} \\
+  &\leadsto
+  label(loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
   \vdash
   ~ br ~ 0, ~ unreachable, ~ end, ~ unreachable
-  \label{eq:loop-3}
-\leadsto \\
-  &c^*
+  \label{eq:loop-3} \\
+&\leadsto
+  c^*
   \vdash
   loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ]), unreachable
   \label{eq:loop-4}
 \end{align}
 
 Consider example 1 above.
-If we assume some control structure $c^*$ is given, we can express the code
+If we assume some control structure $c^*$ is given, the code can be expressed
 like \cref{eq:loop-1}.
 \cref{fig:spectec-loop} is the \spectecp{} of the \texttt{loop} instruction.
 Rather than storing the point to jump as a continuation in the label, it stores
@@ -169,9 +179,9 @@ the \texttt{loop} instruction itself and \textit{enters} the block.
 Here, \textit{enter} means that it pushes the label in the stack and executes
 the instructions in the block, which means that \texttt{i32.const},
 \texttt{br}, \texttt{unreachable}, \texttt{end} and \texttt{unreachable} become
-the new inputs like \cref{eq:loop-2}.
+the new inputs in \cref{eq:loop-2}.
 When \texttt{i32.const} is excuted, it pushes 42 as \officialp{} does
-like \cref{eq:loop-3}.
+in \cref{eq:loop-3}.
 The value is omitted for brevity.
 However, \texttt{br} behaves a bit differently.
 \cref{fig:spectec-br} is the \spectecp{} of the \texttt{br} instruction.
@@ -179,10 +189,41 @@ It pops the label from the stack, removes the input instructions until the end
 of the block, considers the loop instruction in the label as a new input
 instruction.
 Consequently, remaining inputs are \texttt{loop}, and \texttt{unreachable}
-again like \cref{eq:loop-4}.
+again in \cref{eq:loop-4}.
 Therefore, it explains the same behavior in a different point of view.
 
+% an example of function call in official prose
+\textbf{Example 3}
+\begin{verbatim}
+  // function definition as follow
+  (func $foo (result i32) (i32.const 42))
 
+  // function call
+  (call $foo) (f32.const 3.14)
+\end{verbatim}
+
+\begin{align}
+  &c^* \vdash call(\$foo), ~ f32.const ~ 3.14 \label{eq:call-1} \\
+&\leadsto
+  Label(i32, \epsilon), ~ Frame(), ~ c^* \vdash i32.const ~ 42, ~ end, ~ f32.const ~ 3.14 \label{eq:call-2} \\
+&\leadsto
+  Label(i32, \epsilon), ~ Frame(), ~ c^* \vdash end, ~ f32.const ~ 3.14 \label{eq:call-3} \\
+&\leadsto
+  c^* \vdash f32.const ~ 3.14 \label{eq:call-4} \\
+&\leadsto
+  c^* \label{eq:call-5}
+\end{align}
+
+Example 3 contains a function definition whose body is \texttt{i32.const}, a
+\texttt{call} instruction followed by a \texttt{f32.const} instruction, which can be expressed in \cref{eq:call-1}.
+By invoking a function, it enters the block in \cref{eq:call-2}.
+After executing the body in \cref{eq:call-3}, an \texttt{end} is executed.
+In this point, this \texttt{end} represent both the end of the block and the
+function.
+As a consequence, this \text{end} perform both exiting label and returning from
+a function in \cref{eq:call-4}, and the instruction after the \texttt{call} is
+executed in \cref{eq:call-5}
+It results in the values 42 and 3.14 pushed to the stack.
 
 
 
