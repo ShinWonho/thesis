@@ -7,7 +7,8 @@
 \newcommand{\officialp}{official prose}
 \newcommand{\spectecp}{SpecTec prose}
 
-\red{TODO: remove redundant part in the fig}
+\red{TODO: remove redundant part in the fig} \\
+\red{TODO: explanation of context: in the background? or here?} \\
 
 
 \section{Control flow in official prose}
@@ -124,7 +125,9 @@ This is because the \spectecp{} is generated automatically from the
 is interpreted in \spectecp{} as consuming a WebAssembly instruction, pushing
 or poping a control structures, and inputing new WebAssembly instructions.
 It can be expressed in the following form:
-$c^* \vdash i_0, i_1, ..., i_m \leadsto c'^* \vdash i'_0, ...i'_{m'}, i_1, ..., i_m$
+$c^* \vdash i_0, i_1, ..., i_m \leadsto c'^* \vdash i'_0, ...i'_{m'}, i_1, ..., i_m$.
+To simply model the control flow of WebAssembly, other things not closely
+related to the control flow are omitted here.
 
 
 % challenges in SpecTec prose
@@ -151,22 +154,22 @@ When entering a block, an \texttt{end} is appended to the end of the block.
 \begin{align}
   &c^*
   \vdash
-  loop(i32, ~ [ ~ i32.const ~ 42, ~ br ~ 0, ~ unreachable ~ ]), ~ unreachable
+  loop([ ~ i32.const ~ 42, ~ br ~ 0, ~ unreachable ~ ]), ~ unreachable
   \label{eq:loop-1} \\
 &\leadsto
-  label(loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
+  label(loop([ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
   \vdash
   i32.const ~ 42, ~ br ~ 0, ~ unreachable, ~ end, ~ unreachable
   \label{eq:loop-2} \\
   &\leadsto
-  label(loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
+  label(loop([ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
   \vdash
   ~ br ~ 0, ~ unreachable, ~ end, ~ unreachable
   \label{eq:loop-3} \\
 &\leadsto
   c^*
   \vdash
-  loop(i32, ~ [ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ]), unreachable
+  loop([ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ]), unreachable
   \label{eq:loop-4}
 \end{align}
 
@@ -192,6 +195,8 @@ Consequently, remaining inputs are \texttt{loop}, and \texttt{unreachable}
 again in \cref{eq:loop-4}.
 Therefore, it explains the same behavior in a different point of view.
 
+\red{TODO: Also use example 3 to explain function call in official prose}
+
 % an example of function call in official prose
 \textbf{Example 3}
 \begin{verbatim}
@@ -205,9 +210,9 @@ Therefore, it explains the same behavior in a different point of view.
 \begin{align}
   &c^* \vdash call(\$foo), ~ f32.const ~ 3.14 \label{eq:call-1} \\
 &\leadsto
-  Label(i32, \epsilon), ~ Frame(), ~ c^* \vdash i32.const ~ 42, ~ end, ~ f32.const ~ 3.14 \label{eq:call-2} \\
+  Label(\epsilon), ~ Frame(), ~ c^* \vdash i32.const ~ 42, ~ end, ~ f32.const ~ 3.14 \label{eq:call-2} \\
 &\leadsto
-  Label(i32, \epsilon), ~ Frame(), ~ c^* \vdash end, ~ f32.const ~ 3.14 \label{eq:call-3} \\
+  Label(\epsilon), ~ Frame(), ~ c^* \vdash end, ~ f32.const ~ 3.14 \label{eq:call-3} \\
 &\leadsto
   c^* \vdash f32.const ~ 3.14 \label{eq:call-4} \\
 &\leadsto
@@ -224,6 +229,13 @@ As a consequence, this \text{end} perform both exiting label and returning from
 a function in \cref{eq:call-4}, and the instruction after the \texttt{call} is
 executed in \cref{eq:call-5}
 It results in the values 42 and 3.14 pushed to the stack.
+
+In short, the behavior of an \texttt{end} instruction 1) performs exiting
+label, 2) looks up the top of the context, and 3) performs returing from a
+function, if it is a frame.
+With this \texttt{end} instruction, it seems that \spectecp{} can model the
+WebAssembly control flow correctly.
+However, the \red{interpreter} implemented with this model doesn't work well.
 
 
 
