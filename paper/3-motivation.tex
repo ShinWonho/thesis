@@ -8,7 +8,8 @@
 \newcommand{\spectecp}{SpecTec prose}
 
 \red{TODO: remove redundant part in the fig} \\
-\red{TODO: explanation of context: in the background? or here?} \\
+\red{TODO: explanation of context(frame/label): in the background? or here?} \\
+\red{TODO: the notion of meta-level interpreter in background} \\
 
 
 \section{Control flow in official prose}
@@ -126,8 +127,10 @@ is interpreted in \spectecp{} as consuming a WebAssembly instruction, pushing
 or poping a control structures, and inputing new WebAssembly instructions.
 It can be expressed in the following form:
 $c^* \vdash i_0, i_1, ..., i_m \leadsto c'^* \vdash i'_0, ...i'_{m'}, i_1, ..., i_m$.
+It means that given a sequence of contexts $c^*$, executing $i_0$ results in a
+new sequence of contexts $c'^*$ and instructions $i'_0, ...i'_{m'}$.
 To simply model the control flow of WebAssembly, other things not closely
-related to the control flow are omitted here.
+related to the control flow are omitted in this notation.
 
 
 % challenges in SpecTec prose
@@ -220,7 +223,8 @@ Therefore, it explains the same behavior in a different point of view.
 \end{align}
 
 Example 3 contains a function definition whose body is \texttt{i32.const}, a
-\texttt{call} instruction followed by a \texttt{f32.const} instruction, which can be expressed in \cref{eq:call-1}.
+\texttt{call} instruction followed by a \texttt{f32.const} instruction, which
+can be expressed in \cref{eq:call-1}.
 By invoking a function, it enters the block in \cref{eq:call-2}.
 After executing the body in \cref{eq:call-3}, an \texttt{end} is executed.
 In this point, this \texttt{end} represent both the end of the block and the
@@ -230,12 +234,24 @@ a function in \cref{eq:call-4}, and the instruction after the \texttt{call} is
 executed in \cref{eq:call-5}
 It results in the values 42 and 3.14 pushed to the stack.
 
+
+% summary & test
 In short, the behavior of an \texttt{end} instruction 1) performs exiting
 label, 2) looks up the top of the context, and 3) performs returing from a
 function, if it is a frame.
-With this \texttt{end} instruction, it seems that \spectecp{} can model the
-WebAssembly control flow correctly.
-However, the \red{interpreter} implemented with this model doesn't work well.
+The \spectecp{} can model the WebAssembly control flow using this \texttt{end}
+instruction.
+To show the correctness of the \spectecp{}, we run the WebAssembly tests
+including official WebAssembly test suite by executing the \spectecp{} with
+\red{definitional interpreter}.
+
+
+% Problem
+However, tests related to the control instruction are failed.
+At that time, there was no explicit model to describe the control flow in
+\spectecp{}, it was hard to define the problem, making it complicated to fix
+the problem.
+
 
 
 
