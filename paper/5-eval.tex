@@ -15,8 +15,8 @@
   (call $brAndReturning)
 \end{verbatim}
 
-Example 5.1 is the minimul example that produces a wrong result in \spectecp{}.
-It contains a function that has only a \texttt{br} instruction.
+Example 5.1 contains a function that has only a \texttt{br} instruction, and a
+\texttt{call} insstruction.
 According to the \officialp{}, when the function \texttt{\$brAndReturning} is
 called, a frame is pushed to the stack, and the block of the function
 body is entered with a label.
@@ -40,6 +40,10 @@ enters the function body \cref{eq:bug-2}.
 When the \texttt{br} is executed, it pops the label and removes the input
 instructions until the end in \cref{eq:bug-3}.
 As a result, the frame is remained after the executing the call.
+The problem is that the \texttt{end} express both the end of the block and the
+function, 
+
+
 
 
 % simplified version of AL algorithm of call, br, and returning from a function
@@ -56,39 +60,42 @@ Returning from a function:
   PopCtx Frame
 \end{verbatim}
 
+The code above is simplified version of \spectecp{}.
+According to the semantics defined in 
+
 
 \red{TODO: Change to array} \\
 \red{TODO: Change naming for $c$}
 \begin{align}
   &c^* \vdash call(\$brAndReturning); ~ \wasm ~ (n, ~ c)
   \label{eq:resolve-1} \\
-  &\leadsto c^* \vdash \epsilon; ~ \al ~ ([ ~ \pushctxi, ~ \enteri ~ ], ~ 0, ~ \wasm ~ (n, ~ c))
+  &\leadsto c^* \vdash \epsilon; ~ \al ~ ([ ~ \pushctxi, ~ \enteri ~ ], ~ \epsilon, ~ \wasm ~ (n, ~ c))
   \label{eq:resolve-2} \\
-  &\leadsto Frame, ~ c^* \vdash \epsilon; ~ \al ~ ([ ~ \enteri ~ ], ~ 1, ~ \wasm ~ (n, ~ c))
+  &\leadsto Frame, ~ c^* \vdash \epsilon; ~ \al ~ ([ ~ \enteri ~ ], ~ [ ~ Frame ~ ], ~ \wasm ~ (n, ~ c))
   \label{eq:resolve-3} \\
-  &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (br ~ 0), ~ (unreachable), ~ (end ~ 2); ~
-    \wasm ~ (2, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c)))
+  &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (br ~ \epsilon), ~ (unreachable), ~ (exiting), ~ (returning); \\
+  &\quad\quad \wasm ~ ([ ~ Label, ~ Frame ~ ], ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c)))
   \label{eq:resolve-4} \\
-  &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (unreachable), ~ (end ~ 2); \\
-  &\quad\quad \al ~ ([ ~ \red{\symbol{PopCtxI}}, ~ \executeseqi ~ ], ~ 0, ~ \wasm ~ (2, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
+  &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (unreachable), ~ (exiting), ~ (returning); \\
+  &\quad\quad \al ~ ([ ~ \red{\symbol{PopCtxI}}, ~ \executeseqi ~ ], ~ \epsilon, ~ \wasm ~ ([ ~ Label, ~ Frame ~ ], ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-5} \\
-  &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~
-    \al ~ ([ ~ \executeseqi ~ ], ~ 0, ~ \wasm ~ (1, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
+  &\leadsto Frame, ~ c^* \vdash (returning); ~
+    \al ~ ([ ~ \executeseqi ~ ], ~ \epsilon, ~ \wasm ~ ([ ~ Frame ~ ], ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-6} \\
-  &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~
-    \al ~ (\epsilon, ~ 0, ~ \wasm ~ (1, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
+  &\leadsto Frame, ~ c^* \vdash (returning); ~
+    \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ ([ ~ Frame ~ ], ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-7} \\
-  &\leadsto Frame, ~ c^* \vdash (end ~ 1); ~ \wasm ~ (1, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c)))
+  &\leadsto Frame, ~ c^* \vdash (returning); ~ \wasm ~ ([ ~ Frame ~ ], ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c)))
   \label{eq:resolve-8} \\
   &\leadsto Frame, ~ c^* \vdash \epsilon; ~
-    \al ~ ([ ~ \red{\symbol{PopCtxI}} ~ ], ~ 0, ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
+    \al ~ ([ ~ \red{\symbol{PopCtxI}} ~ ], ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-9} \\
   &\leadsto c^* \vdash \epsilon; ~
-    \al ~ (\epsilon, ~ 0, ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))))
+    \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c))))
   \label{eq:resolve-10} \\
-  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (0, ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c)))
+  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (\epsilon, ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c)))
   \label{eq:resolve-11} \\
-  &\leadsto c^* \vdash \epsilon; ~ \al ~ (\epsilon, ~ 0, ~ \wasm ~ (n, ~ c))
+  &\leadsto c^* \vdash \epsilon; ~ \al ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (n, ~ c))
   \label{eq:resolve-12} \\
   &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (n, ~ c)
   \label{eq:resolve-13}
