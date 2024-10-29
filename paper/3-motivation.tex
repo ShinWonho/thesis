@@ -205,11 +205,11 @@ Therefore, it explains the same behavior in a different point of view.
 % an example of function call in official prose
 \textbf{Example 3}
 \begin{verbatim}
-  // function definition as follow
-  (func $foo (result i32) (i32.const 42))
+  // function definition of $push-42
+  (func $push-42 (result i32) (i32.const 42))
 
   // function call
-  (call $foo) (f32.const 3.14)
+  (call $push-42) (f32.const 3.14)
 \end{verbatim}
 
 \begin{align}
