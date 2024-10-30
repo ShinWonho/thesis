@@ -40,10 +40,16 @@ enters the function body \cref{eq:bug-2}.
 When the \texttt{br} is executed, it pops the label and removes the input
 instructions until the end in \cref{eq:bug-3}.
 As a result, the frame is remained after the executing the call.
-The problem is that the \texttt{end} express both the end of the block and the
-function, 
+The problem is that the \texttt{br} should remove the end of the block but
+should not remove the end of the function, but \texttt{end} express the end of
+the block and the function at the same time.
 
 
+% Fix
+To fix the problem, semantics of \enteri is changed.
+The sequence of contexts that is pushed in the AL algorithm is stored,
+and when a block is entered, exiting label and returning from a function is
+appended according to the sequence.
 
 
 % simplified version of AL algorithm of call, br, and returning from a function
@@ -60,8 +66,9 @@ Returning from a function:
   PopCtx Frame
 \end{verbatim}
 
-The code above is simplified version of \spectecp{}.
-According to the semantics defined in 
+The code above is simplified version of \spectecp{} of \texttt{call},
+\texttt{br}, and \texttt{returning from a function}.
+By using the semantics defined in \cref{ch:semantics}, the example 5.1 results in the same result with the \officialp{}; $call(\$brAndReturning)$ does nothing.
 
 
 \red{TODO: Change to array} \\
