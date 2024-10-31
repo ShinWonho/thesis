@@ -19,7 +19,7 @@ of WebAssembly.
 There are dozens of WebAssembly engines; all the browsers have there own
 implementations of WebAssembly with multiple tiers, and there are many engines
 that target for specific areas including embedded systems and edge computing.
-However, WebAssembly should be portable across these implementations, it risks
+However, as WebAssembly should be portable across these implementations, it risks
 the implementations divergence.
 
 % rigorous standardization -> spec is rigorous: formal notation & prose notation
@@ -32,11 +32,11 @@ Formal notation uses mathematical rules to compactly describe the semantics,
 and it is used for proofs such as type soundness.
 On the other hand, prose notation uses psudocodes to explain the semantics step
 by step.
-People such as WebAssembly engine developers who are not familiar with
-mathematical rules utilize it.
+Most WebAssembly users and engine developers are not familiar with
+mathematical rules, so they utilize the prose notation.
 
 % structure
-A WebAssembly program is sequence of \textit{modules}.
+A WebAssembly program is comprised of \textit{modules}.
 A module is the unit of deployment, loading, and compilation, which consists of
 definitions such as functions, globals, and memories.
 A module is instantiated to validate the module and allocate each definition to
@@ -55,7 +55,7 @@ resulting values, and pushes them to the stack.
 \cref{fig:testop} is the WebAssembly specification for the \texttt{testop}
 instruction.
 Prose notation is written in the upper part, and formal notation is written in
-the grey box.
+the lower grey box.
 In the prose notation, it pops a value from the stack, performs a test
 operation, and pushes the result to the stack.
 It is written compactly in the form of reduction rule in the formal notation
