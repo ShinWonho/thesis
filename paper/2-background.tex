@@ -22,23 +22,50 @@ that target for specific areas including embedded systems and edge computing.
 However, WebAssembly should be portable across these implementations, it risks
 the implementations divergence.
 
-% rigorous standardization -> formal notation & prose notation
+% rigorous standardization -> spec is rigorous: formal notation & prose notation
 To mitigate this problem, WebAssembly has been standardized very rigourously by
 the W3C~\cite{wasm-w3c}.
-One of the requirements to standardize a feature is to describe the semantics
-of WebAssembly in two forms: formal notation and prose notation.
+Especially, WebAssembly specification is written very rigorously.
+It describes the semantics of WebAssembly in two forms: formal notation and
+prose notation.
 Formal notation uses mathematical rules to compactly describe the semantics,
 and it is used for proofs such as type soundness.
-On the other hand, prose notation uses psudocodes to explain the semantics
-step by step.
+On the other hand, prose notation uses psudocodes to explain the semantics step
+by step.
 People such as WebAssembly engine developers who are not familiar with
 mathematical rules utilize it.
 
-% structure: module, function, ...
+% structure
+A WebAssembly program is sequence of \textit{modules}.
+A module is the unit of deployment, loading, and compilation, which consists of
+definitions such as functions, globals, and memories.
+A module is instantiated to validate the module and allocate each definition to
+the data structure named \textit{store}.
+After the instantiation, functions can be invoked for the execution.
 
-% execution: instantiation, invocation, ...
+\begin{figure}[t]
+    \centerline{\includegraphics[width=15cm]{fig/testop}}
+    \caption[Enter the caption title here]{\texttt{testop} instruction} \label{fig:testop}
+\end{figure}
 
-% control structure: label frame block ...
+% execution
+WebAssembly execution is based on a stack machine.
+An instruction consumes values in the stack as operands, produces the
+resulting values, and pushes them to the stack.
+\cref{fig:testop} is the WebAssembly specification for the \texttt{testop}
+instruction.
+Prose notation is written in the upper part, and formal notation is written in
+the grey box.
+In the prose notation, it pops a value from the stack, performs a test
+operation, and pushes the result to the stack.
+It is written compactly in the form of reduction rule in the formal notation
+which consists of LHS, RHS, and premises: $(t.const ~ c_1) ~ t.testop$,
+$(i32.const ~ c)$, and $c = testop_t(c_1)$.
+The LHS means that when the value at the top of the stack $(t.const ~ c_1)$
+and an instruction to execute is $t.testop$.
+The RHS means that the value at the top of the stack is changed to $(i32.const
+~ c)$, and this happens when the premise $c = testop_t(c_1)$ is satisfied.
 
+% control flow
 
 \section{SpecTec}
