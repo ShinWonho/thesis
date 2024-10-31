@@ -39,8 +39,9 @@ mathematical rules, so they utilize the prose notation.
 A WebAssembly program is comprised of \textit{modules}.
 A module is the unit of deployment, loading, and compilation, which consists of
 definitions such as functions, globals, and memories.
-A module is instantiated to validate the module and allocate each definition to
+A module is instantiated to validate the module, allocate each definition to
 the data structure named \textit{store}.
+This results in module instance, a runtime representation for the module.
 After the instantiation, functions can be invoked for the execution.
 
 \begin{figure}[t]
@@ -61,11 +62,20 @@ operation, and pushes the result to the stack.
 It is written compactly in the form of reduction rule in the formal notation
 which consists of LHS, RHS, and premises: $(t.const ~ c_1) ~ t.testop$,
 $(i32.const ~ c)$, and $c = testop_t(c_1)$.
-The LHS means that when the value at the top of the stack $(t.const ~ c_1)$
+The LHS means that the value at the top of the stack is $(t.const ~ c_1)$,
 and an instruction to execute is $t.testop$.
 The RHS means that the value at the top of the stack is changed to $(i32.const
 ~ c)$, and this happens when the premise $c = testop_t(c_1)$ is satisfied.
 
-% control flow
+% control structure
+The stack stores not only the input and output values of the instructions but also
+structures related to the control flow.
+A \textit{call frame} and a \textit{label} are used for function call and
+branching, respectively.
+In exception handling proposal, there is a \textit{handler} for exception
+handling, and other strucutres could be introduced in the future.
+How these control structures are used for the control flow will be discussed in
+\cref{sec:control flow in official prose}. \\
+\red{TODO: remove dangling section header}
 
 \section{SpecTec}
