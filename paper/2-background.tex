@@ -7,6 +7,7 @@
 
 \section{WebAssembly}
 
+
 % breif overview
 WebAssembly is a low-level bytecode language that is safe, fast, portable, and
 compact~\cite{wasm}.
@@ -15,6 +16,7 @@ Not only that, other areas such as edge computing~\cite{wasm-edge},
 IoT~\cite{wasm-iot}, and block chains~\cite{wasm-block} deploy the advantages
 of WebAssembly.
 
+
 % risk of implementation divergence
 There are dozens of WebAssembly engines; all the browsers have there own
 implementations of WebAssembly with multiple tiers, and there are many engines
@@ -22,10 +24,11 @@ that target for specific areas including embedded systems and edge computing.
 However, as WebAssembly should be portable across these implementations, it risks
 the implementations divergence.
 
+
 % rigorous standardization -> spec is rigorous: formal notation & prose notation
 To mitigate this problem, WebAssembly has been standardized very rigourously by
 the W3C~\cite{wasm-w3c}.
-Especially, WebAssembly specification is written very rigorously.
+Especially, WebAssembly specification document is written very rigorously.
 It describes the semantics of WebAssembly in two forms: formal notation and
 prose notation.
 Formal notation uses mathematical rules to compactly describe the semantics,
@@ -34,6 +37,7 @@ On the other hand, prose notation uses psudocodes to explain the semantics
 through a step by step instruction.
 Most WebAssembly users and engine developers are not familiar with
 mathematical rules, so they utilize the prose notation.
+
 
 % structure
 A WebAssembly program is comprised of \textit{modules}.
@@ -48,6 +52,7 @@ After the instantiation, functions can be invoked for the execution.
     \centerline{\includegraphics[width=15cm]{fig/testop}}
     \caption[Enter the caption title here]{\texttt{testop} instruction} \label{fig:testop}
 \end{figure}
+
 
 % execution
 WebAssembly execution is based on a stack machine.
@@ -67,6 +72,7 @@ and an instruction to execute is $t.testop$.
 The RHS means that the value at the top of the stack is changed to $(i32.const
 ~ c)$, and this happens when the premise $c = testop_t(c_1)$ is satisfied.
 
+
 % control structure
 The stack stores not only the input and output values of the instructions but also
 structures related to the control flow.
@@ -75,8 +81,52 @@ branching, respectively.
 In exception handling proposal, there is a \textit{handler} for exception
 handling, and other strucutres could be introduced in the future.
 How these control structures are used for the control flow will be discussed in
-\cref{sec:control flow in official prose}. \\
-\red{TODO: remove dangling section header}
+\cref{sec:control flow in official prose}.
 
 \section{SpecTec}
+
+
+% SpecTec
+SpecTec is a tool for \textit{mechanizing} WebAssembly specification.
+Specification mechanization is a technique that treats the specification as
+data that can be manipulated by a computer.
+SpecTec provides a domain specific language(DSL) for specification, and it
+automatically generates a specification documents including the semantics
+described in formal notation and prose noatation from the DSL.
+The DSL is a declarative language that resembles textbook style notation, and
+it is type checked to prevent meta-level errors such as notation misuses and
+dimension mismatches.
+
+
+% prose language
+However, The DSL cannot generate the prose notation just as it is because it is
+declarative.
+Therefore, SpecTec also defines another imperative language for the prose
+notation, and translates the DSL into the prose language to generate the prose
+notation.
+
+
+% interpreter
+What is especially intriguing here is that the prose language is executable.
+As a result, the prose program generated from the DSL serves as a WebAssembly
+interpter.
+That is to say, if WebAssembly semantics is written in the DSL, SpecTec
+automatically generates the WebAssembly interpreter following the written
+semantics.
+The generated interpreter passes all the execution tests in the official test
+suites except for the tests related to the infinte loop.
+
+
+% other backends
+Furthermore, SpecTec automatically translates the DSL into Coq\cite{il2coq} for
+mathematical proofs and it is working on generating other artifacts such as
+test suites required to the WebAssembly standization.
+
+
+
+
+
+
+
+
 
