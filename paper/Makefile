@@ -13,9 +13,13 @@ BIBTEX = bibtex
 all: $(MAIN).pdf
 
 # Rule to compile the main document
-$(MAIN).pdf: $(MAIN).tex # $(MAIN).bbl
+$(MAIN).pdf: $(wildcard *.tex)
 	$(LATEX) $(MAIN)
 	$(LATEX) $(MAIN)
+	while ( grep -q '^LaTeX Warning: Label(s) may have changed' $(MAIN).log) \
+	do pdflatex $(MAIN); done
+
+
 
 # Rule to compile the bibliography
 $(MAIN).bbl: $(MAIN).tex # reference.bib
