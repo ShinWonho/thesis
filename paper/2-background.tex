@@ -46,7 +46,8 @@ definitions such as functions, globals, and memories.
 A module is instantiated to validate the module, allocate each definition to
 the data structure named \textit{store}.
 This results in module instance, a runtime representation for the module.
-After the instantiation, functions can be invoked for the execution.
+After the instantiation, functions can be invoked so that the function body,
+which is a sequence of instructions, is executed.
 
 \begin{figure}[t]
     \centerline{\includegraphics[width=15cm]{fig/testop}}
@@ -56,8 +57,8 @@ After the instantiation, functions can be invoked for the execution.
 
 % execution
 WebAssembly execution is based on a stack machine.
-An instruction consumes values in the stack as operands, produces the
-resulting values, and pushes them to the stack.
+An instruction consumes values in the stack as operands, performs some
+operation, produces resulting values, and pushes them to the stack.
 \cref{fig:testop} is the WebAssembly specification for the \texttt{testop}
 instruction.
 Prose notation is written in the upper part, and formal notation is written in
