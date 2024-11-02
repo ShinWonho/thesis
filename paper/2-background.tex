@@ -4,8 +4,11 @@
 \label{ch:background}
 \noindent
 
+\red{TODO: fix fig name}
+
 
 \section{WebAssembly}
+\label{sec:webassembly}
 
 
 % breif overview
@@ -52,6 +55,8 @@ which is a sequence of instructions, is executed.
 \begin{figure}[t]
     \centerline{\includegraphics[width=15cm]{fig/testop}}
     \caption[Enter the caption title here]{\texttt{testop} instruction} \label{fig:testop}
+    \centerline{\includegraphics[width=15cm]{fig/spectec-testop}}
+    \caption[Enter the caption title here]{SpecTec \texttt{testop} instruction} \label{fig:spectec-testop}
 \end{figure}
 
 
@@ -59,8 +64,8 @@ which is a sequence of instructions, is executed.
 WebAssembly execution is based on a stack machine.
 An instruction consumes values in the stack as operands, performs some
 operation, produces resulting values, and pushes them to the stack.
-\cref{fig:testop} is the WebAssembly specification for the \texttt{testop}
-instruction.
+\cref{fig:testop} is the WebAssembly specification document for the
+\texttt{testop} instruction.
 Prose notation is written in the upper part, and formal notation is written in
 the lower grey box.
 In the prose notation, it pops a value from the stack, performs a test
@@ -84,19 +89,38 @@ handling, and other strucutres could be introduced in the future.
 How these control structures are used for the control flow will be discussed in
 \cref{sec:control flow in official prose}.
 
+
+
 \section{SpecTec}
+\label{sec:spectec}
 
 
-% SpecTec
-SpecTec is a tool for \textit{mechanizing} WebAssembly specification.
-Specification mechanization is a technique that treats the specification as
-data that can be manipulated by a computer.
-SpecTec provides a domain specific language(DSL) for specification, and it
-automatically generates a specification documents including the semantics
-described in formal notation and prose noatation from the DSL.
-The DSL is a declarative language that resembles textbook style notation, and
-it is type checked to prevent meta-level errors such as notation misuses and
-dimension mismatches.
+% SpecTec: specification mechanization tool
+SpecTec is a tool for \textit{mechanizing} WebAssembly specification
+~\cite{spectec}.
+Specification mechanization is a technique that treats a specification as data
+that can be manipulated by a computer to automatically generate parser and
+interpreter ~\cite{jiset}, to generate tests and perform differential tests
+~\cite{jest}, to find meta-level errors in the specification ~\cite{jstar}, and
+to perform meta-level static analysis for the static analysis of the defined
+language ~\cite{jsaver}.
+This technique is especially crucial in growing languages such as JavaScript
+and WebAssembly.
+
+
+% DSL & generated document
+SpecTec provides a domain specific language (DSL) for the specification, and it
+is a declarative language that resembles textbook style notation.
+It is type checked to prevent meta-level errors such as notation misuses and
+dimension mismatches. The code below is the specification for \texttt{testop}
+instruction written in the DSL, which is designed to be similar to the formal
+notation, while obtaining better user experience. \\
+\red{TODO: better character for $\sim$ in the code}
+\begin{verbatim}
+  rule Step_pure/testop:
+  (CONST nt c_1) (TESTOP nt testop)  ~>  (CONST I32 c)
+  -- if c = $testop_(nt, testop, c_1)
+\end{verbatim}
 
 
 % prose language
@@ -105,9 +129,13 @@ declarative.
 Therefore, SpecTec also defines another imperative language for the prose
 notation, and translates the DSL into the prose language to generate the prose
 notation.
+\cref{fig:spectec-testop} is the specification document automatically generated
+from the DSL which depicts both formal notation and prose noatation.
+The automatically generated document also closely resembles the official
+document except for some minor notation changes and some missing hyperlinks.
 
 
-% interpreter
+% meta-level interpreter
 What is especially intriguing here is that the prose language is executable.
 As a result, the prose program generated from the DSL serves as a WebAssembly
 interpter.
@@ -118,16 +146,9 @@ The generated interpreter passes all the execution tests in the official test
 suites except for the tests related to the infinte loop.
 
 
-% other backends
-Furthermore, SpecTec automatically translates the DSL into Coq\cite{il2coq} for
-mathematical proofs and it is working on generating other artifacts such as
-test suites required to the WebAssembly standization.
-
-
-
-
-
-
-
-
-
+% other backends and other language
+SpecTec also translates the DSL into Coq\cite{il2coq} for mathematical proofs
+and it is also working on generating other artifacts such as test suites
+required to the WebAssembly standization.
+Moreover, some researches are ongoing to deploy SpecTec to mechanize other
+languages \cite{p4-cherry-workshop}.
