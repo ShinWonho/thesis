@@ -12,8 +12,8 @@
 
 
 % breif overview
-WebAssembly is a low-level bytecode language that is safe, fast, portable, and
-compact~\cite{wasm}.
+WebAssembly~\cite{wasm} is a low-level bytecode language that is safe, fast,
+portable, and compact.
 It is widely used as a compile target for web applications.
 Not only that, other areas such as edge computing~\cite{wasm-edge},
 IoT~\cite{wasm-iot}, and block chains~\cite{wasm-block} deploy the advantages
@@ -22,8 +22,9 @@ of WebAssembly.
 
 % risk of implementation divergence
 There are dozens of WebAssembly engines; all the browsers have there own
-implementations of WebAssembly with multiple tiers, and there are many engines
-that target for specific areas including embedded systems and edge computing.
+implementations of WebAssembly with multiple tiers ~\cite{v8}
+\cite{spidermonkey} \cite{webkit}, and there are many engines that target for
+specific areas including embedded systems and edge computing.
 However, as WebAssembly should be portable across these implementations, it risks
 the implementations divergence.
 
