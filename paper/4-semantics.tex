@@ -327,66 +327,66 @@
 %
 % Call
 \newline \\
-  \seq e, \seq i = \lookup(p, str_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \seq e, \seq i = \lookup(\seq{a}, str_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (a, w, \call ~ (str_0, str_1, \seq v, c)) \leadsto (a, w, \al ~ (\seq i, \mu, \call ~ (str_0, str_1, \seq v, c))) \\
+  (\seq{a}, w, \call ~ (str_0, str_1, \seq v, c)) \leadsto (\seq{a}, w, \al ~ (\seq i, \mu, \call ~ (str_0, str_1, \seq v, c))) \\
 %
 % Return
   \mu = \getenv(c) \quad c' = \setenv(\mu[str_0 \mapsto v]) \\
   \hline
-  (a, w, \ret ~ (v, \call ~ (str_0, str_1, \seq v, c)) \leadsto c' \\
+  (\seq{a}, w, \ret ~ (v, \call ~ (str_0, str_1, \seq v, c)) \leadsto c' \\
 %
 % Al-empty
 \newline \\
   \hline
-  (a, w, \al ~ (\epsilon, \mu, 0, c)) \leadsto (a, w, c) \\
+  (\seq{a}, w, \al ~ (\epsilon, \mu, 0, c)) \leadsto (\seq{a}, w, c) \\
 %
 % Al-instr
 \newline \\
-  a, w, \al ~ (\seq{i_1}, \mu, n, c) \vdash i_0 \Rightarrow (w', c') \\
+  \seq{a}, w, \al ~ (\seq{i_1}, \mu, n, c) \vdash i_0 \Rightarrow (w', c') \\
   \hline
-  (a, w, \al ~ (i_0 ~ \seq{i_1}, \mu, n, c)) \leadsto (a, w', c') \\
+  (\seq{a}, w, \al ~ (i_0 ~ \seq{i_1}, \mu, n, c)) \leadsto (\seq{a}, w', c') \\
 %
 % Wasm-zero
 \newline \\
   \hline
-  (a, w, \wasm ~ (0, c)) \leadsto (a, w, c) \\
+  (\seq{a}, w, \wasm ~ (0, c)) \leadsto (\seq{a}, w, c) \\
 %
 % Wasm-value
 \newline \\
   n > 0 \quad \iswasmvalueinstr(wi) \\
   \hline
-  (a, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
+  (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
   \leadsto
-  (a, (\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (n, c)) \\
+  (\seq{a}, (\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (n, c)) \\
 %
 % Wasm-instr
 \newline \\
   n > 0 \quad \neg \iswasmvalueinstr(wi) \\
   \casev ~ (str, \seq v) = wi \quad
-  \seq e, \seq i = \lookup(a, str) \quad
+  \seq e, \seq i = \lookup(\seq{a}, str) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (a, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
+  (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
   \leadsto
-  (a, (\seq{wi'}, \seq{wv}, sto), \al ~ (\seq i, \seq v, \wasm ~ (n, c))) \\
+  (\seq{a}, (\seq{wi'}, \seq{wv}, sto), \al ~ (\seq i, \seq v, \wasm ~ (n, c))) \\
 %
 % Execute-value
 \newline \\
   \iswasmvalueinstr(wi') \\
   \hline
-  (a, (\seq{wi}, \seq{wv}, sto), \exe ~ (wi', c))
+  (\seq{a}, (\seq{wi}, \seq{wv}, sto), \exe ~ (wi', c))
   \leadsto
-  (a, (\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
+  (\seq{a}, (\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
 %
 % Execute-instr
 \newline \\
   \neg \iswasmvalueinstr(wi') \\
   \casev ~ (str, \seq v) = wi \quad
-  \seq e, \seq i = \lookup(a, str) \quad
+  \seq e, \seq i = \lookup(\seq{a}, str) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (a, w, \exe ~ (wi', c)) \leadsto (a, w, \al ~ (\seq i, \seq v, c)) \\
+  (\seq{a}, w, \exe ~ (wi', c)) \leadsto (\seq{a}, w, \al ~ (\seq i, \seq v, c)) \\
 \end{gather*}
 
 
@@ -398,31 +398,31 @@
 
 \begin{gather*}
   \text{NOTE: input cont is always \al} \\
-  a, ~ w, ~ c \vdash i \Rightarrow w, ~ c \\
+  \seq{a}, ~ w, ~ c \vdash i \Rightarrow w, ~ c \\
 %
 % If-true
 \newline \\
   \mu = \getenv(c) \quad w, \mu \vdash e \Rightarrow v \quad
   \istrue(v) \quad c' = \prependinstr(c, \seq{i_1}) \\
   \hline
-  a, w, c \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, c') \\
+  \seq{a}, w, c \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, c') \\
 %
 % If-false
 \newline \\
   \mu = \getenv(c) \quad w, \mu \vdash e \Rightarrow v \quad
   \neg \istrue(v) \quad c' = \prependinstr(c, \seq{i_2}) \\
   \hline
-  a, w, c \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, c') \\
+  \seq{a}, w, c \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, c') \\
 %
 % Either-1
 \newline \\
   \hline
-  a, w, c \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(c, \seq{i_1})) \\
+  \seq{a}, w, c \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(c, \seq{i_1})) \\
 %
 % Either-2
 \newline \\
   \hline
-  a, w, c \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(c, \seq{i_2})) \\
+  \seq{a}, w, c \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(c, \seq{i_2})) \\
 %
 % Enter
 \newline \\
@@ -431,7 +431,7 @@
   w, \mu \vdash e_1 \Rightarrow v_1 \quad
   w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
   \hline
-  a, (\seq{wv}, \seq{wi}, sto), c \vdash \enteri ~ (e_1, e_2)
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), c \vdash \enteri ~ (e_1, e_2)
   \Rightarrow
   ((v_1 ~ \seq{wv}, \seq{v_2} ~ \seq{wi}, sto), \wasm ~ (n+1, \increasectxcnt(c))) \\
 %
@@ -439,7 +439,7 @@
 \newline \\
   \mu = \getenv(c) \quad w, \mu \vdash e \Rightarrow v \\
   \hline
-  a, w, c \vdash \pushctxi ~ e
+  \seq{a}, w, c \vdash \pushctxi ~ e
   \Rightarrow
   (\push_{WasmValue}(w, v), \increasectxcnt(c)) \\
 %
@@ -447,7 +447,7 @@
 \newline \\
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  a, w, c \vdash \pushi ~ e \Rightarrow (\push_{WasmValue}(w, v), c) \\
+  \seq{a}, w, c \vdash \pushi ~ e \Rightarrow (\push_{WasmValue}(w, v), c) \\
 %
 % PopCtx
 \newline \\
@@ -458,7 +458,7 @@
   c_2 = \exit_{Cont}(c_1) \quad
   \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \\
   \hline
-  a, (\seq{wv}, \seq{wi}, sto), c \vdash \popctxi ~ e
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), c \vdash \popctxi ~ e
   \Rightarrow
   ((\seq{wv'}, \seq{wi'}, sto), c_2) \\
 %
@@ -468,7 +468,7 @@
   wv, w' = \pop_{WasmValue}(w) \quad
   \mu' = \assign(\mu, e, wv) \\
   \hline
-  a, w, c \vdash \popi ~ e \Rightarrow (w', \setenv(c, \mu')) \\
+  \seq{a}, w, c \vdash \popi ~ e \Rightarrow (w', \setenv(c, \mu')) \\
 %
 % PopN
 \newline \\
@@ -477,7 +477,7 @@
   wv^n, w' = \popn_{WasmValue}(w, n) \quad
   \mu' = \assign(\mu, e_1, \listv ~ wv^n) \\
   \hline
-  a, w, c \vdash \popni ~ (e_1, e_2) \Rightarrow (w', \setenv(c, \mu')) \\
+  \seq{a}, w, c \vdash \popni ~ (e_1, e_2) \Rightarrow (w', \setenv(c, \mu')) \\
 %
 % PopAll
 \newline \\
@@ -485,7 +485,7 @@
   \seq{wv_0}, \seq{wv_1} = \splitctx(wv) \quad
   \mu' = \assign(\mu, e, \listv ~ \seq{wv_0}) \\
   \hline
-  a, (\seq{wv}, \seq{wi}, sto), e \vdash \popalli ~ e
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), e \vdash \popalli ~ e
   \Rightarrow
   ((\seq{wv_1}, \seq{wi}, sto), \setenv(c, \mu')) \\
 %
@@ -495,32 +495,32 @@
   w, \mu \vdash e_2 \Rightarrow v \quad
   \mu' = \assign(\mu, e_1, v) \\
   \hline
-  a, w, c \vdash \leti ~ (e_1, e_2)
+  \seq{a}, w, c \vdash \leti ~ (e_1, e_2)
   \Rightarrow
   (w, \setenv(c, \mu')) \\
 %
 % Trap
 \newline \\
   \hline
-  a, w, c \vdash \trapi \Rightarrow (w, \ret ~ (\trapv, \mt)) \\
+  \seq{a}, w, c \vdash \trapi \Rightarrow (w, \ret ~ (\trapv, \mt)) \\
 %
 % Return-rule
 \newline \\
   \hline
-  a, w, \al~ (\seq{i}, \mu, n, c) \vdash \returnrulei \Rightarrow (w, c) \\
+  \seq{a}, w, \al~ (\seq{i}, \mu, n, c) \vdash \returnrulei \Rightarrow (w, c) \\
 %
 % Return-func
 \newline \\
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  a, w, \al ~ (\seq{i}, \mu, n, c) \vdash \returnfunci ~ e \Rightarrow (w, \ret ~ (v, c)) \\
+  \seq{a}, w, \al ~ (\seq{i}, \mu, n, c) \vdash \returnfunci ~ e \Rightarrow (w, \ret ~ (v, c)) \\
 %
 % Execute
 \newline \\
   \mu = \getenv(c) \quad
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  a, w, c \vdash \executei ~ e \Rightarrow (w, \exe ~ (v, c)) \\
+  \seq{a}, w, c \vdash \executei ~ e \Rightarrow (w, \exe ~ (v, c)) \\
 %
 % ExecuteSeq
 \newline \\
@@ -528,7 +528,7 @@
   w, \mu \vdash e \Rightarrow \listv ~ \seq v \quad
   c' = \fold(\execute, \seq v, c) \\
   \hline
-  a, w, c \vdash \executeseqi ~ e \Rightarrow (w, c') \\
+  \seq{a}, w, c \vdash \executeseqi ~ e \Rightarrow (w, c') \\
 %
 % Call-fname
 \newline \\
@@ -536,7 +536,7 @@
   \fnamev ~ str_2 = \mu(str_1) \quad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
-  a, w, c \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_2, \seq v, c)) \\
+  \seq{a}, w, c \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_2, \seq v, c)) \\
 %
 % Call-fname
 \newline \\
@@ -544,7 +544,7 @@
   str_1 \not\in \domain(\mu) \quad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
-  a, w, c \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_1, \seq v, c)) \\
+  \seq{a}, w, c \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_1, \seq v, c)) \\
 %
 % Replace-frame
 \newline \\
@@ -555,7 +555,7 @@
   w, \mu \vdash e_2 \Rightarrow v_2 \quad
   v_3 = \update(v_1, \seq p, v_2) \\
   \hline
-  a, w, c \vdash \replacei ~ (e_1, \seq{path}, e_2) \Rightarrow (\setcurframe(w, v_3), c) \\
+  \seq{a}, w, c \vdash \replacei ~ (e_1, \seq{path}, e_2) \Rightarrow (\setcurframe(w, v_3), c) \\
 %
 % Replace-store
 \newline \\
@@ -564,7 +564,7 @@
   w, \mu \vdash e_2 \Rightarrow v_2 \quad
   sto' = \update_{Sto}(sto, \seq p, v_2) \\
   \hline
-  a, (\seq{wv}, \seq{wi}, sto), c \vdash \replacei ~ (e_1, \seq path, e_2)
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), c \vdash \replacei ~ (e_1, \seq{path}, e_2)
   \Rightarrow ((\seq{wv}, \seq{wi}, sto'), c) \\
 \end{gather*}
 
@@ -792,10 +792,10 @@
 % lookup
   &str' = str \\
   \hline
-  &\lookup((str', \seq e, \seq i) ~ \seq{p'}, str) = \seq e, \seq i \\
+  &\lookup((str', \seq e, \seq i) ~ \seq{a'}, str) = \seq e, \seq i \\
   &str' \not= str \\
   \hline
-  &\lookup((str, \seq e, \seq i) ~ \seq{p'}, str) = \lookup(\seq{p'}, str) \\
+  &\lookup((str, \seq e, \seq i) ~ \seq{a'}, str) = \lookup(\seq{a'}, str) \\
 %
 % pop_all-ctx
 \newline \\
