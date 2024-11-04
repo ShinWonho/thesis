@@ -37,8 +37,8 @@ It describes the semantics of WebAssembly in two forms: formal notation and
 prose notation.
 Formal notation uses mathematical rules to compactly describe the semantics,
 and it is used for proofs such as type soundness.
-On the other hand, prose notation uses psudocodes to explain the semantics
-through a step by step instruction.
+On the other hand, prose notation uses psudocodes algorithm to explain the
+semantics through a step by step instruction.
 Most WebAssembly users and engine developers are not familiar with
 mathematical rules, so they utilize the prose notation.
 
@@ -132,12 +132,14 @@ notation, and translates the DSL into the prose language to generate the prose
 notation.
 \cref{fig:spectec-testop} is the specification document automatically
 generated from the DSL which depicts both formal notation and prose noatation.
-The automatically generated document also closely resembles the official
-document except for some minor notation changes and some missing hyperlinks.
+The generated document closely resembles the official document except for some
+minor notation changes and some missing hyperlinks.
 
 
 % meta-level interpreter
 What is especially intriguing here is that the prose language is executable.
+It can perform each step written in the prose program one by one, which
+WebAssembly interpreter should follow.
 As a result, the prose program generated from the DSL serves as a WebAssembly
 interpter.
 That is to say, if WebAssembly semantics is written in the DSL, SpecTec
@@ -148,9 +150,8 @@ suites except for the tests related to the infinte loop.
 
 
 % other backends and other language
-SpecTec also translates the DSL into Coq for mathematical proofs ~\cite{il2coq}
-and it is also working on generating other artifacts such as test suites
-required to the WebAssembly standization.
-% TODO: check any presentation about west, component model, or rust using SpecTec
-Moreover, some researches are ongoing to deploy SpecTec to mechanize other
+SpecTec also translates the DSL into Coq for mathematical proofs and is working
+on generating other artifacts, such as test suites required for WebAssembly
+standardization.
+Additionally, research is ongoing to extend SpecTec for mechanizing other
 languages ~\cite{p4-cherry-workshop}.
