@@ -78,10 +78,12 @@
 \newcommand{\leti}{\symbol{LetI}}
 \newcommand{\trapi}{\symbol{TrapI}}
 \newcommand{\nopi}{\symbol{NopI}}
-\newcommand{\returni}{\symbol{ReturnI}}
+\newcommand{\returnrulei}{\symbol{ReturnRuleI}}
+\newcommand{\returnfunci}{\symbol{ReturnFuncI}}
 \newcommand{\executei}{\symbol{ExecuteI}}
 \newcommand{\executeseqi}{\symbol{ExecuteSeqI}}
 \newcommand{\performi}{\symbol{PerformI}}
+\newcommand{\calli}{\symbol{CallI}}
 \newcommand{\replacei}{\symbol{ReplaceI}}
 
 % Expression
@@ -100,7 +102,6 @@
 \newcommand{\lene}{\symbol{LenE}}
 \newcommand{\tupe}{\symbol{TupE}}
 \newcommand{\casee}{\symbol{CaseE}}
-\newcommand{\calle}{\symbol{CallE}}
 \newcommand{\itere}{\symbol{IterE}}
 \newcommand{\liste}{\symbol{ListE}}
 \newcommand{\getcurctxe}{\symbol{GetCurContextE}}
@@ -243,10 +244,12 @@
     | & ~ \popalli ~ E \\
     | & ~ \leti ~ E \times E \\
     | & ~ \trapi \\
-    | & ~ \returni ~ E_{\bot} \\
+    | & ~ \returnrulei \\
+    | & ~ \returnfunci ~ E \\
     | & ~ \executei ~ E \\
     | & ~ \executeseqi ~ E \\
     | & ~ \performi ~ String \times \seq{E} \\
+    | & ~ \calli ~ String \times String \times \seq{E} \\
     | & ~ \replacei ~ E \times \seq{Path} \times E \\
 %
 % Expression
@@ -265,7 +268,6 @@
     | & ~ \lene ~ E \\
     | & ~ \tupe ~ \seq E \\
     | & ~ \casee ~ String \times \seq E \\
-    | & ~ \calle ~ String \times \seq E \\
     | & ~ \itere ~ E \times Iter \times \seq{String} \\
     | & ~ \liste ~ \seq E \\
     | & ~ \getcurctxe ~ String \\
@@ -325,9 +327,14 @@
 %
 % Call
 \newline \\
-  \seq e, \seq i = \lookup(p, str) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \seq e, \seq i = \lookup(p, str_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (a, w, \call ~ (str, \seq v, c)) \leadsto (a, w, \al ~ (\seq i, \mu, c)) \\
+  (a, w, \call ~ (str_0, str_1, \seq v, c)) \leadsto (a, w, \al ~ (\seq i, \mu, \call ~ (str_0, str_1, \seq v, c))) \\
+%
+% Return
+  \mu = \getenv(c) \quad c' = \setenv(\mu[str_0 \mapsto v]) \\
+  \hline
+  (a, w, \ret ~ (v, \call ~ (str_0, str_1, \seq v, c)) \leadsto c' \\
 %
 % Al-empty
 \newline \\
@@ -497,16 +504,16 @@
   \hline
   a, w, c \vdash \trapi \Rightarrow (w, \ret ~ (\trapv, \mt)) \\
 %
-% Return-none
+% Return-rule
 \newline \\
   \hline
-  a, w, \al~ (\seq{i}, \mu, n, c) \vdash \returni \Rightarrow (w, c) \\
+  a, w, \al~ (\seq{i}, \mu, n, c) \vdash \returnrulei \Rightarrow (w, c) \\
 %
-% Return-some
+% Return-func
 \newline \\
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  a, w, \al ~ (\seq{i}, \mu, n, c) \vdash \returni ~ e \Rightarrow (w, \ret ~ (v, c)) \\
+  a, w, \al ~ (\seq{i}, \mu, n, c) \vdash \returnfunci ~ e \Rightarrow (w, \ret ~ (v, c)) \\
 %
 % Execute
 \newline \\
@@ -523,12 +530,21 @@
   \hline
   a, w, c \vdash \executeseqi ~ e \Rightarrow (w, c') \\
 %
-% Perform
+% Call-fname
 \newline \\
   \mu = \getenv(c) \quad
+  \fnamev ~ str_2 = \mu(str_1) \quad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
-  a, w, c \vdash \performi ~ (str, \seq e) \Rightarrow (w, \call ~ (str, \seq v, c)) \\
+  a, w, c \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_2, \seq v, c)) \\
+%
+% Call-fname
+\newline \\
+  \mu = \getenv(c) \quad
+  str_1 \not\in \domain(\mu) \quad
+  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  \hline
+  a, w, c \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_1, \seq v, c)) \\
 %
 % Replace-frame
 \newline \\
@@ -655,22 +671,6 @@
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
   w, \mu \vdash \casee ~ (str, \seq{e}) \Rightarrow \casev ~ (str, \seq{v}) \\
-%
-% Call-fname
-\newline \\
-  \fnamev ~ str' = \mu(str) \quad
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
-  (w, \call ~ (str', \seq v, \mt)) \seq{\leadsto} (w, \ret ~ v') \\
-  \hline
-  w, \mu \vdash \calle ~ (str, \seq{e}) \Rightarrow v' \\
-%
-% Call-normal
-\newline \\
-  str \not\in \domain(\mu) \quad
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
-  (w, \call ~ (str, \seq v, \mt)) \seq{\leadsto} (w, \ret ~ v') \\
-  \hline
-  w, \mu \vdash \calle ~ (str, \seq{e}) \Rightarrow v' \\
 %
 % Iter-
 \newline \\
