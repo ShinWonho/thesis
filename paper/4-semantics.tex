@@ -59,7 +59,7 @@
 % Continuation
 \newcommand{\mt}{\symbol{Empty}}
 \newcommand{\call}{\symbol{Call}}
-\newcommand{\al}{\symbol{Al}}
+\newcommand{\algo}{\symbol{Algo}}
 \newcommand{\enter}{\symbol{Enter}}
 \newcommand{\wasm}{\symbol{Wasm}}
 \newcommand{\exe}{\symbol{Execute}}
@@ -82,7 +82,6 @@
 \newcommand{\returnfunci}{\symbol{ReturnFuncI}}
 \newcommand{\executei}{\symbol{ExecuteI}}
 \newcommand{\executeseqi}{\symbol{ExecuteSeqI}}
-\newcommand{\performi}{\symbol{PerformI}}
 \newcommand{\calli}{\symbol{CallI}}
 \newcommand{\replacei}{\symbol{ReplaceI}}
 
@@ -167,8 +166,9 @@
 \newcommand{\execute}{\helper{execute}}
 \newcommand{\exit}{\helper{exit}}
 \newcommand{\duplicateenv}{\helper{duplicate\_env}}
-\newcommand{\getctxcnt}{\helper{get\_ctx\_cnt}}
-\newcommand{\increasectxcnt}{\helper{increase\_ctx\_cnt}}
+\newcommand{\getctx}{\helper{get\_ctx}}
+\newcommand{\addctx}{\helper{add\_ctx}}
+\newcommand{\resetctx}{\helper{reset\_ctx}}
 \newcommand{\getenv}{\helper{get\_env}}
 \newcommand{\setenv}{\helper{set\_env}}
 \newcommand{\prependinstr}{\helper{prepend\_instr}}
@@ -185,6 +185,7 @@
 \newcommand{\updateidx}{\helper{update\_idx}}
 \newcommand{\updateslice}{\helper{update\_slice}}
 \newcommand{\updatedot}{\helper{update\_dot}}
+\newcommand{\getendalgo}{\helper{get\_end\_algo}}
 \newcommand{\istrue}{\helper{is\_true}}
 \newcommand{\isframe}{\helper{is\_frame}}
 \newcommand{\zip}{\helper{zip}}
@@ -204,6 +205,8 @@
 
 
 %% Syntax
+\section{Syntax of AL}
+\label{syntax}
 
 \begin{align*}
 %
@@ -222,15 +225,18 @@
   sto \in Store =& String \mapsto \seq V \\
 %
 % Continuation
-  c \in Cont =& ~ \mt \\
+  k \in Cont =& ~ \mt \\
     | & ~ \call ~ String \times \seq V \times Cont \\
-    | & ~ \al ~ \seq I \times Env \times \mathbb N \times Cont \\
-    | & ~ \wasm ~ \mathbb N \times Cont \\
+    | & ~ \algo ~ \seq I \times Env \times \seq C \times Cont \\
+    | & ~ \wasm ~ \seq C \times Cont \\
     | & ~ \exe ~ wi \times Cont \\
     | & ~ \ret ~ V \times Cont \\
 %
 % Environment
   \mu \in Env =& String \mapsto V \\
+%
+% Control
+  c \in C =& V \\
 %
 % Instruction
   i \in I =& ~ \ifi ~ E \times \seq I \times \seq I \\
@@ -248,7 +254,6 @@
     | & ~ \returnfunci ~ E \\
     | & ~ \executei ~ E \\
     | & ~ \executeseqi ~ E \\
-    | & ~ \performi ~ String \times \seq{E} \\
     | & ~ \calli ~ String \times String \times \seq{E} \\
     | & ~ \replacei ~ E \times \seq{Path} \times E \\
 %
@@ -316,10 +321,11 @@
 
 
 
+%% Syntax
+\section{Semantics of AL}
+\label{semantics}
 
 %% Continuation
-
-\newpage
 
 \begin{gather*}
 \newline \\
@@ -329,55 +335,55 @@
 \newline \\
   \seq e, \seq i = \lookup(\seq{a}, str_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (\seq{a}, w, \call ~ (str_0, str_1, \seq v, c)) \leadsto (\seq{a}, w, \al ~ (\seq i, \mu, \call ~ (str_0, str_1, \seq v, c))) \\
+  (\seq{a}, w, \call ~ (str_0, str_1, \seq v, k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \call ~ (str_0, str_1, \seq v, k))) \\
 %
 % Return
-  \mu = \getenv(c) \quad c' = \setenv(\mu[str_0 \mapsto v]) \\
+  \mu = \getenv(k) \quad k' = \setenv(k, \mu[str_0 \mapsto v]) \\
   \hline
-  (\seq{a}, w, \ret ~ (v, \call ~ (str_0, str_1, \seq v, c)) \leadsto c' \\
+  (\seq{a}, w, \ret ~ (v, \call ~ (str_0, str_1, \seq v, k)) \leadsto k' \\
 %
 % Al-empty
 \newline \\
   \hline
-  (\seq{a}, w, \al ~ (\epsilon, \mu, 0, c)) \leadsto (\seq{a}, w, c) \\
+  (\seq{a}, w, \algo ~ (\epsilon, \mu, \seq c, k)) \leadsto (\seq{a}, w, k) \\
 %
 % Al-instr
 \newline \\
-  \seq{a}, w, \al ~ (\seq{i_1}, \mu, n, c) \vdash i_0 \Rightarrow (w', c') \\
+  \seq{a}, w, \algo ~ (\seq{i_1}, \mu, \seq c, k) \vdash i_0 \Rightarrow (w', k') \\
   \hline
-  (\seq{a}, w, \al ~ (i_0 ~ \seq{i_1}, \mu, n, c)) \leadsto (\seq{a}, w', c') \\
+  (\seq{a}, w, \algo ~ (i_0 ~ \seq{i_1}, \mu, \seq c, k)) \leadsto (\seq{a}, w', k') \\
 %
 % Wasm-zero
 \newline \\
   \hline
-  (\seq{a}, w, \wasm ~ (0, c)) \leadsto (\seq{a}, w, c) \\
+  (\seq{a}, w, \wasm ~ (\epsilon, k)) \leadsto (\seq{a}, w, k) \\
 %
 % Wasm-value
 \newline \\
-  n > 0 \quad \iswasmvalueinstr(wi) \\
+  |\seq c| > 0 \quad \iswasmvalueinstr(wi) \\
   \hline
-  (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
+  (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (\seq c, k))
   \leadsto
-  (\seq{a}, (\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (n, c)) \\
+  (\seq{a}, (\seq{wi'}, wi ~ \seq{wv}, sto), \wasm ~ (\seq c, k)) \\
 %
 % Wasm-instr
 \newline \\
-  n > 0 \quad \neg \iswasmvalueinstr(wi) \\
+  |\seq c| > 0 \quad \neg \iswasmvalueinstr(wi) \\
   \casev ~ (str, \seq v) = wi \quad
   \seq e, \seq i = \lookup(\seq{a}, str) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (n, c))
+  (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (\seq c, k))
   \leadsto
-  (\seq{a}, (\seq{wi'}, \seq{wv}, sto), \al ~ (\seq i, \seq v, \wasm ~ (n, c))) \\
+  (\seq{a}, (\seq{wi'}, \seq{wv}, sto), \algo ~ (\seq i, \mu, \epsilon, \wasm ~ (\seq c, k))) \\
 %
 % Execute-value
 \newline \\
   \iswasmvalueinstr(wi') \\
   \hline
-  (\seq{a}, (\seq{wi}, \seq{wv}, sto), \exe ~ (wi', c))
+  (\seq{a}, (\seq{wi}, \seq{wv}, sto), \exe ~ (wi', k))
   \leadsto
-  (\seq{a}, (\seq{wi}, wi' ~ \seq{wv}, sto), c) \\
+  (\seq{a}, (\seq{wi}, wi' ~ \seq{wv}, sto), k) \\
 %
 % Execute-instr
 \newline \\
@@ -386,7 +392,7 @@
   \seq e, \seq i = \lookup(\seq{a}, str) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (\seq{a}, w, \exe ~ (wi', c)) \leadsto (\seq{a}, w, \al ~ (\seq i, \seq v, c)) \\
+  (\seq{a}, w, \exe ~ (wi', k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, k)) \\
 \end{gather*}
 
 
@@ -397,175 +403,176 @@
 \newpage
 
 \begin{gather*}
-  \text{NOTE: input cont is always \al} \\
-  \seq{a}, ~ w, ~ c \vdash i \Rightarrow w, ~ c \\
+  \text{NOTE: input cont is always \algo} \\
+  \seq{a}, ~ w, ~ k \vdash i \Rightarrow w, ~ k \\
 %
 % If-true
 \newline \\
-  \mu = \getenv(c) \quad w, \mu \vdash e \Rightarrow v \quad
-  \istrue(v) \quad c' = \prependinstr(c, \seq{i_1}) \\
+  \mu = \getenv(k) \quad w, \mu \vdash e \Rightarrow v \quad
+  \istrue(v) \quad k' = \prependinstr(k, \seq{i_1}) \\
   \hline
-  \seq{a}, w, c \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, c') \\
+  \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, k') \\
 %
 % If-false
 \newline \\
-  \mu = \getenv(c) \quad w, \mu \vdash e \Rightarrow v \quad
-  \neg \istrue(v) \quad c' = \prependinstr(c, \seq{i_2}) \\
+  \mu = \getenv(k) \quad w, \mu \vdash e \Rightarrow v \quad
+  \neg \istrue(v) \quad k' = \prependinstr(k, \seq{i_2}) \\
   \hline
-  \seq{a}, w, c \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, c') \\
+  \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, k') \\
 %
 % Either-1
 \newline \\
   \hline
-  \seq{a}, w, c \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(c, \seq{i_1})) \\
+  \seq{a}, w, k \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(k, \seq{i_1})) \\
 %
 % Either-2
 \newline \\
   \hline
-  \seq{a}, w, c \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(c, \seq{i_2})) \\
+  \seq{a}, w, k \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(k, \seq{i_2})) \\
 %
 % Enter
 \newline \\
-  \mu = \getenv(c) \quad
-  n = \getctxcnt(c) \quad
+  \mu = \getenv(k) \quad
   w, \mu \vdash e_1 \Rightarrow v_1 \quad
   w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
+  \seq c = \getctx(k) \quad
+  \seq{wi_{end}} = [ ~ \getendalgo(c) ~ | ~ c \leftarrow \seq c ~ ] \\
   \hline
-  \seq{a}, (\seq{wv}, \seq{wi}, sto), c \vdash \enteri ~ (e_1, e_2)
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \enteri ~ (e_1, e_2)
   \Rightarrow
-  ((v_1 ~ \seq{wv}, \seq{v_2} ~ \seq{wi}, sto), \wasm ~ (n+1, \increasectxcnt(c))) \\
+  ((v_1 ~ \seq{wv}, \seq{v_2} ~ \seq{wi_{end}}~ \seq{wi}, sto), \wasm ~ (v_1 ~ \seq c, \resetctx(k))) \\
 %
 % PushCtx
 \newline \\
-  \mu = \getenv(c) \quad w, \mu \vdash e \Rightarrow v \\
+  w, \getenv(k) \vdash e \Rightarrow v \\
   \hline
-  \seq{a}, w, c \vdash \pushctxi ~ e
+  \seq{a}, w, k \vdash \pushctxi ~ e
   \Rightarrow
-  (\push_{WasmValue}(w, v), \increasectxcnt(c)) \\
+  (\push_{WasmValue}(w, v), \addctx(k, v)) \\
 %
 % Push
 \newline \\
-  w, \mu \vdash e \Rightarrow v \\
+  w, \getenv(k) \vdash e \Rightarrow v \\
   \hline
-  \seq{a}, w, c \vdash \pushi ~ e \Rightarrow (\push_{WasmValue}(w, v), c) \\
+  \seq{a}, w, k \vdash \pushi ~ e \Rightarrow (\push_{WasmValue}(w, v), k) \\
 %
 % PopCtx
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   wv_{ctx} ~ \seq{wv'} = \exit_{WasmValue}(\seq{wv}) \quad
   \mu' = \assign(\mu, e, wv_{ctx}) \\
-  c_1 = \setenv(c, \mu') \quad
-  c_2 = \exit_{Cont}(c_1) \quad
+  k_1 = \setenv(k, \mu') \quad
+  k_2 = \exit_{Cont}(k_1) \quad
   \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \\
   \hline
-  \seq{a}, (\seq{wv}, \seq{wi}, sto), c \vdash \popctxi ~ e
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \popctxi ~ e
   \Rightarrow
-  ((\seq{wv'}, \seq{wi'}, sto), c_2) \\
+  ((\seq{wv'}, \seq{wi'}, sto), k_2) \\
 %
 % Pop
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   wv, w' = \pop_{WasmValue}(w) \quad
   \mu' = \assign(\mu, e, wv) \\
   \hline
-  \seq{a}, w, c \vdash \popi ~ e \Rightarrow (w', \setenv(c, \mu')) \\
+  \seq{a}, w, k \vdash \popi ~ e \Rightarrow (w', \setenv(k, \mu')) \\
 %
 % PopN
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   w, \mu \vdash e_2 \Rightarrow \numv ~ n \quad
   wv^n, w' = \popn_{WasmValue}(w, n) \quad
   \mu' = \assign(\mu, e_1, \listv ~ wv^n) \\
   \hline
-  \seq{a}, w, c \vdash \popni ~ (e_1, e_2) \Rightarrow (w', \setenv(c, \mu')) \\
+  \seq{a}, w, k \vdash \popni ~ (e_1, e_2) \Rightarrow (w', \setenv(k, \mu')) \\
 %
 % PopAll
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   \seq{wv_0}, \seq{wv_1} = \splitctx(wv) \quad
   \mu' = \assign(\mu, e, \listv ~ \seq{wv_0}) \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), e \vdash \popalli ~ e
   \Rightarrow
-  ((\seq{wv_1}, \seq{wi}, sto), \setenv(c, \mu')) \\
+  ((\seq{wv_1}, \seq{wi}, sto), \setenv(k, \mu')) \\
 %
 % Let
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   w, \mu \vdash e_2 \Rightarrow v \quad
   \mu' = \assign(\mu, e_1, v) \\
   \hline
-  \seq{a}, w, c \vdash \leti ~ (e_1, e_2)
+  \seq{a}, w, k \vdash \leti ~ (e_1, e_2)
   \Rightarrow
-  (w, \setenv(c, \mu')) \\
+  (w, \setenv(k, \mu')) \\
 %
 % Trap
 \newline \\
   \hline
-  \seq{a}, w, c \vdash \trapi \Rightarrow (w, \ret ~ (\trapv, \mt)) \\
+  \seq{a}, w, k \vdash \trapi \Rightarrow (w, \ret ~ (\trapv, \mt)) \\
 %
 % Return-rule
 \newline \\
   \hline
-  \seq{a}, w, \al~ (\seq{i}, \mu, n, c) \vdash \returnrulei \Rightarrow (w, c) \\
+  \seq{a}, w, \algo~ (\seq{i}, \mu, \seq c, k) \vdash \returnrulei \Rightarrow (w, k) \\
 %
 % Return-func
 \newline \\
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  \seq{a}, w, \al ~ (\seq{i}, \mu, n, c) \vdash \returnfunci ~ e \Rightarrow (w, \ret ~ (v, c)) \\
+  \seq{a}, w, \algo ~ (\seq{i}, \mu, \seq c, k) \vdash \returnfunci ~ e \Rightarrow (w, \ret ~ (v, k)) \\
 %
 % Execute
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  \seq{a}, w, c \vdash \executei ~ e \Rightarrow (w, \exe ~ (v, c)) \\
+  \seq{a}, w, k \vdash \executei ~ e \Rightarrow (w, \exe ~ (v, k)) \\
 %
 % ExecuteSeq
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   w, \mu \vdash e \Rightarrow \listv ~ \seq v \quad
-  c' = \fold(\execute, \seq v, c) \\
+  k' = \fold(\execute, \seq v, k) \\
   \hline
-  \seq{a}, w, c \vdash \executeseqi ~ e \Rightarrow (w, c') \\
+  \seq{a}, w, k \vdash \executeseqi ~ e \Rightarrow (w, k') \\
 %
 % Call-fname
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   \fnamev ~ str_2 = \mu(str_1) \quad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
-  \seq{a}, w, c \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_2, \seq v, c)) \\
+  \seq{a}, w, k \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_2, \seq v, k)) \\
 %
 % Call-fname
 \newline \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   str_1 \not\in \domain(\mu) \quad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
-  \seq{a}, w, c \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_1, \seq v, c)) \\
+  \seq{a}, w, k \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_1, \seq v, k)) \\
 %
 % Replace-frame
 \newline \\
 \text{NOTE: $e_1$ is either store or current frame} \\
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   w, \mu \vdash e_1 \Rightarrow v_1 \quad
   \isframe(v_1) \quad
   w, \mu \vdash e_2 \Rightarrow v_2 \quad
   v_3 = \update(v_1, \seq p, v_2) \\
   \hline
-  \seq{a}, w, c \vdash \replacei ~ (e_1, \seq{path}, e_2) \Rightarrow (\setcurframe(w, v_3), c) \\
+  \seq{a}, w, k \vdash \replacei ~ (e_1, \seq{path}, e_2) \Rightarrow (\setcurframe(w, v_3), k) \\
 %
 % Replace-store
 \newline \\
   w, \mu \vdash e_1 \Rightarrow \storev \quad
-  \mu = \getenv(c) \quad
+  \mu = \getenv(k) \quad
   w, \mu \vdash e_2 \Rightarrow v_2 \quad
   sto' = \update_{Sto}(sto, \seq p, v_2) \\
   \hline
-  \seq{a}, (\seq{wv}, \seq{wi}, sto), c \vdash \replacei ~ (e_1, \seq{path}, e_2)
-  \Rightarrow ((\seq{wv}, \seq{wi}, sto'), c) \\
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \replacei ~ (e_1, \seq{path}, e_2)
+  \Rightarrow ((\seq{wv}, \seq{wi}, sto'), k) \\
 \end{gather*}
 
 
@@ -692,7 +699,7 @@
 %
 % Iter-n
 \newline \\
-  w, \mu \vdash e_2 \numv ~ n \\
+  w, \mu \vdash e_2 \Rightarrow \numv ~ n \\
   f_i =
     (\lambda ~ x ~ acc. ~
       \listv ~ \seq v = \mu(x); ~
@@ -810,18 +817,16 @@
 %
 % execute
 \newline \\
-  &\execute(v, c) = \exe(v, c) \\
+  &\execute(v, k) = \exe(v, k) \\
 %
 % exit_cont-wasm_0
 \newline \\
-&\text{NOTE: input cont of exit is either \al ~ or \wasm} \\
-  &\exit_{Cont}(\wasm (0, c)) = \wasm(0, \exit_{Cont}(c)) \\
+&\text{NOTE: input cont of exit is either \algo ~ or \wasm} \\
+  &\exit_{Cont}(\wasm (\epsilon, k)) = \wasm(\epsilon, \exit_{Cont}(k)) \\
 % exit_cont-wasm_nonzero
-  &n > 0 \\
-  \hline
-  &\exit_{Cont}(\wasm (n, c)) = \wasm(n-1, c) \\
+  &\exit_{Cont}(\wasm (c ~ \seq c', k)) = \wasm(\seq c', k) \\
 % exit_cont-al
-  &\exit_{Cont}(\al (\seq i, \mu, n, c)) = \al (\seq i, \mu, n, \exit(c)) \\
+  &\exit_{Cont}(\algo (\seq i, \mu, \seq c, k)) = \algo (\seq i, \mu, \seq c, \exit(k)) \\
 %
 % exit_wasm_instr-end
 \newline \\
@@ -848,23 +853,27 @@
 %
 % get_env
 \newline \\
-  &\getenv(\al ~ (\seq i, \mu, n, c)) = \mu \\
+  &\getenv(\algo ~ (\seq i, \mu, \seq c, k)) = \mu \\
 %
 % set_env
 \newline \\
-  &\setenv(\al ~ (\seq i, \mu, n, c), \mu') = \al ~ (\seq i, \mu', n, c) \\
+  &\setenv(\algo ~ (\seq i, \mu, \seq c, k), \mu') = \algo ~ (\seq i, \mu', \seq c, k) \\
 %
 % prepend_instr
 \newline \\
-  &\prependinstr(\al ~ (\seq i, \mu, n, c), \seq{i'}) = \al ~ (\seq{i'} ~ \seq i, \mu, n, c) \\
+  &\prependinstr(\algo ~ (\seq i, \mu, \seq c, k), \seq{i'}) = \algo ~ (\seq{i'} ~ \seq i, \mu, \seq c, k) \\
 %
-% get_ctx_cnt
+% get_ctx
 \newline \\
-  &\getctxcnt(\al ~ (\seq i, \mu, n, c)) = n \\
+  &\getctx(\algo ~ (\seq i, \mu, \seq c, k)) = \seq c \\
 %
-% increase_ctx_cnt
+% add_ctx
 \newline \\
-  &\increasectxcnt(\al ~ (\seq i, \mu, n, c)) = \al ~ (\seq i, \mu, n + 1, c) \\
+  &\addctx(\algo ~ (\seq i, \mu, \seq c, k), c') = \algo ~ (\seq i, \mu, c' ~ \seq c, k) \\
+%
+% reset_ctx
+\newline \\
+  &\resetctx(\algo ~ (\seq i, \mu, \seq c, k)) = \algo ~ (\seq i, \mu, \epsilon, k) \\
 %
 % push
 \newline \\
@@ -991,6 +1000,11 @@
   =
   (str_0, v_0) ~ \updatedot(\seq{(str_1, v_1)}, str_2, v_2) \\
 %
+% get_end_algo
+\newline \\
+  &\getendalgo(\casev(\text{"LABEL"}, \epsilon)) = \casev(\text{"EXTING"}, \epsilon) \\
+  &\getendalgo(\casev(\text{"FRAME"}, \epsilon)) = \casev(\text{"RETURNING"}, \epsilon) \\
+%
 % is_true
 \newline \\
   &\istrue(\boolv ~ b) = b \\
@@ -998,7 +1012,7 @@
 %
 % is_frame
 \newline \\
-  &\isframe(\casev ~ (\text{"FRAME\_"}, \seq v)) = true \\
+  &\isframe(\casev ~ (\text{"FRAME"}, \seq v)) = true \\
   &otherwise \\
   \hline
   &\isframe(v) = false \\
