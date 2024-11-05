@@ -56,6 +56,10 @@
 
 \renewcommand{\symbol}[1]{\textbf{#1}}
 
+% Algorithm
+\newcommand{\rel}{\symbol{Rel}}
+\newcommand{\fun}{\symbol{Fun}}
+
 % Continuation
 \newcommand{\mt}{\symbol{Empty}}
 \newcommand{\call}{\symbol{Call}}
@@ -162,6 +166,7 @@
 \newcommand{\helper}[1]{\text{#1}}
 
 % Helper function
+\newcommand{\getalgoname}{\helper{get\_algo\_name}}
 \newcommand{\lookup}{\helper{lookup}}
 \newcommand{\execute}{\helper{execute}}
 \newcommand{\exit}{\helper{exit}}
@@ -214,7 +219,8 @@
   s \in S =& \seq A \times W \times Cont \\
 %
 % Algorithm
-  a \in A =& str \times \seq E \times \seq I \\
+  a \in A =& ~ \rel ~ String \times \seq E \times \seq I \\
+    | & ~ \fun ~ String \times \seq E \times \seq I \\
 %
 % Wasm state
   w \in W =& \seq{WasmValue} \times \seq{WasmInstr} \times Store \\
@@ -333,7 +339,7 @@
 %
 % Call
 \newline \\
-  \seq e, \seq i = \lookup(\seq{a}, str_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \fun ~ (str_1, \seq e, \seq i) = \lookup(\seq{a}, str_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
   (\seq{a}, w, \call ~ (str_0, str_1, \seq v, k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \call ~ (str_0, str_1, \seq v, k))) \\
 %
@@ -370,7 +376,7 @@
 \newline \\
   |\seq c| > 0 \quad \neg \iswasmvalueinstr(wi) \\
   \casev ~ (str, \seq v) = wi \quad
-  \seq e, \seq i = \lookup(\seq{a}, str) \quad
+  \rel (str, \seq e, \seq i) = \lookup(\seq{a}, str) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
   (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (\seq c, k))
@@ -389,7 +395,7 @@
 \newline \\
   \neg \iswasmvalueinstr(wi') \\
   \casev ~ (str, \seq v) = wi \quad
-  \seq e, \seq i = \lookup(\seq{a}, str) \quad
+  \rel ~ (str, \seq e, \seq i) = \lookup(\seq{a}, str) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
   (\seq{a}, w, \exe ~ (wi', k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, k)) \\
@@ -796,13 +802,20 @@
 
 \begin{align*}
 %
+% get_algo_name
+\newline \\
+  &\getalgoname(\rel ~ (str, \seq e, \seq i)) = str \\
+  &\getalgoname(\fun ~ (str, \seq e, \seq i)) = str \\
+%
 % lookup
-  &str' = str \\
+\newline \\
+  &str = \getalgoname(a) \\
   \hline
-  &\lookup((str', \seq e, \seq i) ~ \seq{a'}, str) = \seq e, \seq i \\
-  &str' \not= str \\
+  &\lookup(a ~ \seq{a'}, str) = a \\
+%
+  &str \not = \getalgoname(a) \\
   \hline
-  &\lookup((str, \seq e, \seq i) ~ \seq{a'}, str) = \lookup(\seq{a'}, str) \\
+  &\lookup(a ~ \seq{a'}, str) = \lookup(\seq{a'}, str) \\
 %
 % pop_all-ctx
 \newline \\
@@ -824,7 +837,7 @@
 &\text{NOTE: input cont of exit is either \algo ~ or \wasm} \\
   &\exit_{Cont}(\wasm (\epsilon, k)) = \wasm(\epsilon, \exit_{Cont}(k)) \\
 % exit_cont-wasm_nonzero
-  &\exit_{Cont}(\wasm (c ~ \seq c', k)) = \wasm(\seq c', k) \\
+  &\exit_{Cont}(\wasm (c ~ \seq{c'}, k)) = \wasm(\seq{c'}, k) \\
 % exit_cont-al
   &\exit_{Cont}(\algo (\seq i, \mu, \seq c, k)) = \algo (\seq i, \mu, \seq c, \exit(k)) \\
 %
