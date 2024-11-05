@@ -63,10 +63,9 @@
 % Continuation
 \newcommand{\mt}{\symbol{Empty}}
 \newcommand{\call}{\symbol{Call}}
-\newcommand{\algo}{\symbol{Algo}}
-\newcommand{\enter}{\symbol{Enter}}
 \newcommand{\wasm}{\symbol{Wasm}}
 \newcommand{\exe}{\symbol{Execute}}
+\newcommand{\algo}{\symbol{Algo}}
 \newcommand{\ret}{\symbol{Return}}
 
 % Instruction
@@ -228,14 +227,14 @@
   wi \in WasmInstr =& V \\
 %
 % Store
-  sto \in Store =& String \mapsto \seq V \\
+  sto \in Store =& \seq{(String \times V)} \\
 %
 % Continuation
   k \in Cont =& ~ \mt \\
-    | & ~ \call ~ String \times \seq V \times Cont \\
+    | & ~ \call ~ String \times String \times \seq V \times Cont \\
     | & ~ \algo ~ \seq I \times Env \times \seq C \times Cont \\
     | & ~ \wasm ~ \seq C \times Cont \\
-    | & ~ \exe ~ wi \times Cont \\
+    | & ~ \exe ~ WasmInstr \times Cont \\
     | & ~ \ret ~ V \times Cont \\
 %
 % Environment
@@ -271,7 +270,7 @@
     | & ~ \une ~ Unop \times E \\
     | & ~ \bine ~ Binop \times E \times E \\
     | & ~ \acce ~ E \times Path \\
-    | & ~ \upde ~ E \times \seq Path \times E \\
+    | & ~ \upde ~ E \times \seq{Path} \times E \\
     | & ~ \stre ~ \seq{(String \times E)} \\
     | & ~ \compe ~ E \times E \\
     | & ~ \cate ~ E \times E \\
@@ -316,14 +315,68 @@
 % Value
   v \in V =& ~ \numv ~ \mathbb N \\
     | & ~ \boolv ~ \mathbb B \\
+    | & ~ \fnamev ~ String \\
     | & ~ \listv ~ \seq V \\
     | & ~ \strv ~ \seq{(String \times V)} \\
-    | & ~ \casev ~ String \times \seq V \\
     | & ~ \tupv ~ \seq V \\
-    | & ~ \fnamev ~ String \\
+    | & ~ \casev ~ String \times \seq V \\
     | & ~ \trapv \\
     | & ~ \storev \\
 \end{align*}
+
+% state
+An AL state consists of sequence of algorithm, a WebAssembly state, and a
+continuation.
+% algorithm
+An algorithm is either a relation or a function that repectively correspond to
+the relation definition and the function definition in the DSL.
+Both of them consist of name, parameters, and AL instructions, but has distinct
+usage.
+% WebAssembly state
+WebAssembly state consists of a WebAssembly value stack, an WebAssembly
+instruction stack, and a store.
+% WebAssembly value & instruction
+A WebAssembly value and a WebAssembly instruction are expressed in values,
+especially in the form of $\casev$.
+% store
+A store is expressed in a sequence of a field name and an AL value pairs which
+models records.
+% continuation
+A continuation is empty; let call with a variable, a function name, arguments,
+and a continuation; wasm with contexts and a continuation; execute with a
+WebAssembly instruction and a continuation; algorithm with AL instructions, an
+environment, contexts, and a continuation; or return with a AL value and a
+continuation.
+% env
+A environment is a finite mapping from a variable name to the AL value.
+% context
+A context is a AL value, especially in the form of $\casev$.
+% instruction
+An instruction is if, nondeterministically choosing either branch, entering a
+block, pusing a context, pushing a value, popping a context, popping a value,
+popping n values, popping all the values within a context, let binding,
+traping, returing an AL relation, returing an AL function, executing WebAsembly
+instruction, executing WebAssembly instruction sequence, AL function call with
+let binding, or replacing some mutable data structure.
+% expression
+An expression is variable, number, boolean, function name, unary operation,
+binary operation, access elements of an data structure, update elements of an
+data structure, record (or struct), record composition, list concatenation,
+membership checking, getting length, tuple, tagged tuple, iteration, list,
+getting current context, choosing an element from an data structure, tag
+checking, checking context kind, match relation, or type relation.
+% value
+A value is number, boolean, function name, list, record, tuple, tagged tuple,
+trap, or store.
+
+
+% terminology
+State, value, function, and instruction exist in both WebAssembly and AL. In
+this section, we abbreviate AL-specific terms (AL state, AL value, AL function
+and AL instruction) as simply state, value, function, and instruction, while
+keeping the WebAssembly terms unchanged.
+
+
 
 
 
@@ -572,10 +625,10 @@
 %
 % Replace-store
 \newline \\
-  w, \mu \vdash e_1 \Rightarrow \storev \quad
   \mu = \getenv(k) \quad
+  w, \mu \vdash e_1 \Rightarrow \storev \quad
   w, \mu \vdash e_2 \Rightarrow v_2 \quad
-  sto' = \update_{Sto}(sto, \seq p, v_2) \\
+  sto' = \update(\strv sto, \seq p, v_2) \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \replacei ~ (e_1, \seq{path}, e_2)
   \Rightarrow ((\seq{wv}, \seq{wi}, sto'), k) \\
@@ -961,9 +1014,10 @@
   \hline
   &\access(\mu, w, v, \dotp ~ str) = \access(\mu, w, \strv ~ \seq{(str_1, v_1)}, \dotp ~ str) \\
 % access-store
-  &\storev = v \\
+  &\storev = v \quad w = (\seq{wv}, \seq{wi}, sto)\\
   \hline
-  &\access(\mu, (\seq{wv}, \seq{wi}, sto), v, \dotp ~ str) = sto(str) \\
+  &\access(\mu, w, v, path)
+  =\access(\mu, w, \strv sto, path) \\
 %
 % update-idx
 \newline \\
