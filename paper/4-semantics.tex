@@ -82,7 +82,7 @@
 \newcommand{\leti}{\symbol{LetI}}
 \newcommand{\trapi}{\symbol{TrapI}}
 \newcommand{\nopi}{\symbol{NopI}}
-\newcommand{\returnrulei}{\symbol{ReturnRuleI}}
+\newcommand{\returnreli}{\symbol{ReturnRelI}}
 \newcommand{\returnfunci}{\symbol{ReturnFuncI}}
 \newcommand{\executei}{\symbol{ExecuteI}}
 \newcommand{\executeseqi}{\symbol{ExecuteSeqI}}
@@ -257,7 +257,7 @@
     &&&& | & ~ \popalli ~ e &\quad\text{(Pop All)} \\
     &&&& | & ~ \leti ~ (e, e) &\quad\text{(Let)} \\
     &&&& | & ~ \trapi &\quad\text{(Trap)} \\
-    &&&& | & ~ \returnrulei &\quad\text{(Return Relation)} \\
+    &&&& | & ~ \returnreli &\quad\text{(Return Relation)} \\
     &&&& | & ~ \returnfunci ~ e &\quad\text{(Return Function)} \\
     &&&& | & ~ \executei ~ e &\quad\text{(Execute)} \\
     &&&& | & ~ \executeseqi ~ e &\quad\text{(Execute Sequence)} \\
@@ -504,14 +504,14 @@ $.
 %
 % If-true
 \newline \\
-  \mu = \getenv(k) \quad w, \mu \vdash e \Rightarrow v \quad
+  w, \getenv(k) \vdash e \Rightarrow v \quad
   \istrue(v) \quad k' = \prependinstr(k, \seq{i_1}) \\
   \hline
   \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, k') \\
 %
 % If-false
 \newline \\
-  \mu = \getenv(k) \quad w, \mu \vdash e \Rightarrow v \quad
+  \quad w, \getenv(k) \vdash e \Rightarrow v \quad
   \neg \istrue(v) \quad k' = \prependinstr(k, \seq{i_2}) \\
   \hline
   \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, k') \\
@@ -532,7 +532,7 @@ $.
   w, \mu \vdash e_1 \Rightarrow v_1 \quad
   w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
   \seq c = \getctx(k) \quad
-  \seq{wi_{end}} = [ ~ \getendalgo(c) ~ | ~ c \leftarrow \seq c ~ ] \\
+  \seq{wi_{end}} = [ ~ \getendalgo(c) ~ | ~ c \leftarrow v_2 ~ \seq c ~ ] \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \enteri ~ (e_1, e_2)
   \Rightarrow
@@ -554,22 +554,19 @@ $.
 %
 % PopCtx
 \newline \\
-  \mu = \getenv(k) \quad
+  \mu = \assign(\getenv(k), e, wv_{ctx}) \\
   wv_{ctx} ~ \seq{wv'} = \exit_{WasmValue}(\seq{wv}) \quad
-  \mu' = \assign(\mu, e, wv_{ctx}) \\
-  k_1 = \setenv(k, \mu') \quad
-  k_2 = \exit_{Cont}(k_1) \quad
-  \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \\
+  \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \quad
+  k_1 = \exit_{Cont}(k) \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \popctxi ~ e
   \Rightarrow
-  ((\seq{wv'}, \seq{wi'}, sto), k_2) \\
+  ((\seq{wv'}, \seq{wi'}, sto), \setenv(k_1, \mu)) \\
 %
 % Pop
 \newline \\
-  \mu = \getenv(k) \quad
   wv, w' = \pop_{WasmValue}(w) \quad
-  \mu' = \assign(\mu, e, wv) \\
+  \mu' = \assign(\getenv(k), e, wv) \\
   \hline
   \seq{a}, w, k \vdash \popi ~ e \Rightarrow (w', \setenv(k, \mu')) \\
 %
@@ -584,9 +581,8 @@ $.
 %
 % PopAll
 \newline \\
-  \mu = \getenv(k) \quad
   \seq{wv_0}, \seq{wv_1} = \splitctx(wv) \quad
-  \mu' = \assign(\mu, e, \listv ~ \seq{wv_0}) \\
+  \mu' = \assign(\getenv(k), e, \listv ~ \seq{wv_0}) \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), e \vdash \popalli ~ e
   \Rightarrow
@@ -610,7 +606,7 @@ $.
 % Return-rule
 \newline \\
   \hline
-  \seq{a}, w, \algo~ (\seq{i}, \mu, \seq c, k) \vdash \returnrulei \Rightarrow (w, k) \\
+  \seq{a}, w, \algo~ (\seq{i}, \mu, \seq c, k) \vdash \returnreli \Rightarrow (w, k) \\
 %
 % Return-func
 \newline \\
@@ -620,15 +616,13 @@ $.
 %
 % Execute
 \newline \\
-  \mu = \getenv(k) \quad
-  w, \mu \vdash e \Rightarrow v \\
+  w, \getenv(k) \vdash e \Rightarrow v \\
   \hline
   \seq{a}, w, k \vdash \executei ~ e \Rightarrow (w, \exe ~ (v, k)) \\
 %
 % ExecuteSeq
 \newline \\
-  \mu = \getenv(k) \quad
-  w, \mu \vdash e \Rightarrow \listv ~ \seq v \quad
+  w, \getenv(k) \vdash e \Rightarrow \listv ~ \seq v \quad
   k' = \fold(\execute, \seq v, k) \\
   \hline
   \seq{a}, w, k \vdash \executeseqi ~ e \Rightarrow (w, k') \\
@@ -636,18 +630,18 @@ $.
 % Call-fname
 \newline \\
   \mu = \getenv(k) \quad
-  \fnamev ~ str_2 = \mu(str_1) \quad
+  \fnamev ~ s_2 = \mu(s_1) \quad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
-  \seq{a}, w, k \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_2, \seq v, k)) \\
+  \seq{a}, w, k \vdash \calli ~ (s_0, s_1, \seq e) \Rightarrow (w, \call ~ (s_0, s_2, \seq v, k)) \\
 %
 % Call-fname
 \newline \\
   \mu = \getenv(k) \quad
-  str_1 \not\in \domain(\mu) \quad
+  s_1 \not\in \domain(\mu) \quad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
-  \seq{a}, w, k \vdash \calli ~ (str_0, str_1, \seq e) \Rightarrow (w, \call ~ (str_0, str_1, \seq v, k)) \\
+  \seq{a}, w, k \vdash \calli ~ (s_0, s_1, \seq e) \Rightarrow (w, \call ~ (s_0, s_1, \seq v, k)) \\
 %
 % Replace-frame
 \newline \\
@@ -658,7 +652,7 @@ $.
   w, \mu \vdash e_2 \Rightarrow v_2 \quad
   v_3 = \update(v_1, \seq p, v_2) \\
   \hline
-  \seq{a}, w, k \vdash \replacei ~ (e_1, \seq{path}, e_2) \Rightarrow (\setcurframe(w, v_3), k) \\
+  \seq{a}, w, k \vdash \replacei ~ (e_1, \seq{p}, e_2) \Rightarrow (\setcurframe(w, v_3), k) \\
 %
 % Replace-store
 \newline \\
@@ -667,9 +661,68 @@ $.
   w, \mu \vdash e_2 \Rightarrow v_2 \quad
   sto' = \update(\strv sto, \seq p, v_2) \\
   \hline
-  \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \replacei ~ (e_1, \seq{path}, e_2)
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \replacei ~ (e_1, \seq{p}, e_2)
   \Rightarrow ((\seq{wv}, \seq{wi}, sto'), k) \\
 \end{gather*}
+
+Given the algorithms $\seq a$, WebAssembly state $w$, and continuation,
+executing an instruction produces an updated WebAssembly state and a new
+continuation.
+Here, the input continuation is always \algo{}, but instead of enumerating all
+arguments individually, we encapsulate them within the \algo{} continuation.
+% If
+\ifi{} instruction evaluates a $e$ and selects the corresponding branch.
+% Either
+\eitheri{} instruction nondeterministically selects a branch.
+% Enter
+\enteri{} instruction is a key instruction to describe WebAssembly control flow.
+It evaluates $e_1$ and pushes the context $v_1$ to the WebAssembly value stack.
+It also evaluates $e_2$ to get WebAssembly instruction sequence $\seq{v_2}$.
+Then, it appends end instruction of pushed contexts including $v_1$, and pushes
+them to the WebAssembly instruction stack.
+Finally, it resets the contexts of the continuation.
+% Push Context
+\pushctxi{} instruction evaluates $e$, pushes the context and add the context
+in the continuation.
+% Push
+\pushi{} instruction evaluates $e$ and pushes the value to the WebAssembly
+value stack.
+% Pop Context
+\popctxi{} instruction is another key instruction to describe WebAssembly
+control flow.
+It pops all the WebAssembly value until context inclusively and the WebAssembly
+instructions until end instruction inclusively.
+It also pops the context in the continuation.
+Then, it assign the context to $e$.
+% Pop
+\popi{} instruction pops a WebAssembly value and assign the value to $e$.
+% PopN
+\popn{} instruction evalutes $e_2$ to get n and pops n WebAssembly values and
+assign the values to $e_1$.
+% PopAll
+\popalli{} instruction pops all the WebAssembly value until context exclusively
+and assign the values to $e_1$.
+% Let
+\leti{} instruction evaluates $e_2$ and assign the value to $e_1$.
+% Trap
+\trapi{} instruction terminates the execution with \trapv{}.
+% Return Relation
+\returnreli{} instruction pops a continuation.
+% Return Function
+\returnfunci{} instruction evaluates $e$, pops a continuation, and results in
+\ret{} with the resulting value.
+% Execute
+\executei{} instruction evaluates $e$ and result in a \exe{} with the value.
+% Execute Sequence
+\executeseqi{} instruction evaluates $e$ and result in a nesting \exe{}.
+% Call
+\calli{} instruction checks the environment and if $s_1$ exists, gets the
+function name in the environment, and if not, uses $s_1$ as the function name.
+It evaluates $\seq e$ and construct \call{} with binding variable, the function
+name, and the values.
+\replacei{} evaluates $e_1$ and $e_2$ to $v_1$ and $v_2$.
+If $v_1$ is frame, access the frame with $p$ and update the value to $v_2$.
+If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 
 
 
@@ -717,13 +770,13 @@ $.
 \newline \\
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  w, \mu \vdash \acce ~ (e, path) \Rightarrow \access(w, \mu, v, path) \\
+  w, \mu \vdash \acce ~ (e, p) \Rightarrow \access(w, \mu, v, p) \\
 %
 % Upd
 \newline \\
   w, \mu \vdash e_1 \Rightarrow v_1 \quad w, \mu \vdash e_2 \Rightarrow v_2 \\
   \hline
-  w, \mu \vdash \upde ~ (e_1, \seq path, e_2) \Rightarrow \update(v_1, \seq path, v_2) \\
+  w, \mu \vdash \upde ~ (e_1, \seq p, e_2) \Rightarrow \update(v_1, \seq p, v_2) \\
 %
 % Str
 \newline \\
@@ -1053,17 +1106,17 @@ $.
 % access-store
   &\storev = v \quad w = (\seq{wv}, \seq{wi}, sto)\\
   \hline
-  &\access(\mu, w, v, path)
-  =\access(\mu, w, \strv sto, path) \\
+  &\access(\mu, w, v, p)
+  =\access(\mu, w, \strv sto, p) \\
 %
 % update-idx
 \newline \\
   &\numv ~ n = \sem{e}(\mu, w) \quad
   \listv ~ \seq{v_3} = v_1 \\
   \hline
-  &\update(\mu, w, v_1, (\idxp ~ e) ~ \seq{path}, v_2)
+  &\update(\mu, w, v_1, (\idxp ~ e) ~ \seq{p}, v_2)
   =
-  \updateidx(v_3, n, \update(\mu, w, \seq{v_3}[n], \seq{path}, v_2)) \\
+  \updateidx(v_3, n, \update(\mu, w, \seq{v_3}[n], \seq{p}, v_2)) \\
 % update_idx
   &\updateidx(v_0 ~ \seq{v_1}, 0, v_2) =  v_2 ~ \seq{v_1} \\
   &n > 0 \\
@@ -1076,9 +1129,9 @@ $.
   \numv ~ n_2 = \sem{e_2}(\mu, w) \quad
   \listv ~ \seq{v_3} = v_1 \\
   \hline
-  &\update(\mu, w, v_1, (\slicep ~ e) ~ \seq{path}, v_2)
+  &\update(\mu, w, v_1, (\slicep ~ e) ~ \seq{p}, v_2)
   =
-  \updateslice(v_3, n_1, n_2, \update(\mu, w, \seq{v_3}[n_1: n_2], \seq{path}, v_2)) \\
+  \updateslice(v_3, n_1, n_2, \update(\mu, w, \seq{v_3}[n_1: n_2], \seq{p}, v_2)) \\
 % update_slice
   &\updateslice(v_0^n ~ \seq{v_1}, 0, n, v_2^n) = v_2^n ~ \seq{v_1} \\
   &m > 0 \\
@@ -1089,9 +1142,9 @@ $.
 \newline \\
   &\strv ~ \seq{(str', v')} = v \\
   \hline
-  &\update(\mu, w, v, (\dotp ~ str) ~ \seq{path}, v_2)
+  &\update(\mu, w, v, (\dotp ~ str) ~ \seq{p}, v_2)
   =
-  \updatedot(\seq{(str', v')}, str, \update(\mu, w, \access(v, \dotp ~ str), \seq{path}, v_2)) \\
+  \updatedot(\seq{(str', v')}, str, \update(\mu, w, \access(v, \dotp ~ str), \seq{p}, v_2)) \\
 % update_dot
   &str_0 = str_2 \\
   \hline
