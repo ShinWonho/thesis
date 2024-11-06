@@ -110,7 +110,6 @@
 \newcommand{\getcurctxe}{\symbol{GetCurContextE}}
 \newcommand{\choosee}{\symbol{ChooseE}}
 \newcommand{\iscaseofe}{\symbol{IsCaseOfE}}
-\newcommand{\isvalide}{\symbol{IsValidE}}
 \newcommand{\ctxkinde}{\symbol{CtxKindE}}
 \newcommand{\matche}{\symbol{MatchE}}
 \newcommand{\hastypee}{\symbol{HasTypeE}}
@@ -201,7 +200,6 @@
 \newcommand{\assign}{\helper{assign}}
 \newcommand{\binop}{\helper{binop}}
 % Reference interpreter
-\newcommand{\isvalid}{\helper{is\_valid}}
 \newcommand{\match}{\helper{match}}
 \newcommand{\hastype}{\helper{has\_type}}
 
@@ -918,12 +916,6 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
   \hline
   w, \mu \vdash \itere ~ (e_1, \listidxiter ~ e_2, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
 %
-% IsValid
-\newline \\
-  w, \mu \vdash e \Rightarrow v \\
-  \hline
-  w, \mu \vdash \isvalide ~ e \Rightarrow \boolv ~ (\isvalid(v)) \\
-%
 % Match
 \newline \\
   w, \mu \vdash e_1 \Rightarrow v_1 \quad
@@ -986,12 +978,12 @@ unbound.
 It evaluates $e_2$ to obtain $n$ and then behaves like \listniter{} as if
 $\listv ~ [0 ~ ... ~ n-1]$ was bound to the variables.
 % IsValid Match HasType
-\isvalide{}, \matche{}, and \hastypee{} expressions evaluate inner exressions
-and perform \isvalid{}, \match{}, and \hastype{}.
-Note that \isvalid{}, \match{}, and \hastype{} are implementations of
-WebAssembly static semantics.
-Note that the formalization for them is omitted as they are too WebAssembly
-specific and verbose.
+\matche{} and \hastypee{} expressions evaluate inner exressions and perform
+\match{} and \hastype{}, respectively.
+Note that \match{} and \hastype{} are implementations of WebAssembly static
+semantics.
+Their formalization is omitted as they are highly specific to WebAssembly and
+excessively verbose.
 
 
 
