@@ -231,13 +231,13 @@
   \text{Store}\quad& Store &\ni& sto &::=& \seq{(s, v)} \\
 %
 % Continuation
-  \text{Continuation}\quad & Cont &\ni& k &::=& ~ \mt \\
-    &&&& | & ~ \toplevelcall ~ (s, \seq v, k) \\
-    &&&& | & ~ \call ~ (s, s, \seq v, k) \\
-    &&&& | & ~ \wasm ~ (\seq c, k) \\
-    &&&& | & ~ \exe ~ (wi, k) \\
-    &&&& | & ~ \algo ~ (\seq i, \mu, \seq c, k) \\
-    &&&& | & ~ \ret ~ (v, k) \\
+  \text{Continuation}\quad & Cont &\ni& k &::=& ~ \mt &\quad\text{(Empty)} \\
+    &&&& | & ~ \toplevelcall ~ (s, \seq v, k) &\quad\text{(Top-level Call)} \\
+    &&&& | & ~ \call ~ (s, s, \seq v, k) &\quad\text{(Call)} \\
+    &&&& | & ~ \wasm ~ (\seq c, k) &\quad\text{(Wasm)} \\
+    &&&& | & ~ \exe ~ (wi, k) &\quad\text{(Execute)} \\
+    &&&& | & ~ \algo ~ (\seq i, \mu, \seq c, k) &\quad\text{(Algorithm)} \\
+    &&&& | & ~ \ret ~ (v, k) &\quad\text{(Return)} \\
 %
 % Environment
   \text{Environment}\quad& M &\ni& \mu &::=& \seq{[s \mapsto v]} \\
@@ -246,23 +246,23 @@
   \text{Context}\quad& C &\ni& c &::=& v \\
 %
 % Instruction
-  \text{Instruction}\quad& I &\ni& i &::=& ~ \ifi ~ (e, \seq i, \seq i) \\
-    &&&& | & ~ \eitheri ~ (\seq i, \seq i) \\
-    &&&& | & ~ \enteri ~ (e, e) \\
-    &&&& | & ~ \pushctxi ~ e \\
-    &&&& | & ~ \pushi ~ e \\
-    &&&& | & ~ \popctxi ~ e \\
-    &&&& | & ~ \popi ~ e \\
-    &&&& | & ~ \popni ~ (e, e) \\
-    &&&& | & ~ \popalli ~ e \\
-    &&&& | & ~ \leti ~ (e, e) \\
-    &&&& | & ~ \trapi \\
-    &&&& | & ~ \returnrulei \\
-    &&&& | & ~ \returnfunci ~ e \\
-    &&&& | & ~ \executei ~ e \\
-    &&&& | & ~ \executeseqi ~ e \\
-    &&&& | & ~ \calli ~ (s, s, \seq{e}) \\
-    &&&& | & ~ \replacei ~ (e, \seq{p}, e) \\
+  \text{Instruction}\quad& I &\ni& i &::=& ~ \ifi ~ (e, \seq i, \seq i) &\quad\text{(If)} \\
+    &&&& | & ~ \eitheri ~ (\seq i, \seq i) &\quad\text{(Either)} \\
+    &&&& | & ~ \enteri ~ (e, e) &\quad\text{(Enter)} \\
+    &&&& | & ~ \pushctxi ~ e &\quad\text{(Push Context)} \\
+    &&&& | & ~ \pushi ~ e &\quad\text{(Push)} \\
+    &&&& | & ~ \popctxi ~ e &\quad\text{(Pop Context)} \\
+    &&&& | & ~ \popi ~ e &\quad\text{(Pop)} \\
+    &&&& | & ~ \popni ~ (e, e) &\quad\text{(Pop N)} \\
+    &&&& | & ~ \popalli ~ e &\quad\text{(Pop All)} \\
+    &&&& | & ~ \leti ~ (e, e) &\quad\text{(Let)} \\
+    &&&& | & ~ \trapi &\quad\text{(Trap)} \\
+    &&&& | & ~ \returnrulei &\quad\text{(Return Relation)} \\
+    &&&& | & ~ \returnfunci ~ e &\quad\text{(Return Function)} \\
+    &&&& | & ~ \executei ~ e &\quad\text{(Execute)} \\
+    &&&& | & ~ \executeseqi ~ e &\quad\text{(Execute Sequence)} \\
+    &&&& | & ~ \calli ~ (s, s, \seq{e}) &\quad\text{(Let Call)} \\
+    &&&& | & ~ \replacei ~ (e, \seq{p}, e) &\quad\text{(Replace)} \\
 \end{array}
 \end{align*}
 \newpage
@@ -270,48 +270,48 @@
 \begin{array}{lcccrlr}
 %
 % Expression
-  \text{Expression}\quad& E &\ni& e &::=& ~ \vare ~ s \\
-    &&&& | & ~ \nume ~ n \\
-    &&&& | & ~ \boole ~ b \\
-    &&&& | & ~ \fnamee ~ s \\
-    &&&& | & ~ \une ~ (unop, e) \\
-    &&&& | & ~ \bine ~ (binop, e, e) \\
-    &&&& | & ~ \acce ~ (e, p) \\
-    &&&& | & ~ \upde ~ (e, \seq{p}, e) \\
-    &&&& | & ~ \stre ~ \seq{(s, e)} \\
-    &&&& | & ~ \compe ~ (e, e) \\
-    &&&& | & ~ \cate ~ (e, e) \\
-    &&&& | & ~ \meme ~ (e, e) \\
-    &&&& | & ~ \lene ~ e \\
-    &&&& | & ~ \tupe ~ \seq e \\
-    &&&& | & ~ \casee ~ (s, \seq e) \\
-    &&&& | & ~ \itere ~ (e, iter, \seq{s}) \\
-    &&&& | & ~ \liste ~ \seq e \\
-    &&&& | & ~ \getcurctxe ~ s \\
-    &&&& | & ~ \choosee ~ e \\
-    &&&& | & ~ \iscaseofe ~ (e, s) \\
-    &&&& | & ~ \ctxkinde ~ s \\
-    &&&& | & ~ \matche ~ (e, e) \\
-    &&&& | & ~ \hastypee ~ (e, s) \\
+  \text{Expression}\quad& E &\ni& e &::=& ~ \vare ~ s &\quad\text{(Variable)} \\
+    &&&& | & ~ \nume ~ n &\quad\text{(Number)} \\
+    &&&& | & ~ \boole ~ b &\quad\text{(Boolean)} \\
+    &&&& | & ~ \fnamee ~ s &\quad\text{(Function Name)} \\
+    &&&& | & ~ \une ~ (unop, e) &\quad\text{(Unary Operation)} \\
+    &&&& | & ~ \bine ~ (binop, e, e) &\quad\text{(Binary Operation)} \\
+    &&&& | & ~ \acce ~ (e, p) &\quad\text{(Access)} \\
+    &&&& | & ~ \upde ~ (e, \seq{p}, e) &\quad\text{(Update)} \\
+    &&&& | & ~ \stre ~ \seq{(s, e)} &\quad\text{(Record)} \\
+    &&&& | & ~ \compe ~ (e, e) &\quad\text{(Composition)} \\
+    &&&& | & ~ \cate ~ (e, e) &\quad\text{(Concatenation)} \\
+    &&&& | & ~ \meme ~ (e, e) &\quad\text{(Membership)} \\
+    &&&& | & ~ \lene ~ e &\quad\text{(Length)} \\
+    &&&& | & ~ \tupe ~ \seq e &\quad\text{(Tuple)} \\
+    &&&& | & ~ \casee ~ (s, \seq e) &\quad\text{(Tagged Tuple)} \\
+    &&&& | & ~ \itere ~ (e, iter, \seq{s}) &\quad\text{(Iteration)} \\
+    &&&& | & ~ \liste ~ \seq e &\quad\text{(List)} \\
+    &&&& | & ~ \getcurctxe ~ s &\quad\text{(Get Current Context)} \\
+    &&&& | & ~ \choosee ~ e &\quad\text{(Choose)} \\
+    &&&& | & ~ \iscaseofe ~ (e, s) &\quad\text{(Check Tag)} \\
+    &&&& | & ~ \ctxkinde ~ s &\quad\text{(Context Kind)} \\
+    &&&& | & ~ \matche ~ (e, e) &\quad\text{(Match)} \\
+    &&&& | & ~ \hastypee ~ (e, s) &\quad\text{(Has Type)} \\
 %
 % Operator
   \text{Unary Operator}\quad& Unop &\ni& unop &::=& ~ \notop ~ | ~ \minusop \\
   \text{Binary Operator}\quad& Binop &\ni& binop &::=& ~ \addop \\
-    &&&& | & ~ \subop \\
-    &&&& | & ~ \mulop \\
-    &&&& | & ~ \divop \\
-    &&&& | & ~ \modop \\
-    &&&& | & ~ \expop \\
-    &&&& | & ~ \implop \\
-    &&&& | & ~ \equivop \\
-    &&&& | & ~ \andop \\
-    &&&& | & ~ \orop \\
-    &&&& | & ~ \eqop \\
-    &&&& | & ~ \neop \\
-    &&&& | & ~ \ltop \\
-    &&&& | & ~ \gtop \\
-    &&&& | & ~ \leop \\
-    &&&& | & ~ \geop \\
+    &&&& | & ~ \subop &\quad\text{(Subtraction)} \\
+    &&&& | & ~ \mulop &\quad\text{(Multiplication)} \\
+    &&&& | & ~ \divop &\quad\text{(Division)} \\
+    &&&& | & ~ \modop &\quad\text{(Modular)} \\
+    &&&& | & ~ \expop &\quad\text{(Exponential)} \\
+    &&&& | & ~ \implop &\quad\text{(Implication)} \\
+    &&&& | & ~ \equivop &\quad\text{(Equivalence)} \\
+    &&&& | & ~ \andop &\quad\text{(And)} \\
+    &&&& | & ~ \orop &\quad\text{(Or)} \\
+    &&&& | & ~ \eqop &\quad\text{(Equal)} \\
+    &&&& | & ~ \neop &\quad\text{(Not Equal)} \\
+    &&&& | & ~ \ltop &\quad\text{(Less Than)} \\
+    &&&& | & ~ \gtop &\quad\text{(Greater Than)} \\
+    &&&& | & ~ \leop &\quad\text{(Less or Equal)} \\
+    &&&& | & ~ \geop &\quad\text{(Greater or Equal)} \\
 \end{array}
 \end{align*}
 \newpage
@@ -326,14 +326,14 @@
 %
 % Value
   \text{Value}\quad& V &\ni& v &::=& ~ \numv ~ n \\
-    &&&& | & ~ \boolv ~ b \\
-    &&&& | & ~ \fnamev ~ s \\
-    &&&& | & ~ \listv ~ \seq v \\
-    &&&& | & ~ \strv ~ \seq{(s, v)} \\
-    &&&& | & ~ \tupv ~ \seq v \\
-    &&&& | & ~ \casev ~ (s, \seq v) \\
-    &&&& | & ~ \trapv \\
-    &&&& | & ~ \storev \\
+    &&&& | & ~ \boolv ~ b &\quad\text{(Boolean)} \\
+    &&&& | & ~ \fnamev ~ s &\quad\text{(Function Name)} \\
+    &&&& | & ~ \listv ~ \seq v &\quad\text{(List)} \\
+    &&&& | & ~ \strv ~ \seq{(s, v)} &\quad\text{(Record)} \\
+    &&&& | & ~ \tupv ~ \seq v &\quad\text{(Tuple)} \\
+    &&&& | & ~ \casev ~ (s, \seq v) &\quad\text{(Tagged Tuple)} \\
+    &&&& | & ~ \trapv &\quad\text{(Trap)} \\
+    &&&& | & ~ \storev &\quad\text{(Store)} \\
 % Primitives
   \text{String}\quad& \mathbb S &\ni& s \\
   \text{Integer}\quad& \mathbb Z &\ni& n \\
