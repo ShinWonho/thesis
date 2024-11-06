@@ -213,116 +213,132 @@
 \label{syntax}
 
 \begin{align*}
+\begin{array}{lcccrlr}
 %
 % State
-  s \in S =& \seq A \times W \times Cont \\
+  \text{State}\quad& \Sigma &\ni& \sigma & ::=& \seq a, w, k \\
 %
 % Algorithm
-  a \in A =& ~ \rel ~ String \times \seq E \times \seq I \\
-    | & ~ \fun ~ String \times \seq E \times \seq I \\
+  \text{Algorithm}\quad& A &\ni& a &::=& ~ \rel ~ (s, \seq e, \seq i) &\quad\text{(Relation)} \\
+  &&&& | & ~ \fun ~ (s, \seq e, \seq i) &\quad\text{(Function)} \\
 %
 % Wasm state
-  w \in W =& \seq{WasmValue} \times \seq{WasmInstr} \times Store \\
-  wv \in WasmValue =& V \\
-  wi \in WasmInstr =& V \\
+  \text{Wasm State}\quad& W &\ni& w &::=& \seq{wv}, \seq{wi}, sto \\
+  \text{Wasm Value}\quad& WV &\ni& wv &::=& v \\
+  \text{Wasm Instruction}\quad& WI &\ni& wi &::=& v \\
 %
 % Store
-  sto \in Store =& \seq{(String \times V)} \\
+  \text{Store}\quad& Store &\ni& sto &::=& \seq{(s, v)} \\
 %
 % Continuation
-  k \in Cont =& ~ \mt \\
-    | & ~ \toplevelcall ~ String \times \seq V \times Cont \\
-    | & ~ \call ~ String \times String \times \seq V \times Cont \\
-    | & ~ \wasm ~ \seq C \times Cont \\
-    | & ~ \exe ~ WasmInstr \times Cont \\
-    | & ~ \algo ~ \seq I \times Env \times \seq C \times Cont \\
-    | & ~ \ret ~ V \times Cont \\
+  \text{Continuation}\quad & Cont &\ni& k &::=& ~ \mt \\
+    &&&& | & ~ \toplevelcall ~ (s, \seq v, k) \\
+    &&&& | & ~ \call ~ (s, s, \seq v, k) \\
+    &&&& | & ~ \wasm ~ (\seq c, k) \\
+    &&&& | & ~ \exe ~ (wi, k) \\
+    &&&& | & ~ \algo ~ (\seq i, \mu, \seq c, k) \\
+    &&&& | & ~ \ret ~ (v, k) \\
 %
 % Environment
-  \mu \in Env =& String \mapsto V \\
+  \text{Environment}\quad& M &\ni& \mu &::=& \seq{[s \mapsto v]} \\
 %
-% Control
-  c \in C =& V \\
+% Context
+  \text{Context}\quad& C &\ni& c &::=& v \\
 %
 % Instruction
-  i \in I =& ~ \ifi ~ E \times \seq I \times \seq I \\
-    | & ~ \eitheri ~ \seq I \times \seq I \\
-    | & ~ \enteri ~ E \times E \\
-    | & ~ \pushctxi ~ E \\
-    | & ~ \pushi ~ E \\
-    | & ~ \popctxi ~ E \\
-    | & ~ \popi ~ E \\
-    | & ~ \popni ~ E \times E \\
-    | & ~ \popalli ~ E \\
-    | & ~ \leti ~ E \times E \\
-    | & ~ \trapi \\
-    | & ~ \returnrulei \\
-    | & ~ \returnfunci ~ E \\
-    | & ~ \executei ~ E \\
-    | & ~ \executeseqi ~ E \\
-    | & ~ \calli ~ String \times String \times \seq{E} \\
-    | & ~ \replacei ~ E \times \seq{Path} \times E \\
+  \text{Instruction}\quad& I &\ni& i &::=& ~ \ifi ~ (e, \seq i, \seq i) \\
+    &&&& | & ~ \eitheri ~ (\seq i, \seq i) \\
+    &&&& | & ~ \enteri ~ (e, e) \\
+    &&&& | & ~ \pushctxi ~ e \\
+    &&&& | & ~ \pushi ~ e \\
+    &&&& | & ~ \popctxi ~ e \\
+    &&&& | & ~ \popi ~ e \\
+    &&&& | & ~ \popni ~ (e, e) \\
+    &&&& | & ~ \popalli ~ e \\
+    &&&& | & ~ \leti ~ (e, e) \\
+    &&&& | & ~ \trapi \\
+    &&&& | & ~ \returnrulei \\
+    &&&& | & ~ \returnfunci ~ e \\
+    &&&& | & ~ \executei ~ e \\
+    &&&& | & ~ \executeseqi ~ e \\
+    &&&& | & ~ \calli ~ (s, s, \seq{e}) \\
+    &&&& | & ~ \replacei ~ (e, \seq{p}, e) \\
+\end{array}
+\end{align*}
+\newpage
+\begin{align*}
+\begin{array}{lcccrlr}
 %
 % Expression
-  e \in E =& ~ \vare ~ String \\
-    | & ~ \nume ~ \mathbb N \\
-    | & ~ \boole ~ \mathbb B \\
-    | & ~ \fnamee ~ String \\
-    | & ~ \une ~ Unop \times E \\
-    | & ~ \bine ~ Binop \times E \times E \\
-    | & ~ \acce ~ E \times Path \\
-    | & ~ \upde ~ E \times \seq{Path} \times E \\
-    | & ~ \stre ~ \seq{(String \times E)} \\
-    | & ~ \compe ~ E \times E \\
-    | & ~ \cate ~ E \times E \\
-    | & ~ \meme ~ E \times E \\
-    | & ~ \lene ~ E \\
-    | & ~ \tupe ~ \seq E \\
-    | & ~ \casee ~ String \times \seq E \\
-    | & ~ \itere ~ E \times Iter \times \seq{String} \\
-    | & ~ \liste ~ \seq E \\
-    | & ~ \getcurctxe ~ String \\
-    | & ~ \choosee ~ E \\
-    | & ~ \iscaseofe ~ E \times String \\
-    | & ~ \ctxkinde ~ String \\
-    | & ~ \matche ~ E \times E \\
-    | & ~ \hastypee ~ E \times String \\
+  \text{Expression}\quad& E &\ni& e &::=& ~ \vare ~ s \\
+    &&&& | & ~ \nume ~ n \\
+    &&&& | & ~ \boole ~ b \\
+    &&&& | & ~ \fnamee ~ s \\
+    &&&& | & ~ \une ~ (unop, e) \\
+    &&&& | & ~ \bine ~ (binop, e, e) \\
+    &&&& | & ~ \acce ~ (e, p) \\
+    &&&& | & ~ \upde ~ (e, \seq{p}, e) \\
+    &&&& | & ~ \stre ~ \seq{(s, e)} \\
+    &&&& | & ~ \compe ~ (e, e) \\
+    &&&& | & ~ \cate ~ (e, e) \\
+    &&&& | & ~ \meme ~ (e, e) \\
+    &&&& | & ~ \lene ~ e \\
+    &&&& | & ~ \tupe ~ \seq e \\
+    &&&& | & ~ \casee ~ (s, \seq e) \\
+    &&&& | & ~ \itere ~ (e, iter, \seq{s}) \\
+    &&&& | & ~ \liste ~ \seq e \\
+    &&&& | & ~ \getcurctxe ~ s \\
+    &&&& | & ~ \choosee ~ e \\
+    &&&& | & ~ \iscaseofe ~ (e, s) \\
+    &&&& | & ~ \ctxkinde ~ s \\
+    &&&& | & ~ \matche ~ (e, e) \\
+    &&&& | & ~ \hastypee ~ (e, s) \\
 %
 % Operator
-  unop \in Unop =& ~ \notop ~ | ~ \minusop \\
-  binop \in Binop =& ~ \addop \\
-    | & ~ \subop \\
-    | & ~ \mulop \\
-    | & ~ \divop \\
-    | & ~ \modop \\
-    | & ~ \expop \\
-    | & ~ \implop \\
-    | & ~ \equivop \\
-    | & ~ \andop \\
-    | & ~ \orop \\
-    | & ~ \eqop \\
-    | & ~ \neop \\
-    | & ~ \ltop \\
-    | & ~ \gtop \\
-    | & ~ \leop \\
-    | & ~ \geop \\
+  \text{Unary Operator}\quad& Unop &\ni& unop &::=& ~ \notop ~ | ~ \minusop \\
+  \text{Binary Operator}\quad& Binop &\ni& binop &::=& ~ \addop \\
+    &&&& | & ~ \subop \\
+    &&&& | & ~ \mulop \\
+    &&&& | & ~ \divop \\
+    &&&& | & ~ \modop \\
+    &&&& | & ~ \expop \\
+    &&&& | & ~ \implop \\
+    &&&& | & ~ \equivop \\
+    &&&& | & ~ \andop \\
+    &&&& | & ~ \orop \\
+    &&&& | & ~ \eqop \\
+    &&&& | & ~ \neop \\
+    &&&& | & ~ \ltop \\
+    &&&& | & ~ \gtop \\
+    &&&& | & ~ \leop \\
+    &&&& | & ~ \geop \\
+\end{array}
+\end{align*}
+\newpage
+\begin{align*}
+\begin{array}{lcccrlr}
 %
 % Path
-  path \in Path =& ~ \idxp ~ E ~ | ~ \slicep ~ E \times E ~ | ~ \dotp ~ String \\
+  \text{Path}\quad& P &\ni& p &::=& ~ \idxp ~ e ~ | ~ \slicep ~ (e, e) ~ | ~ \dotp ~ s \\
 %
 % Iter
-  iter \in Iter =& ~ \listiter ~ | ~ \listniter ~ E ~|~ \listidxiter ~ String \times E \\
+  \text{Iter}\quad& Iter &\ni& iter &::=& ~ \listiter ~ | ~ \listniter ~ e ~|~ \listidxiter ~ (s, e) \\
 %
 % Value
-  v \in V =& ~ \numv ~ \mathbb N \\
-    | & ~ \boolv ~ \mathbb B \\
-    | & ~ \fnamev ~ String \\
-    | & ~ \listv ~ \seq V \\
-    | & ~ \strv ~ \seq{(String \times V)} \\
-    | & ~ \tupv ~ \seq V \\
-    | & ~ \casev ~ String \times \seq V \\
-    | & ~ \trapv \\
-    | & ~ \storev \\
+  \text{Value}\quad& V &\ni& v &::=& ~ \numv ~ n \\
+    &&&& | & ~ \boolv ~ b \\
+    &&&& | & ~ \fnamev ~ s \\
+    &&&& | & ~ \listv ~ \seq v \\
+    &&&& | & ~ \strv ~ \seq{(s, v)} \\
+    &&&& | & ~ \tupv ~ \seq v \\
+    &&&& | & ~ \casev ~ (s, \seq v) \\
+    &&&& | & ~ \trapv \\
+    &&&& | & ~ \storev \\
+% Primitives
+  \text{String}\quad& \mathbb S &\ni& s \\
+  \text{Integer}\quad& \mathbb Z &\ni& n \\
+  \text{Boolean}\quad& \mathbb B &\ni& b \\
+\end{array}
 \end{align*}
 
 % state
