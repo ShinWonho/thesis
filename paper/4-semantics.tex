@@ -296,7 +296,7 @@
 %
 % Operator
   \text{Unary Operator}\quad& Unop &\ni& unop &::=& ~ \notop ~ | ~ \minusop \\
-  \text{Binary Operator}\quad& Binop &\ni& binop &::=& ~ \addop \\
+  \text{Binary Operator}\quad& Binop &\ni& binop &::=& ~ \addop &\quad\text{(Addition)} \\
     &&&& | & ~ \subop &\quad\text{(Subtraction)} \\
     &&&& | & ~ \mulop &\quad\text{(Multiplication)} \\
     &&&& | & ~ \divop &\quad\text{(Division)} \\
@@ -325,7 +325,7 @@
   \text{Iter}\quad& Iter &\ni& iter &::=& ~ \listiter ~ | ~ \listniter ~ e ~|~ \listidxiter ~ (s, e) \\
 %
 % Value
-  \text{Value}\quad& V &\ni& v &::=& ~ \numv ~ n \\
+  \text{Value}\quad& V &\ni& v &::=& ~ \numv ~ n &\quad\text{(Number)} \\
     &&&& | & ~ \boolv ~ b &\quad\text{(Boolean)} \\
     &&&& | & ~ \fnamev ~ s &\quad\text{(Function Name)} \\
     &&&& | & ~ \listv ~ \seq v &\quad\text{(List)} \\
@@ -455,6 +455,7 @@ keeping the WebAssembly terms unchanged.
   (\seq{a}, w, \algo ~ (i_0 ~ \seq{i_1}, \mu, \seq c, k)) \leadsto (\seq{a}, w', k') \\
 %
 % Return
+\newline \\
   \mu = \getenv(k) \quad k' = \setenv(k, \mu[str_0 \mapsto v]) \\
   \hline
   (\seq{a}, w, \ret ~ (v, \call ~ (str_0, str_1, \seq v, k)) \leadsto k' \\
