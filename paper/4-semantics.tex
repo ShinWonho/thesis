@@ -163,7 +163,7 @@
 
 %% Helper function
 
-\newcommand{\helper}[1]{\text{#1}}
+\newcommand{\helper}[1]{\textsf{#1}}
 
 % Helper function
 \newcommand{\getalgoname}{\helper{get\_algo\_name}}
@@ -274,23 +274,23 @@
     &&&& | & ~ \nume ~ n &\quad\text{(Number)} \\
     &&&& | & ~ \boole ~ b &\quad\text{(Boolean)} \\
     &&&& | & ~ \fnamee ~ s &\quad\text{(Function Name)} \\
+    &&&& | & ~ \liste ~ \seq e &\quad\text{(List)} \\
+    &&&& | & ~ \stre ~ \seq{(s, e)} &\quad\text{(Record)} \\
+    &&&& | & ~ \tupe ~ \seq e &\quad\text{(Tuple)} \\
+    &&&& | & ~ \casee ~ (s, \seq e) &\quad\text{(Tagged Tuple)} \\
     &&&& | & ~ \une ~ (unop, e) &\quad\text{(Unary Operation)} \\
     &&&& | & ~ \bine ~ (binop, e, e) &\quad\text{(Binary Operation)} \\
     &&&& | & ~ \acce ~ (e, p) &\quad\text{(Access)} \\
     &&&& | & ~ \upde ~ (e, \seq{p}, e) &\quad\text{(Update)} \\
-    &&&& | & ~ \stre ~ \seq{(s, e)} &\quad\text{(Record)} \\
-    &&&& | & ~ \compe ~ (e, e) &\quad\text{(Composition)} \\
     &&&& | & ~ \cate ~ (e, e) &\quad\text{(Concatenation)} \\
+    &&&& | & ~ \compe ~ (e, e) &\quad\text{(Composition)} \\
     &&&& | & ~ \meme ~ (e, e) &\quad\text{(Membership)} \\
-    &&&& | & ~ \lene ~ e &\quad\text{(Length)} \\
-    &&&& | & ~ \tupe ~ \seq e &\quad\text{(Tuple)} \\
-    &&&& | & ~ \casee ~ (s, \seq e) &\quad\text{(Tagged Tuple)} \\
-    &&&& | & ~ \itere ~ (e, iter, \seq{s}) &\quad\text{(Iteration)} \\
-    &&&& | & ~ \liste ~ \seq e &\quad\text{(List)} \\
-    &&&& | & ~ \getcurctxe ~ s &\quad\text{(Get Current Context)} \\
     &&&& | & ~ \choosee ~ e &\quad\text{(Choose)} \\
+    &&&& | & ~ \lene ~ e &\quad\text{(Length)} \\
     &&&& | & ~ \iscaseofe ~ (e, s) &\quad\text{(Check Tag)} \\
+    &&&& | & ~ \getcurctxe ~ s &\quad\text{(Get Current Context)} \\
     &&&& | & ~ \ctxkinde ~ s &\quad\text{(Context Kind)} \\
+    &&&& | & ~ \itere ~ (e, iter, \seq{s}) &\quad\text{(Iteration)} \\
     &&&& | & ~ \matche ~ (e, e) &\quad\text{(Match)} \\
     &&&& | & ~ \hastypee ~ (e, s) &\quad\text{(Has Type)} \\
 %
@@ -376,12 +376,12 @@ traping, returing an AL relation, returing an AL function, executing WebAsembly
 instruction, executing WebAssembly instruction sequence, AL function call with
 let binding, or replacing some mutable data structure.
 % expression
-An expression is variable, number, boolean, function name, unary operation,
-binary operation, access elements of an data structure, update elements of an
-data structure, record (or struct), record composition, list concatenation,
-membership checking, getting length, tuple, tagged tuple, iteration, list,
-getting current context, choosing an element from an data structure, tag
-checking, checking context kind, match relation, or type relation.
+An expression is variable, number, boolean, function name, list, record (or
+struct), tuple, tagged tuple, unary operation, binary operation, access
+elements of an data structure, update elements of an data structure, record
+composition, list concatenation, membership checking, choosing an element from
+an data structure, getting length, tag checking, getting current
+context, checking context kind, iteration, match relation, or type relation.
 % value
 A value is number, boolean, function name, list, record, tuple, tagged tuple,
 trap, or store.
@@ -396,7 +396,6 @@ keeping the WebAssembly terms unchanged.
 
 
 
-
 %% Syntax
 \section{Semantics of AL}
 \label{semantics}
@@ -404,20 +403,19 @@ keeping the WebAssembly terms unchanged.
 %% Continuation
 
 \begin{gather*}
-\leadsto \subseteq S \times S
-\newline \\
+\leadsto \subseteq S \times S \\
 %
 % TopLevelCall
 \newline \\
-  \fun ~ (str_1, \seq e, \seq i) = \lookup(\seq{a}, str_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \fun ~ (s_1, \seq e, \seq i) = \lookup(\seq{a}, s_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (\seq{a}, w, \toplevelcall ~ (str_1, \seq v)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \mt)) \\
+  (\seq{a}, w, \toplevelcall ~ (s_1, \seq v)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \mt)) \\
 %
 % Call
 \newline \\
-  \fun ~ (str_1, \seq e, \seq i) = \lookup(\seq{a}, str_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \fun ~ (s_1, \seq e, \seq i) = \lookup(\seq{a}, s_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (\seq{a}, w, \call ~ (str_0, str_1, \seq v, k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \call ~ (str_0, str_1, \seq v, k))) \\
+  (\seq{a}, w, \call ~ (s_0, s_1, \seq v, k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \call ~ (s_0, s_1, \seq v, k))) \\
 %
 % Wasm-zero
 \newline \\
@@ -427,8 +425,8 @@ keeping the WebAssembly terms unchanged.
 % Wasm-instr
 \newline \\
   |\seq c| > 0 \quad
-  \casev ~ (str, \seq v) = wi \quad
-  \rel ~ (str, \seq e, \seq i) = \lookup(\seq{a}, str) \quad
+  \casev ~ (s, \seq v) = wi \quad
+  \rel ~ (s, \seq e, \seq i) = \lookup(\seq{a}, s) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
   (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (\seq c, k))
@@ -437,8 +435,8 @@ keeping the WebAssembly terms unchanged.
 %
 % Execute-instr
 \newline \\
-  \casev ~ (str, \seq v) = wi \quad
-  \rel ~ (str, \seq e, \seq i) = \lookup(\seq{a}, str) \quad
+  \casev ~ (s, \seq v) = wi \quad
+  \rel ~ (s, \seq e, \seq i) = \lookup(\seq{a}, s) \quad
   \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
   (\seq{a}, w, \exe ~ (wi', k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, k)) \\
@@ -456,9 +454,9 @@ keeping the WebAssembly terms unchanged.
 %
 % Return
 \newline \\
-  \mu = \getenv(k) \quad k' = \setenv(k, \mu[str_0 \mapsto v]) \\
+  \mu = \getenv(k) \quad k' = \setenv(k, \mu[s_0 \mapsto v]) \\
   \hline
-  (\seq{a}, w, \ret ~ (v, \call ~ (str_0, str_1, \seq v, k)) \leadsto k' \\
+  (\seq{a}, w, \ret ~ (v, \call ~ (s_0, s_1, \seq v, k)) \leadsto k' \\
 \end{gather*}
 
 The semantics of an AL is defined with a state transition system.
@@ -490,10 +488,12 @@ If the function call originates from a \call{}, the result is assigned to a
 variable.
 If it originates from a \toplevelcall{}, the entire execution completes:
 $
-(\seq a, w, \toplevelcall ~ (str, \seq v))
+(\seq a, w, \toplevelcall ~ (s, \seq v))
 \leadsto^*
 (\seq a, w', \ret ~ (v', \mt))
 $.
+
+
 
 
 %% Instruction
@@ -681,13 +681,13 @@ It also evaluates $e_2$ to get WebAssembly instruction sequence $\seq{v_2}$.
 Then, it appends end instruction of pushed contexts including $v_1$, and pushes
 them to the WebAssembly instruction stack.
 Finally, it resets the contexts of the continuation.
-% Push Context
+% PushCtx
 \pushctxi{} instruction evaluates $e$, pushes the context and add the context
 in the continuation.
 % Push
 \pushi{} instruction evaluates $e$ and pushes the value to the WebAssembly
 value stack.
-% Pop Context
+% PopCtx
 \popctxi{} instruction is another key instruction to describe WebAssembly
 control flow.
 It pops all the WebAssembly value until context inclusively and the WebAssembly
@@ -706,9 +706,9 @@ and assign the values to $e_1$.
 \leti{} instruction evaluates $e_2$ and assign the value to $e_1$.
 % Trap
 \trapi{} instruction terminates the execution with \trapv{}.
-% Return Relation
+% ReturnRel
 \returnreli{} instruction pops a continuation.
-% Return Function
+% ReturnFunc
 \returnfunci{} instruction evaluates $e$, pops a continuation, and results in
 \ret{} with the resulting value.
 % Execute
@@ -727,17 +727,16 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 
 
 
-
 %% Expression
 
 \begin{gather*}
-  w, \mu \vdash e \Rightarrow v
+  w, \mu \vdash e \Rightarrow v \\
 %
 % Var
 \newline \\
-  v = \mu(str) \\
+  v = \mu(s) \\
   \hline
-  w, \mu \vdash \vare ~ str \Rightarrow v \\
+  w, \mu \vdash \vare ~ s \Rightarrow v \\
 %
 % Num
 \newline \\
@@ -752,11 +751,40 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 % Fname
 \newline \\
   \hline
-  w, \mu \vdash \fnamee ~ str \Rightarrow \fnamev ~ str \\
+  w, \mu \vdash \fnamee ~ s \Rightarrow \fnamev ~ s \\
+%
+% List
+\newline \\
+  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  \hline
+  w, \mu \vdash \liste ~ \seq{e} \Rightarrow \listv ~ \seq{v} \\
+%
+% Str
+\newline \\
+  \seq{(s, v)} =
+    [ ~
+      s, v
+    ~ | ~
+      (s, e) \leftarrow \seq{(s, e)}; w, \mu \vdash e \Rightarrow v
+    ~ ] \\
+  \hline
+  w, \mu \vdash \stre ~ \seq{(s, e)} \Rightarrow \strv ~ \seq{(s, v)} \\
+%
+% Tup
+\newline \\
+  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  \hline
+  w, \mu \vdash \tupe ~ \seq{e} \Rightarrow \tupv ~ \seq{v} \\
+%
+% Case
+\newline \\
+  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  \hline
+  w, \mu \vdash \casee ~ (s, \seq{e}) \Rightarrow \casev ~ (s, \seq{v}) \\
 %
 % Un
 \newline \\
-  w, \mu e \Rightarrow v \\
+  w, \mu \vdash e \Rightarrow v \\
   \hline
   w, \mu \vdash \une ~ (unop, e) \Rightarrow \unop(unop, v) \\
 %
@@ -778,30 +806,19 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
   \hline
   w, \mu \vdash \upde ~ (e_1, \seq p, e_2) \Rightarrow \update(v_1, \seq p, v_2) \\
 %
-% Str
-\newline \\
-  \seq{(str, v)} =
-    [ ~
-      str, v
-    ~ | ~
-      (str, e) \leftarrow \seq{(str, e)}; w, \mu \vdash e \Rightarrow v
-    ~ ] \\
-  \hline
-  w, \mu \vdash \stre ~ \seq{(str, e)} \Rightarrow \strv ~ \seq{(str, v)} \\
-%
-% Comp
-\newline \\
-   w, \mu \vdash e_1 \Rightarrow \strv ~ \seq{(str_1, v_1)} \quad
-   w, \mu \vdash e_2 \Rightarrow \strv ~ \seq{(str_2, v_2)} \\
-  \hline
-  w, \mu \vdash \compe ~ (e_1, e_2) \Rightarrow \strv ~ (\seq{(str_1, v_1)} ~ \seq{(str_2, v_2)}) \\
-%
 % Cat
 \newline \\
    w, \mu \vdash e_1 \Rightarrow \listv ~ \seq{v_1} \quad
    w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
   \hline
   w, \mu \vdash \cate ~ (e_1, e_2) \Rightarrow \listv ~ (\seq{v_1} ~ \seq{v_1}) \\
+%
+% Comp
+\newline \\
+   w, \mu \vdash e_1 \Rightarrow \strv ~ \seq{(s_1, v_1)} \quad
+   w, \mu \vdash e_2 \Rightarrow \strv ~ \seq{(s_2, v_2)} \\
+  \hline
+  w, \mu \vdash \compe ~ (e_1, e_2) \Rightarrow \strv ~ (\seq{(s_1, v_1)} ~ \seq{(s_2, v_2)}) \\
 %
 % Mem
 \newline \\
@@ -810,33 +827,46 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
   \hline
   w, \mu \vdash \meme ~ (e_1, e_2) \Rightarrow \boolv ~ (v_1 \in \seq{v_2}) \\
 %
+% Choose
+\newline \\
+  w, \mu \vdash e \Rightarrow \listv ~ \seq{v} \quad
+  v' \in \seq{v} \\
+  \hline
+  w, \mu \vdash \choosee ~ e \Rightarrow v' \\
+%
 % Len
 \newline \\
   w, \mu \vdash e \Rightarrow \listv ~ \seq{v} \\
   \hline
   w, \mu \vdash \lene ~ e \Rightarrow \numv ~ |\seq v| \\
 %
-% Tup
+% IsCaseOf
 \newline \\
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  w, \mu \vdash e \Rightarrow \casev ~ (s', \seq{v}) \\
   \hline
-  w, \mu \vdash \tupe ~ \seq{e} \Rightarrow \tupv ~ \seq{v} \\
+  w, \mu \vdash \iscaseofe ~ (e, s) \Rightarrow \boolv ~ (s = s') \\
 %
-% Case
+% GetCurCtx
 \newline \\
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  v_{ctx} = \getcurctx(w, s) \\
   \hline
-  w, \mu \vdash \casee ~ (str, \seq{e}) \Rightarrow \casev ~ (str, \seq{v}) \\
+  w, \mu \vdash \getcurctxe ~ s \Rightarrow v_{ctx} \\
+%
+% CtxKind
+\newline \\
+  \casev (s', \seq v) = \getcurctx(w, s) \\
+  \hline
+  w, \mu \vdash \ctxkinde ~ s \Rightarrow \boolv ~ (s = s') \\
 %
 % Iter-
 \newline \\
   f =
-    (\lambda ~ str ~ acc. ~
-      \listv ~ \seq v = \mu(str); ~
-      [ ~ \mu_1[str \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
+    (\lambda ~ s ~ acc. ~
+      \listv ~ \seq v = \mu(s); ~
+      [ ~ \mu_1[s \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
     )
   \\
-  \seq{\mu_2} = \fold(f, \seq{str}, \duplicateenv(\mu, \seq{str})) \quad
+  \seq{\mu_2} = \fold(f, \seq{s}, \duplicateenv(\mu, \seq{s})) \quad
   \seq{v'} =
     [ ~
       v'
@@ -844,7 +874,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
       \mu_3 \leftarrow \seq {\mu_2}; ~ w, \mu_3 \vdash e \Rightarrow v'
     ~ ] \\
   \hline
-  w, \mu \vdash \itere ~ (e, \listiter, \seq{str}) \Rightarrow \listv ~ \seq{v'} \\
+  w, \mu \vdash \itere ~ (e, \listiter, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
 %
 % Iter-n
 \newline \\
@@ -852,10 +882,10 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
   f_i =
     (\lambda ~ x ~ acc. ~
       \listv ~ \seq v = \mu(x); ~
-      [ ~ \mu_1[str \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
+      [ ~ \mu_1[s \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
     )
   \\
-  \seq{\mu_2} = \fold(f, \seq{str}, \mu^n) \quad
+  \seq{\mu_2} = \fold(f, \seq{s}, \mu^n) \quad
   \seq{v'} =
     [ ~
       v'
@@ -863,7 +893,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
       \mu_3 \leftarrow \seq {\mu_2}; ~ w, \mu_3 \vdash e_1 \Rightarrow v'
     ~ ] \\
   \hline
-  w, \mu \vdash \itere ~ (e_1, \listniter ~ e_2, \seq{str}) \Rightarrow \listv ~ \seq{v'} \\
+  w, \mu \vdash \itere ~ (e_1, \listniter ~ e_2, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
 %
 % Iter-idx
 \newline \\
@@ -871,7 +901,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
     [ ~
       \fold(
         (\lambda ~ x ~ acc. ~ acc[x \mapsto \numv ~ i]),
-        \seq{str},
+        \seq{s},
         \mu
       )
     ~ | ~
@@ -885,44 +915,13 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
       \mu_2 \leftarrow \seq {\mu_1}; ~ w, \mu_2 \vdash e_1 \Rightarrow v'
     ~ ] \\
   \hline
-  w, \mu \vdash \itere ~ (e_1, \listidxiter ~ e_2, \seq{str}) \Rightarrow \listv ~ \seq{v'} \\
-%
-% List
-\newline \\
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
-  \hline
-  w, \mu \vdash \liste ~ \seq{e} \Rightarrow \listv ~ \seq{v} \\
-%
-% GetCurCtx
-\newline \\
-  v_{ctx} = \getcurctx(w, str) \\
-  \hline
-  w, \mu \vdash \getcurctxe ~ str \Rightarrow v_{ctx} \\
-%
-% Choose
-\newline \\
-  w, \mu \vdash e \Rightarrow \listv ~ \seq{v} \quad
-  v' \in \seq{v} \\
-  \hline
-  w, \mu \vdash \choosee ~ e \Rightarrow v' \\
-%
-% IsCaseOf
-\newline \\
-  w, \mu \vdash e \Rightarrow \casev ~ (str', \seq{v}) \\
-  \hline
-  w, \mu \vdash \iscaseofe ~ (e, str) \Rightarrow \boolv ~ (str = str') \\
+  w, \mu \vdash \itere ~ (e_1, \listidxiter ~ e_2, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
 %
 % IsValid
 \newline \\
   w, \mu \vdash e \Rightarrow v \\
   \hline
   w, \mu \vdash \isvalide ~ e \Rightarrow \boolv ~ (\isvalid(v)) \\
-%
-% CtxKind
-\newline \\
-  \casev (str', \seq v) = \getcurctx(w, str) \\
-  \hline
-  w, \mu \vdash \ctxkinde ~ str \Rightarrow \boolv ~ (str = str') \\
 %
 % Match
 \newline \\
@@ -935,8 +934,50 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 \newline \\
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  w, \mu \vdash \hastypee ~ (e, str) \Rightarrow \boolv ~ (\hastype(v, str)) \\
+  w, \mu \vdash \hastypee ~ (e, s) \Rightarrow \boolv ~ (\hastype(v, s)) \\
 \end{gather*}
+
+Given WebAssembly state $w$, and an environment $\mu$, an expression evaluates
+to a value.
+% Var
+\vare{} expression looks up the environment and gets the value.
+% Num Bool Fname
+\nume{}, \boole{}, and \fnamee{} expressions directly reduce to \numv{},
+\boolv{}, and \fnamev{}, respectively.
+% Tuple Case List Struct
+\liste{}, \stre{}, \tupe{}, and \casee{} expressions evaluate inner expressions
+and reduce to \listv{}, \strv{}, \tupv{}, and \casev{}, respectively.
+% Un Bin
+\une{} and \bine{} expression evaluates inner expressions and perform \unop{}
+and \binop{}.
+% Acc
+\acce{} expression accesses the elements of a data structure.
+% Upd
+\upde{} expression update a value of a data structure.
+% Cat Comp
+\cate{} and \compe{} expressions concatenate two lists and records,
+respectively.
+% Mem
+\meme{} expression performs membership check.
+% Choose
+\choosee{} expression chooses an element of a datastructure.
+% Len
+\lene{} expression gets a length of a data structure.
+% IsCaseOf
+\iscaseofe{} expression checks a tag of a tagged tuple.
+% GetCurCtx
+\getcurctxe{} expression gets the current context.
+% CtxKind
+\ctxkinde{} expression checks the kind of the current context.
+% Iter
+\itere{} expression is \red{TODO} % TODO
+% IsValid Match HasType
+\isvalide{}, \matche{}, and \hastypee{} expressions evaluate inner exressions
+and perform \isvalid{}, \match{}, and \hastype{}.
+Note that \isvalid{}, \match{}, and \hastype{} are implementations of
+WebAssembly static semantics.
+The formalization for them is omitted as it is too WebAssembly specific and
+verbose.
 
 
 
@@ -947,18 +988,18 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 %
 % get_algo_name
 \newline \\
-  &\getalgoname(\rel ~ (str, \seq e, \seq i)) = str \\
-  &\getalgoname(\fun ~ (str, \seq e, \seq i)) = str \\
+  &\getalgoname(\rel ~ (s, \seq e, \seq i)) = s \\
+  &\getalgoname(\fun ~ (s, \seq e, \seq i)) = s \\
 %
 % lookup
 \newline \\
-  &str = \getalgoname(a) \\
+  &s = \getalgoname(a) \\
   \hline
-  &\lookup(a ~ \seq{a'}, str) = a \\
+  &\lookup(a ~ \seq{a'}, s) = a \\
 %
-  &str \not = \getalgoname(a) \\
+  &s \not = \getalgoname(a) \\
   \hline
-  &\lookup(a ~ \seq{a'}, str) = \lookup(\seq{a'}, str) \\
+  &\lookup(a ~ \seq{a'}, s) = \lookup(\seq{a'}, s) \\
 %
 % pop_all-ctx
 \newline \\
@@ -1003,9 +1044,9 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 \newline \\
   &\duplicateenv(\mu, epsilon) = \mu \\
 % duplicate_env-nonempty
-  &\listv ~ \seq v = \mu(str) \\
+  &\listv ~ \seq v = \mu(s) \\
   \hline
-  &\duplicateenv(\mu, str ~ \seq{str'}) = \mu^{|\seq v|} \\
+  &\duplicateenv(\mu, s ~ \seq{s'}) = \mu^{|\seq v|} \\
 %
 % get_env
 \newline \\
@@ -1095,14 +1136,14 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
   \hline
   &\access(\mu, w, v, \slicep ~ (e_1, e_2)) = \seq{v'}[n_1: n_2] \\
 % access-dot
-  &\strv ~ ((str_0, v_0) ~ \seq{(str_1, v_1)}) = v \quad
-  str_0 = str \\
+  &\strv ~ ((s_0, v_0) ~ \seq{(s_1, v_1)}) = v \quad
+  s_0 = s \\
   \hline
-  &\access(\mu, w, v, \dotp ~ str) = v_0 \\
-  &\strv ~ ((str_0, v_0) ~ \seq{(str_1, v_1)}) = v \quad
-  str_0 \not= str \\
+  &\access(\mu, w, v, \dotp ~ s) = v_0 \\
+  &\strv ~ ((s_0, v_0) ~ \seq{(s_1, v_1)}) = v \quad
+  s_0 \not= s \\
   \hline
-  &\access(\mu, w, v, \dotp ~ str) = \access(\mu, w, \strv ~ \seq{(str_1, v_1)}, \dotp ~ str) \\
+  &\access(\mu, w, v, \dotp ~ s) = \access(\mu, w, \strv ~ \seq{(s_1, v_1)}, \dotp ~ s) \\
 % access-store
   &\storev = v \quad w = (\seq{wv}, \seq{wi}, sto)\\
   \hline
@@ -1140,22 +1181,22 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 %
 % update-dot
 \newline \\
-  &\strv ~ \seq{(str', v')} = v \\
+  &\strv ~ \seq{(s', v')} = v \\
   \hline
-  &\update(\mu, w, v, (\dotp ~ str) ~ \seq{p}, v_2)
+  &\update(\mu, w, v, (\dotp ~ s) ~ \seq{p}, v_2)
   =
-  \updatedot(\seq{(str', v')}, str, \update(\mu, w, \access(v, \dotp ~ str), \seq{p}, v_2)) \\
+  \updatedot(\seq{(s', v')}, s, \update(\mu, w, \access(v, \dotp ~ s), \seq{p}, v_2)) \\
 % update_dot
-  &str_0 = str_2 \\
+  &s_0 = s_2 \\
   \hline
-  &\updatedot((str_0, v_0) ~ \seq{(str_1, v_1)}, str_2, v_2)
+  &\updatedot((s_0, v_0) ~ \seq{(s_1, v_1)}, s_2, v_2)
   =
-  (str_2, v_2) ~ \seq{(str_1, v_1)} \\
-  &str_0 \not= str_2 \\
+  (s_2, v_2) ~ \seq{(s_1, v_1)} \\
+  &s_0 \not= s_2 \\
   \hline
-  &\updatedot((str_0, v_0) ~ \seq{(str_1, v_1)}, str_2, v_2)
+  &\updatedot((s_0, v_0) ~ \seq{(s_1, v_1)}, s_2, v_2)
   =
-  (str_0, v_0) ~ \updatedot(\seq{(str_1, v_1)}, str_2, v_2) \\
+  (s_0, v_0) ~ \updatedot(\seq{(s_1, v_1)}, s_2, v_2) \\
 %
 % get_end_algo
 \newline \\
