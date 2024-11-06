@@ -867,14 +867,14 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
     )
   \\
   \seq{\mu_2} = \fold(f, \seq{s}, \duplicateenv(\mu, \seq{s})) \quad
-  \seq{v'} =
+  \seq{v_1} =
     [ ~
-      v'
+      v_1
     ~ | ~
-      \mu_3 \leftarrow \seq {\mu_2}; ~ w, \mu_3 \vdash e \Rightarrow v'
+      \mu_3 \leftarrow \seq {\mu_2}; ~ w, \mu_3 \vdash e_1 \Rightarrow v_1
     ~ ] \\
   \hline
-  w, \mu \vdash \itere ~ (e, \listiter, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
+  w, \mu \vdash \itere ~ (e_1, \listiter, \seq{s}) \Rightarrow \listv ~ \seq{v_1} \\
 %
 % Iter-n
 \newline \\
@@ -897,6 +897,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 %
 % Iter-idx
 \newline \\
+  w, \mu \vdash e_2 \Rightarrow \listv ~ n \\
   \seq{\mu_1} =
     [ ~
       \fold(
@@ -970,14 +971,27 @@ respectively.
 % CtxKind
 \ctxkinde{} expression checks the kind of the current context.
 % Iter
-\itere{} expression is \red{TODO} % TODO
+\itere{} expression behaves differently depending on $iter$.
+\listiter{} and \listniter{} are basically the same.
+They assume that the all the values mapped to the variables $\seq s$ by the
+envinronment $\mu${} are \listv{} with same length.
+\listniter{} restricts the length to $n$ obtained from evaluating $e_2$,
+while \listiter{} allows any length.
+It generates a sequence of environments where the k-th environment maps each
+variables to the k-th elements of the \listv{}.
+Each environment is then used to evaluate $e_1$, and the resulting values are
+wrapped to \listv{}.
+\listidxiter{} behaves similarly except that the variables $\seq s$ are
+unbound.
+It evaluates $e_2$ to obtain $n$ and then behaves like \listniter{} as if
+$\listv ~ [0 ~ ... ~ n-1]$ was bound to the variables.
 % IsValid Match HasType
 \isvalide{}, \matche{}, and \hastypee{} expressions evaluate inner exressions
 and perform \isvalid{}, \match{}, and \hastype{}.
 Note that \isvalid{}, \match{}, and \hastype{} are implementations of
 WebAssembly static semantics.
-The formalization for them is omitted as it is too WebAssembly specific and
-verbose.
+Note that the formalization for them is omitted as they are too WebAssembly
+specific and verbose.
 
 
 
