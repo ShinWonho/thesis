@@ -1148,7 +1148,7 @@ excessively verbose.
   % idx
   &\update(\mu, w, \listv ~ \seq{v_1}, (\idxp ~ e) ~ \seq{p}, v_2) =
   \listv ~ (\updateidx(v_1, n, \update(\mu, w, \seq{v_1}[n], \seq{p}, v_2))) \\
-  &\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\quad\,\premise{if}\quad
+  &\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\premise{if}\quad
   w, \mu \vdash e \Rightarrow \numv ~ n \\
   % slice
   &\update(\mu, w, \listv ~ \seq{v_1}, (\slicep ~ e) ~ \seq{p}, v_2) =
@@ -1163,7 +1163,6 @@ excessively verbose.
 %
 % update_idx
 \newline \\
-  &\updateidx(v_0 ~ \seq{v_1}, 0, v_2) =   \\
   &\updateidx(v_0 ~ \seq{v_1}, n, v_2) =
   \begin{cases}
     v_2 ~ \seq{v_1}
