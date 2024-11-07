@@ -51,9 +51,11 @@
 
 
 
-%% Symbol definition
+%% font definitions
 
 \renewcommand{\symbol}[1]{\textbf{#1}}
+\newcommand{\helper}[1]{\textsf{#1}}
+\newcommand{\premise}[1]{\textsf{\textbf{#1}}}
 
 % Algorithm
 \newcommand{\rel}{\symbol{Rel}}
@@ -159,10 +161,6 @@
 
 
 
-%% Helper function
-
-\newcommand{\helper}[1]{\textsf{#1}}
-
 % Helper function
 \newcommand{\getalgoname}{\helper{get\_algo\_name}}
 \newcommand{\lookup}{\helper{lookup}}
@@ -228,7 +226,7 @@
   \text{Store}\quad& Store &\ni& sto &::=& \seq{(s, v)} \\
 %
 % Continuation
-  \text{Continuation}\quad & Cont &\ni& k &::=& ~ \mt &\quad\text{(Empty)} \\
+  \text{Continuation}\quad & K &\ni& k &::=& ~ \mt &\quad\text{(Empty)} \\
     &&&& | & ~ \toplevelcall ~ (s, \seq v, k) &\quad\text{(Top-level Call)} \\
     &&&& | & ~ \call ~ (s, s, \seq v, k) &\quad\text{(Call)} \\
     &&&& | & ~ \wasm ~ (\seq c, k) &\quad\text{(Wasm)} \\
@@ -400,7 +398,7 @@ keeping the WebAssembly terms unchanged.
 %% Continuation
 
 \begin{gather*}
-\leadsto \subseteq S \times S \\
+\leadsto \subseteq \Sigma \times \Sigma \\
 %
 % TopLevelCall
 \newline \\
@@ -554,7 +552,7 @@ $.
   \mu = \assign(\getenv(k), e, wv_{ctx}) \\
   wv_{ctx} ~ \seq{wv'} = \exit_{WasmValue}(\seq{wv}) \quad
   \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \quad
-  k_1 = \exit_{Cont}(k) \\
+  k_1 = \exit_{K}(k) \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \popctxi ~ e
   \Rightarrow
@@ -998,24 +996,22 @@ excessively verbose.
 %
 % lookup
 \newline \\
-  &s = \getalgoname(a) \\
-  \hline
-  &\lookup(a ~ \seq{a'}, s) = a \\
-%
-  &s \not = \getalgoname(a) \\
-  \hline
-  &\lookup(a ~ \seq{a'}, s) = \lookup(\seq{a'}, s) \\
+  &\lookup(a ~ \seq{a'}, s) =
+    \begin{cases}
+      a &\quad\quad \premise{if}\quad ~ s = \getalgoname(a) \\
+      \lookup(\seq{a'}, s) &\quad\quad \premise{otherwise}
+    \end{cases}
+  \\
 %
 % pop_all-ctx
 \newline \\
 &\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
-  &\text{is\_ctx}(\text{hd}(\seq{wv})) \\
-  \hline
-  &\splitctx(\seq{wv}) = \epsilon, \seq{wv} \\
-% pop_all-val
-  &\text{is\_not\_ctx}(wv_0) \quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1}) \\
-  \hline
-  &\splitctx(wv_0 ~ \seq{wv_1}) = wv_0 ~ \seq{wv_2}, \seq{wv_3} \\
+  &\splitctx(wv_0 ~ \seq{wv_1}) =
+    \begin{cases}
+      \epsilon, \seq{wv} &\quad\quad \premise{if}\quad ~ \text{is\_ctx}(wv_0) \\
+      wv_0 ~ \seq{wv_2}, \seq{wv_3} &\quad\quad \premise{if}\quad ~ \text{is\_not\_ctx}(wv_0) \quad\land\quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1})
+    \end{cases}
+  \\
 %
 % execute
 \newline \\
@@ -1024,34 +1020,32 @@ excessively verbose.
 % exit_cont-wasm_0
 \newline \\
 &\text{NOTE: input cont of exit is either \algo ~ or \wasm} \\
-  &\exit_{Cont}(\wasm (\epsilon, k)) = \wasm(\epsilon, \exit_{Cont}(k)) \\
+  &\exit_{K}(\wasm (\epsilon, k)) = \wasm(\epsilon, \exit_{K}(k)) \\
 % exit_cont-wasm_nonzero
-  &\exit_{Cont}(\wasm (c ~ \seq{c'}, k)) = \wasm(\seq{c'}, k) \\
+  &\exit_{K}(\wasm (c ~ \seq{c'}, k)) = \wasm(\seq{c'}, k) \\
 % exit_cont-al
-  &\exit_{Cont}(\algo (\seq i, \mu, \seq c, k)) = \algo (\seq i, \mu, \seq c, \exit(k)) \\
+  &\exit_{K}(\algo (\seq i, \mu, \seq c, k)) = \algo (\seq i, \mu, \seq c, \exit(k)) \\
 %
 % exit_wasm_instr-end
 \newline \\
-  &\text{is\_end}(wi) \\
-  \hline
-  &\exit_{WasmInstr}(wi ~ \seq{wi'}) = \seq{wi'} \\
-% exit_wasm_instr-normal_instr
-  &\text{is\_not\_end}(wi) \\
-  \hline
-  &\exit_{WasmInstr}(wi ~ \seq{wi'}) = \exit_{WasmInstr}(\seq{wi'}) \\
+  &\exit_{WasmInstr}(wi ~ \seq{wi'}) =
+    \begin{cases}
+      \seq{wi'} &\quad\quad \premise{if}\quad ~ \helper{is\_end}(wi) \\
+      \exit_{WasmInstr}(\seq{wi'}) &\quad\quad \premise{otherwise} \\
+    \end{cases}
+  \\
 %
 % exit_wasm_value
-  &\seq{wv_1}, \seq{wv_2} = \splitctx(\seq{wv_0}) \\
-  \hline
-  &\exit_{WasmValue}(\seq{wv_0}) = \seq{wv_2} \\
+\newline \\
+  &\exit_{WasmValue}(\seq{wv_0}) = \seq{wv_2}
+  \quad\quad\premise{if}\quad ~ \seq{wv_1}, \seq{wv_2} = \splitctx(\seq{wv_0}) \\
 %
 % duplicate_env-empty
 \newline \\
   &\duplicateenv(\mu, epsilon) = \mu \\
 % duplicate_env-nonempty
-  &\listv ~ \seq v = \mu(s) \\
-  \hline
-  &\duplicateenv(\mu, s ~ \seq{s'}) = \mu^{|\seq v|} \\
+  &\duplicateenv(\mu, s ~ \seq{s'}) = \mu^{|\seq v|}
+  \quad\quad\premise{if}\quad ~ \listv ~ \seq v = \mu(s) \\
 %
 % get_env
 \newline \\
@@ -1091,112 +1085,109 @@ excessively verbose.
 %
 % unop
 \newline \\
-  &\istrue(v) \\
-  \hline
-  &\unop(\notop, v) = \boolv ~ false \\
-  &\neg\istrue(v) \\
-  \hline
-  &\unop(\notop, v) = \boolv ~ true \\
+  &\unop(\notop, v) =
+    \begin{cases}
+      \boolv ~ true &\quad\quad\premise{if}\quad ~ \istrue(v) \\
+      \boolv ~ false &\quad\quad\premise{otherwise} \\
+    \end{cases}
+  \\
   &\unop(\minusop, \numv ~ n) = \numv ~ (-n) \\
 %
 % get_cur_ctx
 \newline \\
-  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \\
-  \hline
-  &\getcurctx((\seq{wv}, \seq{wi}, sto)) = wv_{ctx} \\
+  &\getcurctx((\seq{wv}, \seq{wi}, sto)) =
+  wv_{ctx} \quad\quad\premise{if}\quad ~ \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \\
 %
 % get_cur_frame-frame
 \newline \\
-  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \isframe(wv_{ctx}) \\
-  \hline
-  &\getcurframe((\seq{wv}, \seq{wi}, sto)) = wv_{ctx} \\
-% get_cur_frame-other
-  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
-  \hline
-  &\getcurframe((\seq{wv}, \seq{wi}, sto)) = \getcurframe(\seq{wv_2}) \\
+  &\getcurframe((\seq{wv}, \seq{wi}, sto)) =
+    \begin{cases}
+      wv_{ctx} &\quad\quad\premise{if}\quad
+      \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad\land\quad \isframe(wv_{ctx})\\
+      \getcurframe(\seq{wv_2}) &\quad\quad\premise{if}\quad
+      \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad\land\quad \neg \isframe(wv_{ctx}) \\
+    \end{cases}
+  \\
 %
 % set_cur_frame-frame
 \newline \\
-  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \isframe(wv_{ctx}) \\
-  \hline
   &\setcurframe((\seq{wv}, \seq{wi}, sto), v_{frame})
   =
-  \seq{wv_1} ~ v_{frame} ~ \seq{wv_2}, \seq{wi}, sto \\
-% set_cur_frame-other
-  &\seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
-  \hline
-  &\setcurframe((\seq{wv}, \seq{wi}, sto), v_{frame})
-  =
-  \seq{wv_1} ~ wv_{ctx} ~ \setcurframe(\seq{wv_2}, v_{frame}), \seq{wi}, sto \\
+  \begin{cases}
+    \seq{wv_1} ~ v_{frame} ~ \seq{wv_2}, \seq{wi}, sto \\
+    \qquad\qquad\qquad\quad\premise{if}\quad
+    \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \isframe(wv_{ctx}) \\
+    \seq{wv_1} ~ wv_{ctx} ~ \setcurframe(\seq{wv_2}, v_{frame}), \seq{wi}, sto \\
+    \qquad\qquad\qquad\quad\premise{if}\quad
+    \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
+  \end{cases}
+  \\
 %
 % access-idx
 \newline \\
-  &w, \mu \vdash e \Rightarrow \numv ~ n \\
-  \hline
-  &\access(\mu, w, \listv ~ \seq{v}, \idxp ~ e) = \seq{v}[n] \\
+  &\access(\mu, w, \listv ~ \seq{v}, \idxp ~ e) = \seq{v}[n]
+  \qquad\qquad\qquad~\,\quad\premise{if}\quad w, \mu \vdash e \Rightarrow \numv ~ n \\
 % access-slice
-  &w, \mu \vdash e_1 \Rightarrow \numv ~ n_1 \quad
+  &\access(\mu, w, \listv ~ \seq{v}, \slicep ~ (e_1, e_2)) = \seq{v}[n_1: n_2]
+  \quad\quad\premise{if}\quad
+  w, \mu \vdash e_1 \Rightarrow \numv ~ n_1 \quad\land\quad
   w, \mu \vdash e_2 \Rightarrow \numv ~ n_2 \\
-  \hline
-  &\access(\mu, w, \listv ~ \seq{v}, \slicep ~ (e_1, e_2)) = \seq{v}[n_1: n_2] \\
 % access-dot
-  &\strv ~ ((s_0, v_0) ~ \seq{(s_1, v_1)}) = v \quad
-  s_0 = s \\
-  \hline
-  &\access(\mu, w, v, \dotp ~ s) = v_0 \\
-  &\strv ~ ((s_0, v_0) ~ \seq{(s_1, v_1)}) = v \quad
-  s_0 \not= s \\
-  \hline
-  &\access(\mu, w, v, \dotp ~ s) = \access(\mu, w, \strv ~ \seq{(s_1, v_1)}, \dotp ~ s) \\
+  &\access(\mu, w, \strv ~ ((s_0, v_0) ~ \seq{(s_1, v_1)}), \dotp ~ s) =
+  \begin{cases}
+    v_0 &\quad\quad\premise{if}\quad s_0 = s \\
+    \access(\mu, w, \strv ~ \seq{(s_1, v_1)}, \dotp ~ s) &\quad\quad\premise{otherwise} \\
+  \end{cases}
+  \\
 % access-store
-  &\storev = v \quad w = (\seq{wv}, \seq{wi}, sto)\\
-  \hline
-  &\access(\mu, w, v, p)
-  =\access(\mu, w, \strv sto, p) \\
+  &\access(\mu, w, \storev, p) =\access(\mu, w, \strv sto, p)
+  \quad\quad\premise{if}\quad w = (\seq{wv}, \seq{wi}, sto)\\
 %
-% update-idx
+% update
 \newline \\
-  &w, \mu \vdash e \Rightarrow \numv ~ n \\
-  \hline
-  &\update(\mu, w, \listv ~ \seq{v_1}, (\idxp ~ e) ~ \seq{p}, v_2)
-  =
+  % idx
+  &\update(\mu, w, \listv ~ \seq{v_1}, (\idxp ~ e) ~ \seq{p}, v_2) =
   \listv ~ (\updateidx(v_1, n, \update(\mu, w, \seq{v_1}[n], \seq{p}, v_2))) \\
-% update_idx
-  &\updateidx(v_0 ~ \seq{v_1}, 0, v_2) =  v_2 ~ \seq{v_1} \\
-  &n > 0 \\
-  \hline
-  &\updateidx(v_0 ~ \seq{v_1}, n, v_2) =  v_0 ~ \updateidx(\seq{v_1}, n-1, v_2) \\
-%
-% update-slice
-\newline \\
-  &w, \mu \vdash e_1 \Rightarrow \numv ~ n_1 \quad
-  w, \mu \vdash e_2 \Rightarrow \numv ~ n_2 \\
-  \hline
-  &\update(\mu, w, \listv ~ \seq{v_1}, (\slicep ~ e) ~ \seq{p}, v_2)
-  =
+  &\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\quad\,\premise{if}\quad
+  w, \mu \vdash e \Rightarrow \numv ~ n \\
+  % slice
+  &\update(\mu, w, \listv ~ \seq{v_1}, (\slicep ~ e) ~ \seq{p}, v_2) =
   \listv (\updateslice(v_1, n_1, n_2, update(\mu, w, \seq{v_i}[n_1: n_2], \seq{p}, v_2))) \\
-% update_slice
-  &\updateslice(v_0^n ~ \seq{v_1}, 0, n, v_2^n) = v_2^n ~ \seq{v_1} \\
-  &m > 0 \\
-  \hline
-  &\updateslice(v_0 ~ \seq{v_1}, m, n, v_2^n) =  v_0 ~ \updateslice(\seq{v_1}, m-1, n, v_2) \\
-%
-% update-dot
-\newline \\
+  &\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\premise{if}\quad
+  w, \mu \vdash e_1 \Rightarrow \numv ~ n_1 \quad\land\quad
+  w, \mu \vdash e_2 \Rightarrow \numv ~ n_2 \\
+  % dot
   &\update(\mu, w, \strv ~ \seq{(s, v)}, (\dotp ~ s') ~ \seq{p}, v_2)
   =
   \strv (\updatedot(\seq{(s, v)}, s', \update(\mu, w, \access(v, \dotp ~ s'), \seq{p}, v_2))) \\
+%
+% update_idx
+\newline \\
+  &\updateidx(v_0 ~ \seq{v_1}, 0, v_2) =   \\
+  &\updateidx(v_0 ~ \seq{v_1}, n, v_2) =
+  \begin{cases}
+    v_2 ~ \seq{v_1}
+    &\quad\quad\premise{if}\quad n = 0 \\
+    v_0 ~ \updateidx(\seq{v_1}, n-1, v_2)
+    &\quad\quad\premise{if}\quad n > 0 \\
+  \end{cases} \\
+%
+% update_slice
+\newline \\
+  &\updateslice(v_0^n ~ \seq{v_1}, 0, n, v_2^n) = v_2^n ~ \seq{v_1} \\
+  &\updateslice(v_0 ~ \seq{v_1}, m, n, v_2^n) =  v_0 ~ \updateslice(\seq{v_1}, m-1, n, v_2)
+  \quad\quad\premise{if}\quad m > 0 \\
+%
 % update_dot
-  &s_0 = s_2 \\
-  \hline
-  &\updatedot((s_0, v_0) ~ \seq{(s_1, v_1)}, s_2, v_2)
-  =
-  (s_2, v_2) ~ \seq{(s_1, v_1)} \\
-  &s_0 \not= s_2 \\
-  \hline
-  &\updatedot((s_0, v_0) ~ \seq{(s_1, v_1)}, s_2, v_2)
-  =
-  (s_0, v_0) ~ \updatedot(\seq{(s_1, v_1)}, s_2, v_2) \\
+\newline \\
+  &\updatedot((s_0, v_0) ~ \seq{(s_1, v_1)}, s_2, v_2) =
+  \begin{cases}
+    (s_2, v_2) ~ \seq{(s_1, v_1)}
+    &\quad\quad\premise{if}\quad s_0 = s_2 \\
+    (s_0, v_0) ~ \updatedot(\seq{(s_1, v_1)}, s_2, v_2)
+    &\quad\quad\premise{otherwise}
+  \end{cases}
+  \\
 %
 % get_end_algo
 \newline \\
@@ -1210,10 +1201,13 @@ excessively verbose.
 %
 % is_frame
 \newline \\
-  &\isframe(\casev ~ (\text{"FRAME"}, \seq v)) = true \\
-  &otherwise \\
-  \hline
-  &\isframe(v) = false \\
+  &\isframe(v) =
+  \begin{cases}
+    true
+    &\quad\quad\premise{if}\quad v = \casev ~ (\text{"FRAME"}, \seq v) \\
+    false &\quad\quad\premise{otherwise}\\
+  \end{cases}
+  \\
 %
 % zip
 \newline \\
