@@ -186,7 +186,7 @@
 \newcommand{\updateidx}{\helper{update\_idx}}
 \newcommand{\updateslice}{\helper{update\_slice}}
 \newcommand{\updatedot}{\helper{update\_dot}}
-\newcommand{\getendalgo}{\helper{get\_end\_algo}}
+\newcommand{\getendinstr}{\helper{get\_end\_instr}}
 \newcommand{\istrue}{\helper{is\_true}}
 \newcommand{\isframe}{\helper{is\_frame}}
 \newcommand{\zip}{\helper{zip}}
@@ -527,7 +527,7 @@ $.
   w, \mu \vdash e_1 \Rightarrow v_1 \quad
   w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
   \seq c = \getctx(k) \quad
-  \seq{wi_{end}} = [ ~ \getendalgo(c) ~ | ~ c \leftarrow v_2 ~ \seq c ~ ] \\
+  \seq{wi_{end}} = [ ~ \getendinstr(c) ~ | ~ c \leftarrow v_1 ~ \seq c ~ ] \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \enteri ~ (e_1, e_2)
   \Rightarrow
@@ -1190,8 +1190,8 @@ excessively verbose.
 %
 % get_end_algo
 \newline \\
-  &\getendalgo(\casev(\text{"LABEL"}, \seq v)) = \casev(\text{"EXTING"}, \epsilon) \\
-  &\getendalgo(\casev(\text{"FRAME"}, \seq v)) = \casev(\text{"RETURNING"}, \epsilon) \\
+  &\getendinstr(\casev(\text{"LABEL"}, \seq v)) = \casev(\text{"EXTING"}, \epsilon) \\
+  &\getendinstr(\casev(\text{"FRAME"}, \seq v)) = \casev(\text{"RETURNING"}, \epsilon) \\
 %
 % is_true
 \newline \\
