@@ -1,7 +1,7 @@
 % !TEX root = main.tex
 
-\chapter{Semantics}
-\label{ch:semantics}
+\chapter{Formalization}
+\label{ch:Formalization}
 \noindent
 
 
@@ -354,10 +354,10 @@ especially in the form of $\casev$.
 A store is expressed in a sequence of a field name and an AL value pairs which
 models records.
 % continuation
-A continuation is empty; let call with a variable, a function name, arguments,
-and a continuation; wasm with contexts and a continuation; execute with a
-WebAssembly instruction and a continuation; algorithm with AL instructions, an
-environment, contexts, and a continuation; or return with a AL value and a
+A continuation is \mt{}; \call{} with a variable, a function name, arguments,
+and a continuation; \wasm with contexts and a continuation; \exe with a
+WebAssembly instruction and a continuation; \algo with AL instructions, an
+environment, contexts, and a continuation; or \ret with a AL value and a
 continuation.
 % env
 A environment is a finite mapping from a variable name to the AL value.
