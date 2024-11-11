@@ -188,8 +188,8 @@
   \text{Continuation}\quad & K &\ni& k &::=& ~ \mt &\quad\text{(Empty)} \\
     &&&& | & ~ \toplevelcall ~ (s, \seq v) &\quad\text{(Top-level Call)} \\
     &&&& | & ~ \call ~ (s, s, \seq v, k) &\quad\text{(Call)} \\
-    &&&& | & ~ \wasm ~ (\seq c, k) &\quad\text{(Wasm)} \\
     &&&& | & ~ \exe ~ (wi, k) &\quad\text{(Execute)} \\
+    &&&& | & ~ \wasm ~ (\seq c, k) &\quad\text{(Wasm)} \\
     &&&& | & ~ \algo ~ (\seq i, \mu, \seq c, k) &\quad\text{(Algorithm)} \\
     &&&& | & ~ \ret ~ (v, k) &\quad\text{(Return)} \\
 %
@@ -308,17 +308,13 @@ store.
 A Wasm value and instruction are expressed as AL values, particularly in the
 form of $\casev$.
 % store
-A store is expressed as a sequence of field name and AL value pairs
+A store is expressed as a sequence of field name and AL value pairs.
 % continuation
-A continuation is \mt{} for empty continuation; \call{} for a function call
-with let binding; \wasm{} for executing a Wasm instruction in the Wasm
-instruction
-stack; \exe{} for executing $wi$; \algo{} for interpreting AL instructions; or
-\ret{} for returning from a AL function.
 A continuation is \mt{} for an empty continuation, \call{} for a function call
-with let binding, \wasm{} for executing a Wasm instruction in the instruction
-stack, \exe{} for executing a given Wasm instruction $wi$, \algo{} for
-interpreting AL instructions, or \ret{} for returning from an AL function.
+with let binding, \exe{} for executing a given Wasm instruction $wi$, \wasm{}
+for executing a Wasm instruction in the instruction stack, \algo{} for
+interpreting AL instructions in a algorithm, or \ret{} for returning from an AL
+function.
 % env
 An environment is a finite mapping from a variable name to an AL value.
 % context
@@ -376,7 +372,15 @@ keeping the Wasm terms unchanged.
   \hline
   (\seq{a}, w, \call ~ (s_0, s_1, \seq v, k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \call ~ (s_0, s_1, \seq v, k))) \\
 %
-% Wasm-zero
+% Execute
+\newline \\
+  \casev ~ (s, \seq v) = wi \quad
+  \rel ~ (s, \seq e, \seq i) = \lookup(\seq{a}, s) \quad
+  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \hline
+  (\seq{a}, w, \exe ~ (wi', k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, k)) \\
+%
+% Wasm-empty
 \newline \\
   \hline
   (\seq{a}, w, \wasm ~ (\epsilon, k)) \leadsto (\seq{a}, w, k) \\
@@ -391,14 +395,6 @@ keeping the Wasm terms unchanged.
   (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (\seq c, k))
   \leadsto
   (\seq{a}, (\seq{wi'}, \seq{wv}, sto), \algo ~ (\seq i, \mu, \epsilon, \wasm ~ (\seq c, k))) \\
-%
-% Execute-instr
-\newline \\
-  \casev ~ (s, \seq v) = wi \quad
-  \rel ~ (s, \seq e, \seq i) = \lookup(\seq{a}, s) \quad
-  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
-  \hline
-  (\seq{a}, w, \exe ~ (wi', k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, k)) \\
 %
 % Al-empty
 \newline \\
@@ -418,34 +414,42 @@ keeping the Wasm terms unchanged.
   (\seq{a}, w, \ret ~ (v, \call ~ (s_0, s_1, \seq v, k)) \leadsto (\seq a, w, k') \\
 \end{gather*}
 
-The semantics of an AL is defined with a state transition system.
-% CallTopLevel
-Given the algorithms $\seq a$ generated from the DSL and Wasm state $w$, a
+The semantics of AL is defined by a state transition system.
+% TopLevelCall
+Given the algorithms $\seq a$ generated from the DSL and the Wasm state $w$, a
 top-level function $str$ can be invoked with arguments $\seq v$ to perform
-either module instantiation or function invocation:
+either module instantiation or function invocation: 
 $(\seq a, w, \toplevelcall ~ (str, \seq v))$.
-The contination changes to \algo{} with the function body instructions.
+\toplevelcall{} changes to \algo{} with the function body instructions and
+\mt{} continuation nested within it.
+% Empty
+Here, \mt{} is an empty continuation, representing the end of the transition,
+so no further transition occurs.
 % Call
-Similarly, the continuation changes to \call{} upon encountering a call
-instruction, and then further moves to \algo{}.
-% Wasm
-In the \wasm{} continuation, triggered by the enter instruction, the top
-Wasm instruction is popped from the instruction stack and executed until the
-context sequence $\seq c$ is exhausted.
-Execution involves looking up the corresponding relation definition and
-changing the continuation to \algo{} with the body of that relation.
+Similarly to \toplevelcall{}, \call{} changes to \algo{}, but with the current
+continuation nested within it.
 % Execute
-The \execute{} continuation, introduced by the execute instruction, also
-processes Wasm instructions, changing the continuation to \algo{}.
+\exe{} continuation executes a given Wasm instruction $wi$.
+the execution involves looking up the corresponding relation definition and
+changing the continuation to \algo{} with the body of that relation.
+% Wasm
+In \wasm{} continuation, a Wasm instruction is popped from the Wasm
+instruction stack and executed until the context sequence $\seq c$ is
+exhausted.
+This execution changes the continuation to \algo{}, with current continuation
+nested within it.
 % Algo
-In the \algo{} continuation, the body instructions are executed sequentially.
+In \algo{} continuation, the body instructions are executed sequentially.
+During execution, the continuation can change to \call{}, \exe{}, \wasm{},
+or \ret{}.
 The semantics of each instruction will be detailed separately.
 % Return
-The execution of a function call concludes with a return instruction, shifting
-the continuation to \ret{}.
-If the function call originates from a \call{}, the result is assigned to a
+The execution of a function call concludes with a return instruction, changing
+the continuation to \ret{} with a return value $v$.
+If the function call originates from \call{}, the result is assigned to a
 variable.
-If it originates from a \toplevelcall{}, the entire execution completes:
+If it originates from \toplevelcall{}, the inner continuation $k$ is always
+$empty$, so the entire execution completes:
 $
 (\seq a, w, \toplevelcall ~ (s, \seq v))
 \leadsto^*
