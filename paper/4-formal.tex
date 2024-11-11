@@ -123,6 +123,7 @@
 % Helper function
 \newcommand{\getalgoname}{\helper{get\_algo\_name}}
 \newcommand{\lookup}{\helper{lookup}}
+\newcommand{\createalgo}{\helper{create\_algo}}
 \newcommand{\execute}{\helper{execute}}
 \newcommand{\exit}{\helper{exit}}
 \newcommand{\duplicateenv}{\helper{duplicate\_env}}
@@ -132,6 +133,7 @@
 \newcommand{\getenv}{\helper{get\_env}}
 \newcommand{\setenv}{\helper{set\_env}}
 \newcommand{\prependinstr}{\helper{prepend\_instr}}
+\newcommand{\popwasminstr}{\helper{pop\_wasm\_instr}}
 \newcommand{\push}{\helper{push}}
 \newcommand{\pop}{\helper{pop}}
 \newcommand{\popn}{\helper{popn}}
@@ -362,54 +364,51 @@ keeping the Wasm terms unchanged.
 %
 % TopLevelCall
 \newline \\
-  \fun ~ (s_1, \seq e, \seq i) = \lookup(\seq{a}, s_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (\seq{a}, w, \toplevelcall ~ (s_1, \seq v)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \mt)) \\
+  (\seq{a}, w, \toplevelcall ~ (s, \seq v)) \leadsto (\seq{a}, w, \createalgo(\seq a, s, \seq v, \mt)) \\
 %
 % Call
 \newline \\
-  \fun ~ (s_1, \seq e, \seq i) = \lookup(\seq{a}, s_1) \quad \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
   \hline
-  (\seq{a}, w, \call ~ (s_0, s_1, \seq v, k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, \call ~ (s_0, s_1, \seq v, k))) \\
+  (\seq{a}, w, \call ~ (s_{var}, s_{name}, \seq v, k)) \leadsto
+  (\seq{a}, w, \createalgo(\seq a, s_{name}, \seq v, \call ~ (s_{var}, s_{name}, \seq v, k))) \\
 %
 % Execute
 \newline \\
-  \casev ~ (s, \seq v) = wi \quad
-  \rel ~ (s, \seq e, \seq i) = \lookup(\seq{a}, s) \quad
-  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \casev ~ (s, \seq v) = wi \\
   \hline
-  (\seq{a}, w, \exe ~ (wi', k)) \leadsto (\seq{a}, w, \algo ~ (\seq i, \mu, \epsilon, k)) \\
+  (\seq{a}, w, \exe ~ (wi, k)) \leadsto (\seq{a}, w, \createalgo(\seq a, s, \seq v, \mt)) \\
 %
 % Wasm-empty
 \newline \\
+  \seq c = \epsilon \\
   \hline
-  (\seq{a}, w, \wasm ~ (\epsilon, k)) \leadsto (\seq{a}, w, k) \\
+  (\seq{a}, w, \wasm ~ (\seq c, k)) \leadsto (\seq{a}, w, k) \\
 %
 % Wasm-instr
 \newline \\
-  |\seq c| > 0 \quad
-  \casev ~ (s, \seq v) = wi \quad
-  \rel ~ (s, \seq e, \seq i) = \lookup(\seq{a}, s) \quad
-  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \seq c \not= \epsilon \qquad
+  (w', \casev ~ (s, \seq v)) = \popwasminstr(w) \\
   \hline
-  (\seq{a}, (wi ~ \seq{wi'}, \seq{wv}, sto), \wasm ~ (\seq c, k))
+  (\seq{a}, w, \wasm ~ (\seq c, k))
   \leadsto
-  (\seq{a}, (\seq{wi'}, \seq{wv}, sto), \algo ~ (\seq i, \mu, \epsilon, \wasm ~ (\seq c, k))) \\
+  (\seq{a}, w', \createalgo(\seq a, s, \seq v, \wasm ~ (\seq c, k))) \\
 %
 % Al-empty
 \newline \\
+  \seq i = \epsilon \\
   \hline
-  (\seq{a}, w, \algo ~ (\epsilon, \mu, \seq c, k)) \leadsto (\seq{a}, w, k) \\
+  (\seq{a}, w, \algo ~ (\seq i, \mu, \seq c, k)) \leadsto (\seq{a}, w, k) \\
 %
 % Al-instr
 \newline \\
-  \seq{a}, w, \algo ~ (\seq{i_1}, \mu, \seq c, k) \vdash i_0 \Rightarrow (w', k') \\
+  \seq i = i_0 ~ \seq{i_1} \qquad \seq{a}, w, \algo ~ (\seq{i_1}, \mu, \seq c, k) \vdash i_0 \Rightarrow (w', k') \\
   \hline
-  (\seq{a}, w, \algo ~ (i_0 ~ \seq{i_1}, \mu, \seq c, k)) \leadsto (\seq{a}, w', k') \\
+  (\seq{a}, w, \algo ~ (\seq i, \mu, \seq c, k)) \leadsto (\seq{a}, w', k') \\
 %
 % Return
 \newline \\
-  \mu = \getenv(k) \quad k' = \setenv(k, \mu[s_0 \mapsto v]) \\
+  \mu = \getenv(k) \qquad k' = \setenv(k, \mu[s_0 \mapsto v]) \\
   \hline
   (\seq{a}, w, \ret ~ (v, \call ~ (s_0, s_1, \seq v, k)) \leadsto (\seq a, w, k') \\
 \end{gather*}
@@ -418,7 +417,7 @@ The semantics of AL is defined by a state transition system.
 % TopLevelCall
 Given the algorithms $\seq a$ generated from the DSL and the Wasm state $w$, a
 top-level function $str$ can be invoked with arguments $\seq v$ to perform
-either module instantiation or function invocation: 
+either module instantiation or function invocation:
 $(\seq a, w, \toplevelcall ~ (str, \seq v))$.
 \toplevelcall{} changes to \algo{} with the function body instructions and
 \mt{} continuation nested within it.
@@ -430,7 +429,7 @@ Similarly to \toplevelcall{}, \call{} changes to \algo{}, but with the current
 continuation nested within it.
 % Execute
 \exe{} continuation executes a given Wasm instruction $wi$.
-the execution involves looking up the corresponding relation definition and
+The execution involves looking up the corresponding relation definition and
 changing the continuation to \algo{} with the body of that relation.
 % Wasm
 In \wasm{} continuation, a Wasm instruction is popped from the Wasm
@@ -449,7 +448,7 @@ the continuation to \ret{} with a return value $v$.
 If the function call originates from \call{}, the result is assigned to a
 variable.
 If it originates from \toplevelcall{}, the inner continuation $k$ is always
-$empty$, so the entire execution completes:
+\mt, so the entire execution completes:
 $
 (\seq a, w, \toplevelcall ~ (s, \seq v))
 \leadsto^*
@@ -969,6 +968,15 @@ excessively verbose.
     \end{cases}
   \\
 %
+% create_algo
+\newline \\
+  &\createalgo(\seq a, s, \seq v, k) =
+  \algo(\seq i, \mu, \epsilon, k) \\
+  &\qquad\qquad\qquad\qquad\premise{if}\quad
+  (\rel ~ (s, \seq e, \seq i) \quad\lor\quad \fun ~ (s, \seq e, \seq i)) = \lookup(\seq a, s)
+  \quad\land\quad
+  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v)
+%
 % pop_all-ctx
 \newline \\
 &\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
@@ -1036,6 +1044,10 @@ excessively verbose.
 % reset_ctx
 \newline \\
   &\resetctx(\algo ~ (\seq i, \mu, \seq c, k)) = \algo ~ (\seq i, \mu, \epsilon, k) \\
+%
+% pop_wasm_instr
+\newline \\
+  &\popwasminstr((\seq{wv}, wi ~ \seq{wi'}, sto)) = (\seq{wv}, \seq{wi'}, sto), wi \\
 %
 % push
 \newline \\
