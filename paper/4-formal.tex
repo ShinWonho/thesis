@@ -5,47 +5,6 @@
 \noindent
 
 
-% AL semantics formalize
-%
-%
-% Prose notation:
-% - Implicit when to exit:
-%   • Returning from a function
-%     When the end of a function is reached without a jump (i.e., return) or trap aborting it, then the following steps are performed.
-%
-%   • Exiting with label
-%     When the end of a block is reached without a jump or trap aborting it, then the following steps are performed.
-%
-%   ! end of function/label is defined verbally, not in algorithmic notation
-%
-% - Separate context and instructions:
-%   • Push ctx \& Jump instrs
-%
-%
-% abstract machine of prose notation: vm
-% 1. state: stack, store
-% 2. cosumes sequence of WebAssembly instruction
-% 3. mutate state
-%
-% - store
-%   - instantiate -> alloc
-%   - invoke -> use
-% - stack contains value \& context
-%   - value
-%     ex: binop
-%   - context
-%     1) label: allow structured control flow (continuation)
-%     2) frame: store call information (local variable, module instance)
-%     - enter \& exit
-%     - ex: loop, invoke
-%     - ex: br, implicit exit
-%
-%
-% - wrong interpretation of "end" in AL interpreter \red{(How long does it occur?)}
-% - example
-
-\red{TODO: update syntax}
-
 
 \newcommand{\seq}[1]{#1^*}
 
@@ -337,47 +296,53 @@
 \end{align*}
 
 % state
-An AL state consists of sequence of algorithm, a Wasm state, and a
+An AL state consists of a sequence of algorithms, a Wasm state, and a
 continuation.
 % algorithm
-An algorithm is either a relation or a function that repectively correspond to
-the relation definition and the function definition in the DSL.
-Both of them consist of name, parameters, and AL instructions, but has distinct
-usage.
+An algorithm is either a relation or function, corresponding to the relation
+and function definitions in the DSL.
 % Wasm state
-Wasm state consists of a Wasm value stack, an Wasm instruction stack, and a
+A Wasm state consists of a Wasm value stack, an Wasm instruction stack, and a
 store.
 % Wasm value & instruction
-A Wasm value and a Wasm instruction are expressed in values, especially in the
+A Wasm value and instruction are expressed as AL values, particularly in the
 form of $\casev$.
 % store
-A store is expressed in a sequence of a field name and an AL value pairs which
-models records.
+A store is expressed as a sequence of field name and AL value pairs
 % continuation
-A continuation is \mt{}; \call{} with a variable, a function name, arguments,
-and a continuation; \wasm with contexts and a continuation; \exe with a Wasm
-instruction and a continuation; \algo with AL instructions, an environment,
-contexts, and a continuation; or \ret with a AL value and a continuation.
+A continuation is \mt{} for empty continuation; \call{} for a function call
+with let binding; \wasm{} for executing a Wasm instruction in the Wasm
+instruction
+stack; \exe{} for executing $wi$; \algo{} for interpreting AL instructions; or
+\ret{} for returning from a AL function.
+A continuation is \mt{} for an empty continuation, \call{} for a function call
+with let binding, \wasm{} for executing a Wasm instruction in the instruction
+stack, \exe{} for executing a given Wasm instruction $wi$, \algo{} for
+interpreting AL instructions, or \ret{} for returning from an AL function.
 % env
-A environment is a finite mapping from a variable name to the AL value.
+An environment is a finite mapping from a variable name to an AL value.
 % context
-A context is a AL value, especially in the form of $\casev$.
+A context is an AL value, particularyly in the form of \casev{}.
 % instruction
-An instruction is if, nondeterministically choosing either branch, entering a
-block, pusing a context, pushing a value, popping a context, popping a value,
-popping n values, popping all the values within a context, let binding,
-traping, returing an AL relation, returing an AL function, executing WebAsembly
-instruction, executing Wasm instruction sequence, AL function call with let
-binding, or replacing some mutable data structure.
+An instruction is \ifi{} for conditionally choosing a branch, \eitheri{} for
+nondeterministically choosing a branch, \enteri{} for entering a block,
+\pushctxi{} for pushing a context, \pushi{} for pushing a Wasm value,
+\popctxi{} for popping a context, \popi{} for popping a Wasm value, \popni{}
+for popping $n$ Wasm values, \popalli{} for popping all Wasm values within a
+context, \leti{} for let binding, \trapi{} for trapping, \returnreli{} for
+returning an AL relation, \returnfunci{} for returning an AL function,
+\executei{} for executing a Wasm instruction, \executeseqi{} for executing a
+Wasm instruction sequence, \calli{} for an AL function call with let binding,
+or \replacei{} for replacing some mutable data structure.
 % expression
-An expression is variable, number, boolean, function name, list, record (or
-struct), tuple, tagged tuple, unary operation, binary operation, access
-elements of an data structure, update elements of an data structure, record
-composition, list concatenation, membership checking, choosing an element from
-an data structure, getting length, tag checking, getting current
-context, checking context kind, iteration, match relation, or type relation.
+An expression is a variable, number, boolean, function name, list, record (or
+struct), tuple, tagged tuple, unary operation, binary operation, access to
+elements of a data structure, update of elements in a data structure, list
+concatenation, record composition, membership checking, choosing an element from
+a data structure, getting length, tag checking, getting current context,
+checking context kind, iteration, match relation, or type relation.
 % value
-A value is number, boolean, function name, list, record, tuple, tagged tuple,
+A value is a number, boolean, function name, list, record, tuple, tagged tuple,
 trap, or store.
 
 
