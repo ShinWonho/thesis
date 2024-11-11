@@ -227,7 +227,7 @@
 %
 % Continuation
   \text{Continuation}\quad & K &\ni& k &::=& ~ \mt &\quad\text{(Empty)} \\
-    &&&& | & ~ \toplevelcall ~ (s, \seq v, k) &\quad\text{(Top-level Call)} \\
+    &&&& | & ~ \toplevelcall ~ (s, \seq v) &\quad\text{(Top-level Call)} \\
     &&&& | & ~ \call ~ (s, s, \seq v, k) &\quad\text{(Call)} \\
     &&&& | & ~ \wasm ~ (\seq c, k) &\quad\text{(Wasm)} \\
     &&&& | & ~ \exe ~ (wi, k) &\quad\text{(Execute)} \\
@@ -337,28 +337,27 @@
 \end{align*}
 
 % state
-An AL state consists of sequence of algorithm, a WebAssembly state, and a
+An AL state consists of sequence of algorithm, a Wasm state, and a
 continuation.
 % algorithm
 An algorithm is either a relation or a function that repectively correspond to
 the relation definition and the function definition in the DSL.
 Both of them consist of name, parameters, and AL instructions, but has distinct
 usage.
-% WebAssembly state
-WebAssembly state consists of a WebAssembly value stack, an WebAssembly
-instruction stack, and a store.
-% WebAssembly value & instruction
-A WebAssembly value and a WebAssembly instruction are expressed in values,
-especially in the form of $\casev$.
+% Wasm state
+Wasm state consists of a Wasm value stack, an Wasm instruction stack, and a
+store.
+% Wasm value & instruction
+A Wasm value and a Wasm instruction are expressed in values, especially in the
+form of $\casev$.
 % store
 A store is expressed in a sequence of a field name and an AL value pairs which
 models records.
 % continuation
 A continuation is \mt{}; \call{} with a variable, a function name, arguments,
-and a continuation; \wasm with contexts and a continuation; \exe with a
-WebAssembly instruction and a continuation; \algo with AL instructions, an
-environment, contexts, and a continuation; or \ret with a AL value and a
-continuation.
+and a continuation; \wasm with contexts and a continuation; \exe with a Wasm
+instruction and a continuation; \algo with AL instructions, an environment,
+contexts, and a continuation; or \ret with a AL value and a continuation.
 % env
 A environment is a finite mapping from a variable name to the AL value.
 % context
@@ -368,8 +367,8 @@ An instruction is if, nondeterministically choosing either branch, entering a
 block, pusing a context, pushing a value, popping a context, popping a value,
 popping n values, popping all the values within a context, let binding,
 traping, returing an AL relation, returing an AL function, executing WebAsembly
-instruction, executing WebAssembly instruction sequence, AL function call with
-let binding, or replacing some mutable data structure.
+instruction, executing Wasm instruction sequence, AL function call with let
+binding, or replacing some mutable data structure.
 % expression
 An expression is variable, number, boolean, function name, list, record (or
 struct), tuple, tagged tuple, unary operation, binary operation, access
@@ -383,10 +382,10 @@ trap, or store.
 
 
 % terminology
-State, value, function, and instruction exist in both WebAssembly and AL. In
-this section, we abbreviate AL-specific terms (AL state, AL value, AL function
-and AL instruction) as simply state, value, function, and instruction, while
-keeping the WebAssembly terms unchanged.
+State, value, function, and instruction exist in both Wasm and AL. In this
+section, we abbreviate AL-specific terms (AL state, AL value, AL function and
+AL instruction) as simply state, value, function, and instruction, while
+keeping the Wasm terms unchanged.
 
 
 
@@ -456,8 +455,8 @@ keeping the WebAssembly terms unchanged.
 
 The semantics of an AL is defined with a state transition system.
 % CallTopLevel
-Given the algorithms $\seq a$ generated from the DSL and WebAssembly state $w$,
-a top-level function $str$ can be invoked with arguments $\seq v$ to perform
+Given the algorithms $\seq a$ generated from the DSL and Wasm state $w$, a
+top-level function $str$ can be invoked with arguments $\seq v$ to perform
 either module instantiation or function invocation:
 $(\seq a, w, \toplevelcall ~ (str, \seq v))$.
 The contination changes to \algo{} with the function body instructions.
@@ -466,13 +465,13 @@ Similarly, the continuation changes to \call{} upon encountering a call
 instruction, and then further moves to \algo{}.
 % Wasm
 In the \wasm{} continuation, triggered by the enter instruction, the top
-WebAssembly instruction is popped from the instruction stack and executed
-until the context sequence $\seq c$ is exhausted.
+Wasm instruction is popped from the instruction stack and executed until the
+context sequence $\seq c$ is exhausted.
 Execution involves looking up the corresponding relation definition and
 changing the continuation to \algo{} with the body of that relation.
 % Execute
 The \execute{} continuation, introduced by the execute instruction, also
-processes WebAssembly instructions, changing the continuation to \algo{}.
+processes Wasm instructions, changing the continuation to \algo{}.
 % Algo
 In the \algo{} continuation, the body instructions are executed sequentially.
 The semantics of each instruction will be detailed separately.
@@ -660,9 +659,8 @@ $.
   \Rightarrow ((\seq{wv}, \seq{wi}, sto'), k) \\
 \end{gather*}
 
-Given the algorithms $\seq a$, WebAssembly state $w$, and continuation,
-executing an instruction produces an updated WebAssembly state and a new
-continuation.
+Given the algorithms $\seq a$, Wasm state $w$, and continuation, executing an
+instruction produces an updated Wasm state and a new continuation.
 Here, the input continuation is always \algo{}, but instead of enumerating all
 arguments individually, we encapsulate them within the \algo{} continuation.
 % If
@@ -670,33 +668,33 @@ arguments individually, we encapsulate them within the \algo{} continuation.
 % Either
 \eitheri{} instruction nondeterministically selects a branch.
 % Enter
-\enteri{} instruction is a key instruction to describe WebAssembly control flow.
-It evaluates $e_1$ and pushes the context $v_1$ to the WebAssembly value stack.
-It also evaluates $e_2$ to get WebAssembly instruction sequence $\seq{v_2}$.
+\enteri{} instruction is a key instruction to describe Wasm control flow.
+It evaluates $e_1$ and pushes the context $v_1$ to the Wasm value stack.
+It also evaluates $e_2$ to get Wasm instruction sequence $\seq{v_2}$.
 Then, it appends end instruction of pushed contexts including $v_1$, and pushes
-them to the WebAssembly instruction stack.
+them to the Wasm instruction stack.
 Finally, it resets the contexts of the continuation.
 % PushCtx
 \pushctxi{} instruction evaluates $e$, pushes the context and add the context
 in the continuation.
 % Push
-\pushi{} instruction evaluates $e$ and pushes the value to the WebAssembly
-value stack.
+\pushi{} instruction evaluates $e$ and pushes the value to the Wasm value
+stack.
 % PopCtx
-\popctxi{} instruction is another key instruction to describe WebAssembly
-control flow.
-It pops all the WebAssembly value until context inclusively and the WebAssembly
-instructions until end instruction inclusively.
+\popctxi{} instruction is another key instruction to describe Wasm control
+flow.
+It pops all the Wasm value until context inclusively and the Wasm instructions
+until end instruction inclusively.
 It also pops the context in the continuation.
 Then, it assign the context to $e$.
 % Pop
-\popi{} instruction pops a WebAssembly value and assign the value to $e$.
+\popi{} instruction pops a Wasm value and assign the value to $e$.
 % PopN
-\popn{} instruction evalutes $e_2$ to get n and pops n WebAssembly values and
-assign the values to $e_1$.
+\popn{} instruction evalutes $e_2$ to get n and pops n Wasm values and assign
+the values to $e_1$.
 % PopAll
-\popalli{} instruction pops all the WebAssembly value until context exclusively
-and assign the values to $e_1$.
+\popalli{} instruction pops all the Wasm value until context exclusively and
+assign the values to $e_1$.
 % Let
 \leti{} instruction evaluates $e_2$ and assign the value to $e_1$.
 % Trap
@@ -927,8 +925,8 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
   w, \mu \vdash \hastypee ~ (e, s) \Rightarrow \boolv ~ (\hastype(v, s)) \\
 \end{gather*}
 
-Given WebAssembly state $w$, and an environment $\mu$, an expression evaluates
-to a value.
+Given Wasm state $w$, and an environment $\mu$, an expression evaluates to a
+value.
 % Var
 \vare{} expression looks up the environment and gets the value.
 % Num Bool Fname
@@ -977,9 +975,8 @@ $\listv ~ [0 ~ ... ~ n-1]$ was bound to the variables.
 % IsValid Match HasType
 \matche{} and \hastypee{} expressions evaluate inner exressions and perform
 \match{} and \hastype{}, respectively.
-Note that \match{} and \hastype{} are implementations of WebAssembly static
-semantics.
-Their formalization is omitted as they are highly specific to WebAssembly and
+Note that \match{} and \hastype{} are implementations of Wasm static semantics.
+Their formalization is omitted as they are highly specific to Wasm and
 excessively verbose.
 
 
