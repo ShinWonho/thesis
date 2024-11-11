@@ -301,8 +301,8 @@
 An AL state consists of a sequence of algorithms, a Wasm state, and a
 continuation.
 % algorithm
-An algorithm is either a relation or function, corresponding to the relation
-and function definitions in the DSL.
+An algorithm is either a relation or a function, corresponding to the relation
+and the function definitions in the DSL.
 % Wasm state
 A Wasm state consists of a Wasm value stack, an Wasm instruction stack, and a
 store.
@@ -333,14 +333,14 @@ returning an AL relation, \returnfunci{} for returning an AL function,
 Wasm instruction sequence, \calli{} for an AL function call with let binding,
 or \replacei{} for replacing some mutable data structure.
 % expression
-An expression is a variable, number, boolean, function name, list, record (or
+An expression is variable, number, boolean, function name, list, record (or
 struct), tuple, tagged tuple, unary operation, binary operation, access to
 elements of a data structure, update of elements in a data structure, list
 concatenation, record composition, membership checking, choosing an element from
 a data structure, getting length, tag checking, getting current context,
 checking context kind, iteration, match relation, or type relation.
 % value
-A value is a number, boolean, function name, list, record, tuple, tagged tuple,
+A value is number, boolean, function name, list, record, tuple, tagged tuple,
 trap, or store.
 
 
@@ -428,7 +428,7 @@ so no further transition occurs.
 Similarly to \toplevelcall{}, \call{} changes to \algo{}, but with the current
 continuation nested within it.
 % Execute
-\exe{} continuation executes a given Wasm instruction $wi$.
+\exe{} executes a given Wasm instruction $wi$.
 The execution involves looking up the corresponding relation definition and
 changing the continuation to \algo{} with the body of that relation.
 % Wasm
@@ -448,7 +448,7 @@ the continuation to \ret{} with a return value $v$.
 If the function call originates from \call{}, the result is assigned to a
 variable.
 If it originates from \toplevelcall{}, the inner continuation $k$ is always
-\mt, so the entire execution completes:
+\mt, so the entire execution completes with a return value $v'$:
 $
 (\seq a, w, \toplevelcall ~ (s, \seq v))
 \leadsto^*
