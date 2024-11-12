@@ -121,17 +121,20 @@
 
 
 % Helper function
+\newcommand{\domain}{\helper{domain}}
 \newcommand{\getalgoname}{\helper{get\_algo\_name}}
 \newcommand{\lookup}{\helper{lookup}}
 \newcommand{\createalgo}{\helper{create\_algo}}
 \newcommand{\execute}{\helper{execute}}
 \newcommand{\exit}{\helper{exit}}
 \newcommand{\duplicateenv}{\helper{duplicate\_env}}
+\newcommand{\getenv}{\helper{get\_env}}
+\newcommand{\setenv}{\helper{set\_env}}
 \newcommand{\getctx}{\helper{get\_ctx}}
 \newcommand{\addctx}{\helper{add\_ctx}}
 \newcommand{\resetctx}{\helper{reset\_ctx}}
-\newcommand{\getenv}{\helper{get\_env}}
-\newcommand{\setenv}{\helper{set\_env}}
+\newcommand{\getstore}{\helper{get\_store}}
+\newcommand{\setstore}{\helper{set\_store}}
 \newcommand{\prependinstr}{\helper{prepend\_instr}}
 \newcommand{\popwasminstr}{\helper{pop\_wasm\_instr}}
 \newcommand{\push}{\helper{push}}
@@ -150,10 +153,9 @@
 \newcommand{\getendinstr}{\helper{get\_end\_instr}}
 \newcommand{\istrue}{\helper{is\_true}}
 \newcommand{\isframe}{\helper{is\_frame}}
+\newcommand{\isctx}{\helper{is\_ctx}}
 \newcommand{\zip}{\helper{zip}}
 \newcommand{\fold}{\helper{fold}}
-% How to express?
-\newcommand{\domain}{\helper{domain}}
 % Hardcode
 \newcommand{\assign}{\helper{assign}}
 \newcommand{\binop}{\helper{binop}}
@@ -364,11 +366,13 @@ keeping the Wasm terms unchanged.
 %
 % TopLevelCall
 \newline \\
+  \\
   \hline
   (\seq{a}, w, \toplevelcall ~ (s, \seq v)) \leadsto (\seq{a}, w, \createalgo(\seq a, s, \seq v, \mt)) \\
 %
 % Call
 \newline \\
+  \\
   \hline
   (\seq{a}, w, \call ~ (s_{var}, s_{name}, \seq v, k)) \leadsto
   (\seq{a}, w, \createalgo(\seq a, s_{name}, \seq v, \call ~ (s_{var}, s_{name}, \seq v, k))) \\
@@ -466,37 +470,40 @@ $.
 %
 % If-true
 \newline \\
-  w, \getenv(k) \vdash e \Rightarrow v \quad
-  \istrue(v) \quad k' = \prependinstr(k, \seq{i_1}) \\
+  w, \getenv(k) \vdash e \Rightarrow v \qquad
+  \istrue(v) \qquad k' = \prependinstr(k, \seq{i_1}) \\
   \hline
   \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, k') \\
 %
 % If-false
 \newline \\
-  \quad w, \getenv(k) \vdash e \Rightarrow v \quad
-  \neg \istrue(v) \quad k' = \prependinstr(k, \seq{i_2}) \\
+  \qquad w, \getenv(k) \vdash e \Rightarrow v \qquad
+  \neg \istrue(v) \qquad k' = \prependinstr(k, \seq{i_2}) \\
   \hline
   \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, k') \\
 %
 % Either-1
 \newline \\
+  \\
   \hline
   \seq{a}, w, k \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(k, \seq{i_1})) \\
 %
 % Either-2
 \newline \\
+  \\
   \hline
   \seq{a}, w, k \vdash \eitheri ~ (\seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(k, \seq{i_2})) \\
 %
 % Enter
 \newline \\
-  \mu = \getenv(k) \quad
-  w, \mu \vdash e_1 \Rightarrow v_1 \quad
-  w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
-  \seq c = \getctx(k) \quad
+  (\seq{wv}, \seq{wi}, sto) = w \qquad
+  \mu = \getenv(k) \qquad
+  \seq c = \getctx(k) \\
+  w, \mu \vdash e_1 \Rightarrow v_1 \qquad
+  w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \qquad
   \seq{wi_{end}} = [ ~ \getendinstr(c) ~ | ~ c \leftarrow v_1 ~ \seq c ~ ] \\
   \hline
-  \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \enteri ~ (e_1, e_2)
+  \seq{a}, w, k \vdash \enteri ~ (e_1, e_2)
   \Rightarrow
   ((v_1 ~ \seq{wv}, \seq{v_2} ~ \seq{wi_{end}}~ \seq{wi}, sto), \wasm ~ (v_1 ~ \seq c, \resetctx(k))) \\
 %
@@ -506,19 +513,19 @@ $.
   \hline
   \seq{a}, w, k \vdash \pushctxi ~ e
   \Rightarrow
-  (\push_{WasmValue}(w, v), \addctx(k, v)) \\
+  (\push(w, v), \addctx(k, v)) \\
 %
 % Push
 \newline \\
   w, \getenv(k) \vdash e \Rightarrow v \\
   \hline
-  \seq{a}, w, k \vdash \pushi ~ e \Rightarrow (\push_{WasmValue}(w, v), k) \\
+  \seq{a}, w, k \vdash \pushi ~ e \Rightarrow (\push(w, v), k) \\
 %
 % PopCtx
 \newline \\
+  wv_{ctx} ~ \seq{wv'} = \exit_{WasmValue}(\seq{wv}) \qquad
   \mu = \assign(\getenv(k), e, wv_{ctx}) \\
-  wv_{ctx} ~ \seq{wv'} = \exit_{WasmValue}(\seq{wv}) \quad
-  \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \quad
+  \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \qquad
   k_1 = \exit_{K}(k) \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \popctxi ~ e
@@ -527,23 +534,23 @@ $.
 %
 % Pop
 \newline \\
-  wv, w' = \pop_{WasmValue}(w) \quad
+  (w', wv) = \pop(w) \qquad
   \mu' = \assign(\getenv(k), e, wv) \\
   \hline
   \seq{a}, w, k \vdash \popi ~ e \Rightarrow (w', \setenv(k, \mu')) \\
 %
 % PopN
 \newline \\
-  \mu = \getenv(k) \quad
-  w, \mu \vdash e_2 \Rightarrow \numv ~ n \quad
-  wv^n, w' = \popn_{WasmValue}(w, n) \quad
+  \mu = \getenv(k) \qquad
+  w, \mu \vdash e_2 \Rightarrow \numv ~ n \\
+  (w', wv^n) = \popn(w, n) \qquad
   \mu' = \assign(\mu, e_1, \listv ~ wv^n) \\
   \hline
   \seq{a}, w, k \vdash \popni ~ (e_1, e_2) \Rightarrow (w', \setenv(k, \mu')) \\
 %
 % PopAll
 \newline \\
-  \seq{wv_0}, \seq{wv_1} = \splitctx(wv) \quad
+  (\seq{wv_0}, \seq{wv_1}) = \splitctx(wv) \qquad
   \mu' = \assign(\getenv(k), e, \listv ~ \seq{wv_0}) \\
   \hline
   \seq{a}, (\seq{wv}, \seq{wi}, sto), e \vdash \popalli ~ e
@@ -552,8 +559,8 @@ $.
 %
 % Let
 \newline \\
-  \mu = \getenv(k) \quad
-  w, \mu \vdash e_2 \Rightarrow v \quad
+  \mu = \getenv(k) \qquad
+  w, \mu \vdash e_2 \Rightarrow v \qquad
   \mu' = \assign(\mu, e_1, v) \\
   \hline
   \seq{a}, w, k \vdash \leti ~ (e_1, e_2)
@@ -562,11 +569,13 @@ $.
 %
 % Trap
 \newline \\
+  \\
   \hline
   \seq{a}, w, k \vdash \trapi \Rightarrow (w, \ret ~ (\trapv, \mt)) \\
 %
 % Return-rule
 \newline \\
+  \\
   \hline
   \seq{a}, w, \algo~ (\seq{i}, \mu, \seq c, k) \vdash \returnreli \Rightarrow (w, k) \\
 %
@@ -584,23 +593,23 @@ $.
 %
 % ExecuteSeq
 \newline \\
-  w, \getenv(k) \vdash e \Rightarrow \listv ~ \seq v \quad
+  w, \getenv(k) \vdash e \Rightarrow \listv ~ \seq v \qquad
   k' = \fold(\execute, \seq v, k) \\
   \hline
   \seq{a}, w, k \vdash \executeseqi ~ e \Rightarrow (w, k') \\
 %
 % Call-fname
 \newline \\
-  \mu = \getenv(k) \quad
-  \fnamev ~ s_2 = \mu(s_1) \quad
+  \mu = \getenv(k) \qquad
+  \fnamev ~ s_2 = \mu(s_1) \qquad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
   \seq{a}, w, k \vdash \calli ~ (s_0, s_1, \seq e) \Rightarrow (w, \call ~ (s_0, s_2, \seq v, k)) \\
 %
 % Call-fname
 \newline \\
-  \mu = \getenv(k) \quad
-  s_1 \not\in \domain(\mu) \quad
+  \mu = \getenv(k) \qquad
+  s_1 \not\in \domain(\mu) \qquad
   \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
   \hline
   \seq{a}, w, k \vdash \calli ~ (s_0, s_1, \seq e) \Rightarrow (w, \call ~ (s_0, s_1, \seq v, k)) \\
@@ -608,23 +617,23 @@ $.
 % Replace-frame
 \newline \\
 \text{NOTE: $e_1$ is either store or current frame} \\
-  \mu = \getenv(k) \quad
-  w, \mu \vdash e_1 \Rightarrow v_1 \quad
-  \isframe(v_1) \quad
-  w, \mu \vdash e_2 \Rightarrow v_2 \quad
-  v_3 = \update(v_1, \seq p, v_2) \\
+  \mu = \getenv(k) \qquad
+  w, \mu \vdash e_1 \Rightarrow v_1 \qquad
+  \isframe(v_1) \qquad
+  w, \mu \vdash e_2 \Rightarrow v_2 \qquad
+  v_3 = \update(w, \mu, v_1, \seq p, v_2) \\
   \hline
   \seq{a}, w, k \vdash \replacei ~ (e_1, \seq{p}, e_2) \Rightarrow (\setcurframe(w, v_3), k) \\
 %
 % Replace-store
 \newline \\
-  \mu = \getenv(k) \quad
-  w, \mu \vdash e_1 \Rightarrow \storev \quad
-  w, \mu \vdash e_2 \Rightarrow v_2 \quad
-  sto' = \update(\strv sto, \seq p, v_2) \\
+  \mu = \getenv(k) \qquad
+  w, \mu \vdash e_1 \Rightarrow \storev \qquad
+  w, \mu \vdash e_2 \Rightarrow v_2 \\
+  sto = \update(w, \mu, \strv (\getstore(w)), \seq p, v_2) \\
   \hline
-  \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \replacei ~ (e_1, \seq{p}, e_2)
-  \Rightarrow ((\seq{wv}, \seq{wi}, sto'), k) \\
+  \seq{a}, w, k \vdash \replacei ~ (e_1, \seq{p}, e_2)
+  \Rightarrow (\setstore(w, sto), k) \\
 \end{gather*}
 
 Given the algorithms $\seq a$, Wasm state $w$, and continuation, executing an
@@ -726,7 +735,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
     [ ~
       s, v
     ~ | ~
-      (s, e) \leftarrow \seq{(s, e)}; w, \mu \vdash e \Rightarrow v
+      (s, e) \leftarrow \seq{(s, e)}; ~ w, \mu \vdash e \Rightarrow v
     ~ ] \\
   \hline
   w, \mu \vdash \stre ~ \seq{(s, e)} \Rightarrow \strv ~ \seq{(s, v)} \\
@@ -751,7 +760,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 %
 % Bin
 \newline \\
-  w, \mu \vdash e_1 \Rightarrow v_1 \quad w, \mu \vdash e_2 \Rightarrow v_2 \\
+  w, \mu \vdash e_1 \Rightarrow v_1 \qquad w, \mu \vdash e_2 \Rightarrow v_2 \\
   \hline
   w, \mu \vdash \bine ~ (binop, e_1, e_2) \Rightarrow \binop(binop, v_1, v_2) \\
 %
@@ -763,37 +772,37 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 %
 % Upd
 \newline \\
-  w, \mu \vdash e_1 \Rightarrow v_1 \quad w, \mu \vdash e_2 \Rightarrow v_2 \\
+  w, \mu \vdash e_1 \Rightarrow v_1 \qquad w, \mu \vdash e_2 \Rightarrow v_2 \\
   \hline
-  w, \mu \vdash \upde ~ (e_1, \seq p, e_2) \Rightarrow \update(v_1, \seq p, v_2) \\
+  w, \mu \vdash \upde ~ (e_1, \seq p, e_2) \Rightarrow \update(w, \mu, v_1, \seq p, v_2) \\
 %
 % Cat
 \newline \\
-   w, \mu \vdash e_1 \Rightarrow \listv ~ \seq{v_1} \quad
+   w, \mu \vdash e_1 \Rightarrow \listv ~ \seq{v_1} \qquad
    w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
   \hline
   w, \mu \vdash \cate ~ (e_1, e_2) \Rightarrow \listv ~ (\seq{v_1} ~ \seq{v_1}) \\
 %
 % Comp
 \newline \\
-   w, \mu \vdash e_1 \Rightarrow \strv ~ \seq{(s_1, v_1)} \quad
+   w, \mu \vdash e_1 \Rightarrow \strv ~ \seq{(s_1, v_1)} \qquad
    w, \mu \vdash e_2 \Rightarrow \strv ~ \seq{(s_2, v_2)} \\
   \hline
   w, \mu \vdash \compe ~ (e_1, e_2) \Rightarrow \strv ~ (\seq{(s_1, v_1)} ~ \seq{(s_2, v_2)}) \\
 %
 % Mem
 \newline \\
-  w, \mu \vdash e_1 \Rightarrow v_1 \quad
+  w, \mu \vdash e_1 \Rightarrow v_1 \qquad
   w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
   \hline
   w, \mu \vdash \meme ~ (e_1, e_2) \Rightarrow \boolv ~ (v_1 \in \seq{v_2}) \\
 %
 % Choose
 \newline \\
-  w, \mu \vdash e \Rightarrow \listv ~ \seq{v} \quad
-  v' \in \seq{v} \\
+  w, \mu \vdash e \Rightarrow \listv ~ \seq{v} \qquad
+  v \in \seq{v} \\
   \hline
-  w, \mu \vdash \choosee ~ e \Rightarrow v' \\
+  w, \mu \vdash \choosee ~ e \Rightarrow v \\
 %
 % Len
 \newline \\
@@ -827,7 +836,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
       [ ~ \mu_1[s \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
     )
   \\
-  \seq{\mu_2} = \fold(f, \seq{s}, \duplicateenv(\mu, \seq{s})) \quad
+  \seq{\mu_2} = \fold(f, \seq{s}, \duplicateenv(\mu, \seq{s})) \qquad
   \seq{v_1} =
     [ ~
       v_1
@@ -846,7 +855,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
       [ ~ \mu_1[s \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
     )
   \\
-  \seq{\mu_2} = \fold(f, \seq{s}, \mu^n) \quad
+  \seq{\mu_2} = \fold(f, \seq{s}, \mu^n) \qquad
   \seq{v'} =
     [ ~
       v'
@@ -858,7 +867,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 %
 % Iter-idx
 \newline \\
-  w, \mu \vdash e_2 \Rightarrow \listv ~ n \\
+  w, \mu \vdash e_2 \Rightarrow \listv ~ n \qquad
   \seq{\mu_1} =
     [ ~
       \fold(
@@ -869,7 +878,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
     ~ | ~
       i \leftarrow [0 ~ .. ~ n-1]
     ~ ]
-  \quad
+  \\
   \seq{v'} =
     [ ~
       v'
@@ -881,7 +890,7 @@ If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
 %
 % Match
 \newline \\
-  w, \mu \vdash e_1 \Rightarrow v_1 \quad
+  w, \mu \vdash e_1 \Rightarrow v_1 \qquad
   w, \mu \vdash e_2 \Rightarrow v_2 \\
   \hline
   w, \mu \vdash \matche ~ (e_1, e_2) \Rightarrow \boolv ~ (\match(v_1, v_2)) \\
@@ -954,6 +963,10 @@ excessively verbose.
 
 \begin{align*}
 %
+% domain
+\newline \\
+  &\domain(\mu) = \{ ~ x ~ | ~ \mu(x) = v ~ \} \\
+%
 % get_algo_name
 \newline \\
   &\getalgoname(\rel ~ (s, \seq e, \seq i)) = s \\
@@ -961,10 +974,10 @@ excessively verbose.
 %
 % lookup
 \newline \\
-  &\lookup(a ~ \seq{a'}, s) =
+  &\lookup(a ~ \seq{a}, s) =
     \begin{cases}
       a &\quad\quad \premise{if}\quad ~ s = \getalgoname(a) \\
-      \lookup(\seq{a'}, s) &\quad\quad \premise{otherwise}
+      \lookup(\seq{a}, s) &\quad\quad \premise{otherwise}
     \end{cases}
   \\
 %
@@ -975,15 +988,15 @@ excessively verbose.
   &\qquad\qquad\qquad\qquad\premise{if}\quad
   (\rel ~ (s, \seq e, \seq i) \quad\lor\quad \fun ~ (s, \seq e, \seq i)) = \lookup(\seq a, s)
   \quad\land\quad
-  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v)
+  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
 %
-% pop_all-ctx
+% split_ctx
 \newline \\
 &\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
-  &\splitctx(wv_0 ~ \seq{wv_1}) =
+  &\splitctx(wv ~ \seq{wv}) =
     \begin{cases}
-      \epsilon, \seq{wv} &\quad\quad \premise{if}\quad ~ \text{is\_ctx}(wv_0) \\
-      wv_0 ~ \seq{wv_2}, \seq{wv_3} &\quad\quad \premise{if}\quad ~ \text{is\_not\_ctx}(wv_0) \quad\land\quad \seq{wv_2}, \seq{wv_3} = \splitctx(\seq{wv_1})
+      (\epsilon, wv ~ \seq{wv}) &\quad\quad \premise{if}\quad ~ \isctx(wv) \\
+      (wv ~ \seq{wv_0}, \seq{wv_1}) &\quad\quad \premise{if}\quad ~ \neg\isctx(wv) \quad\land\quad (\seq{wv_0}, \seq{wv_1}) = \splitctx(\seq{wv})
     \end{cases}
   \\
 %
@@ -994,31 +1007,31 @@ excessively verbose.
 % exit_cont-wasm_0
 \newline \\
 &\text{NOTE: input cont of exit is either \algo ~ or \wasm} \\
-  &\exit_{K}(\wasm (\epsilon, k)) = \wasm(\epsilon, \exit_{K}(k)) \\
+  &\exit_{K}(\wasm ~ (\epsilon, k)) = \wasm ~ (\epsilon, \exit_{K}(k)) \\
 % exit_cont-wasm_nonzero
-  &\exit_{K}(\wasm (c ~ \seq{c'}, k)) = \wasm(\seq{c'}, k) \\
+  &\exit_{K}(\wasm ~ (c ~ \seq{c}, k)) = \wasm ~ (\seq{c}, k) \\
 % exit_cont-al
-  &\exit_{K}(\algo (\seq i, \mu, \seq c, k)) = \algo (\seq i, \mu, \seq c, \exit(k)) \\
+  &\exit_{K}(\algo ~ (\seq i, \mu, \seq c, k)) = \algo ~ (\seq i, \mu, \seq c, \exit(k)) \\
 %
 % exit_wasm_instr-end
 \newline \\
-  &\exit_{WasmInstr}(wi ~ \seq{wi'}) =
+  &\exit_{WasmInstr}(wi ~ \seq{wi}) =
     \begin{cases}
-      \seq{wi'} &\quad\quad \premise{if}\quad ~ \helper{is\_end}(wi) \\
-      \exit_{WasmInstr}(\seq{wi'}) &\quad\quad \premise{otherwise} \\
+      \seq{wi} &\quad\quad \premise{if}\quad ~ \helper{is\_end}(wi) \\
+      \exit_{WasmInstr}(\seq{wi}) &\quad\quad \premise{otherwise} \\
     \end{cases}
   \\
 %
 % exit_wasm_value
 \newline \\
-  &\exit_{WasmValue}(\seq{wv_0}) = \seq{wv_2}
-  \quad\quad\premise{if}\quad ~ \seq{wv_1}, \seq{wv_2} = \splitctx(\seq{wv_0}) \\
+  &\exit_{WasmValue}(\seq{wv}) = \seq{wv_1}
+  \quad\quad\premise{if}\quad ~ (\seq{wv_0}, \seq{wv_1}) = \splitctx(\seq{wv}) \\
 %
 % duplicate_env-empty
 \newline \\
   &\duplicateenv(\mu, epsilon) = \mu \\
 % duplicate_env-nonempty
-  &\duplicateenv(\mu, s ~ \seq{s'}) = \mu^{|\seq v|}
+  &\duplicateenv(\mu, s ~ \seq{s}) = \mu^{|\seq v|}
   \quad\quad\premise{if}\quad ~ \listv ~ \seq v = \mu(s) \\
 %
 % get_env
@@ -1045,21 +1058,29 @@ excessively verbose.
 \newline \\
   &\resetctx(\algo ~ (\seq i, \mu, \seq c, k)) = \algo ~ (\seq i, \mu, \epsilon, k) \\
 %
+% get_store
+\newline \\
+  &\getstore((\seq{wv}, \seq{wi}, sto)) = sto \\
+%
+% set_store
+\newline \\
+  &\setstore((\seq{wv}, \seq{wi}, sto), sto') = (\seq{wv}, \seq{wi}, sto') \\
+%
 % pop_wasm_instr
 \newline \\
-  &\popwasminstr((\seq{wv}, wi ~ \seq{wi'}, sto)) = (\seq{wv}, \seq{wi'}, sto), wi \\
+  &\popwasminstr((\seq{wv}, wi ~ \seq{wi}, sto)) = ((\seq{wv}, \seq{wi}, sto), wi) \\
 %
 % push
 \newline \\
-  &\push((\seq{wv}, \seq{wi}, sto), wv') = wv' ~ \seq{wv}, \seq{wi}, sto \\
+  &\push((\seq{wv}, \seq{wi}, sto), wv) = (wv ~ \seq{wv}, \seq{wi}, sto) \\
 %
 % pop
 \newline \\
-  &\pop((wv ~ \seq{wv'}, \seq{wi}, sto)) = \seq{wv'}, \seq{wi}, sto \\
+  &\pop((wv ~ \seq{wv}, \seq{wi}, sto)) = ((\seq{wv}, \seq{wi}, sto), wv) \\
 %
 % popn
 \newline \\
-  &\popn((wv^n ~ \seq{wv'}, \seq{wi}, sto), n) = \seq{wv'}, \seq{wi}, sto \\
+  &\popn((wv^n ~ \seq{wv}, \seq{wi}, sto), n) = ((\seq{wv}, \seq{wi}, sto), wv^n) \\
 %
 % unop
 \newline \\
@@ -1074,16 +1095,16 @@ excessively verbose.
 % get_cur_ctx
 \newline \\
   &\getcurctx((\seq{wv}, \seq{wi}, sto)) =
-  wv_{ctx} \quad\quad\premise{if}\quad ~ \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \\
+  wv_{ctx} \quad\quad\premise{if}\quad ~ (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \\
 %
 % get_cur_frame-frame
 \newline \\
   &\getcurframe((\seq{wv}, \seq{wi}, sto)) =
     \begin{cases}
       wv_{ctx} &\quad\quad\premise{if}\quad
-      \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad\land\quad \isframe(wv_{ctx})\\
-      \getcurframe(\seq{wv_2}) &\quad\quad\premise{if}\quad
-      \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad\land\quad \neg \isframe(wv_{ctx}) \\
+      (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \quad\land\quad \isframe(wv_{ctx})\\
+      \getcurframe(\seq{wv_1}) &\quad\quad\premise{if}\quad
+      (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \quad\land\quad \neg \isframe(wv_{ctx}) \\
     \end{cases}
   \\
 %
@@ -1092,52 +1113,52 @@ excessively verbose.
   &\setcurframe((\seq{wv}, \seq{wi}, sto), v_{frame})
   =
   \begin{cases}
-    \seq{wv_1} ~ v_{frame} ~ \seq{wv_2}, \seq{wi}, sto \\
+    (\seq{wv_0} ~ v_{frame} ~ \seq{wv_1}, \seq{wi}, sto) \\
     \qquad\qquad\qquad\quad\premise{if}\quad
-    \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \isframe(wv_{ctx}) \\
-    \seq{wv_1} ~ wv_{ctx} ~ \setcurframe(\seq{wv_2}, v_{frame}), \seq{wi}, sto \\
+    (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \quad \isframe(wv_{ctx}) \\
+    (\seq{wv_0} ~ wv_{ctx} ~ \setcurframe(\seq{wv_1}, v_{frame}), \seq{wi}, sto) \\
     \qquad\qquad\qquad\quad\premise{if}\quad
-    \seq{wv_1}, wv_{ctx} ~ \seq{wv_2} = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
+    (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
   \end{cases}
   \\
 %
 % access-idx
 \newline \\
-  &\access(\mu, w, \listv ~ \seq{v}, \idxp ~ e) = \seq{v}[n]
+  &\access(w, \mu, \listv ~ \seq{v}, \idxp ~ e) = \seq{v}[n]
   \qquad\qquad\qquad~\,\quad\premise{if}\quad w, \mu \vdash e \Rightarrow \numv ~ n \\
 % access-slice
-  &\access(\mu, w, \listv ~ \seq{v}, \slicep ~ (e_1, e_2)) = \seq{v}[n_1: n_2]
+  &\access(w, \mu, \listv ~ \seq{v}, \slicep ~ (e_1, e_2)) = \seq{v}[n_1: n_2]
   \quad\quad\premise{if}\quad
   w, \mu \vdash e_1 \Rightarrow \numv ~ n_1 \quad\land\quad
   w, \mu \vdash e_2 \Rightarrow \numv ~ n_2 \\
 % access-dot
-  &\access(\mu, w, \strv ~ ((s_0, v_0) ~ \seq{(s_1, v_1)}), \dotp ~ s) =
+  &\access(w, \mu, \strv ~ ((s_0, v_0) ~ \seq{(s_1, v_1)}), \dotp ~ s) =
   \begin{cases}
     v_0 &\quad\quad\premise{if}\quad s_0 = s \\
-    \access(\mu, w, \strv ~ \seq{(s_1, v_1)}, \dotp ~ s) &\quad\quad\premise{otherwise} \\
+    \access(w, \mu, \strv ~ \seq{(s_1, v_1)}, \dotp ~ s) &\quad\quad\premise{otherwise} \\
   \end{cases}
   \\
 % access-store
-  &\access(\mu, w, \storev, p) =\access(\mu, w, \strv sto, p)
+  &\access(w, \mu, \storev, p) =\access(w, \mu, \strv ~ sto, p)
   \quad\quad\premise{if}\quad w = (\seq{wv}, \seq{wi}, sto)\\
 %
 % update
 \newline \\
   % idx
-  &\update(\mu, w, \listv ~ \seq{v_1}, (\idxp ~ e) ~ \seq{p}, v_2) =
-  \listv ~ (\updateidx(v_1, n, \update(\mu, w, \seq{v_1}[n], \seq{p}, v_2))) \\
+  &\update(w, \mu, \listv ~ \seq{v}, (\idxp ~ e) ~ \seq{p}, v) =
+  \listv ~ (\updateidx(\seq v, n, \update(w, \mu, \seq{v}[n], \seq{p}, v))) \\
   &\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\premise{if}\quad
   w, \mu \vdash e \Rightarrow \numv ~ n \\
   % slice
-  &\update(\mu, w, \listv ~ \seq{v_1}, (\slicep ~ e) ~ \seq{p}, v_2) =
-  \listv (\updateslice(v_1, n_1, n_2, update(\mu, w, \seq{v_i}[n_1: n_2], \seq{p}, v_2))) \\
+  &\update(w, \mu, \listv ~ \seq{v}, (\slicep ~ e) ~ \seq{p}, v) =
+  \listv ~ (\updateslice(\seq v, n_1, n_2, \update(w, \mu, \seq{v_i}[n_1: n_2], \seq{p}, v))) \\
   &\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\premise{if}\quad
   w, \mu \vdash e_1 \Rightarrow \numv ~ n_1 \quad\land\quad
   w, \mu \vdash e_2 \Rightarrow \numv ~ n_2 \\
   % dot
-  &\update(\mu, w, \strv ~ \seq{(s, v)}, (\dotp ~ s') ~ \seq{p}, v_2)
+  &\update(w, \mu, \strv ~ \seq{(s, v)}, (\dotp ~ s') ~ \seq{p}, v)
   =
-  \strv (\updatedot(\seq{(s, v)}, s', \update(\mu, w, \access(v, \dotp ~ s'), \seq{p}, v_2))) \\
+  \strv ~ (\updatedot(\seq{(s, v)}, s', \update(w, \mu, \access(v, \dotp ~ s'), \seq{p}, v))) \\
 %
 % update_idx
 \newline \\
@@ -1168,13 +1189,13 @@ excessively verbose.
 %
 % get_end_algo
 \newline \\
-  &\getendinstr(\casev(\text{"LABEL"}, \seq v)) = \casev(\text{"EXTING"}, \epsilon) \\
-  &\getendinstr(\casev(\text{"FRAME"}, \seq v)) = \casev(\text{"RETURNING"}, \epsilon) \\
+  &\getendinstr(\casev ~ (\text{"LABEL"}, \seq v)) = \casev ~ (\text{"EXTING"}, \epsilon) \\
+  &\getendinstr(\casev ~ (\text{"FRAME"}, \seq v)) = \casev ~ (\text{"RETURNING"}, \epsilon) \\
 %
 % is_true
 \newline \\
   &\istrue(\boolv ~ b) = b \\
-  &\istrue(\listv ~ \seq v) = \forall v' \in \seq v. \istrue (v') \\
+  &\istrue(\listv ~ \seq v) = \forall v \in \seq v. \istrue (v) \\
 %
 % is_frame
 \newline \\
@@ -1186,10 +1207,19 @@ excessively verbose.
   \end{cases}
   \\
 %
+% is_ctx
+\newline \\
+  &\isctx(v) =
+  \begin{cases}
+    true
+    &\quad\quad\premise{if}\quad v = (\casev ~ (\text{"FRAME"}, \seq v) \quad\lor\quad \casev ~ (\text{"LABEL"}, \seq v)) \\
+    false &\quad\quad\premise{otherwise}\\
+  \end{cases}
+%
 % zip
 \newline \\
   &\zip(eps, eps) = eps \\
-  &\zip(x ~ \seq{x'}, y ~ \seq{y'}) = (x, y) ~ \zip (\seq{x'}, \seq{y'}) \\
+  &\zip(x ~ \seq{x}, y ~ \seq{y}) = (x, y) ~ \zip (\seq{x}, \seq{y}) \\
 %
 % fold
 \newline \\
