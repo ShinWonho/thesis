@@ -45,7 +45,6 @@
 \newcommand{\returnreli}{\symbol{ReturnRelI}}
 \newcommand{\returnfunci}{\symbol{ReturnFuncI}}
 \newcommand{\executei}{\symbol{ExecuteI}}
-\newcommand{\executeseqi}{\symbol{ExecuteSeqI}}
 \newcommand{\calli}{\symbol{CallI}}
 \newcommand{\replacei}{\symbol{ReplaceI}}
 
@@ -132,7 +131,7 @@
 \newcommand{\setenv}{\helper{set\_env}}
 \newcommand{\getctx}{\helper{get\_ctx}}
 \newcommand{\addctx}{\helper{add\_ctx}}
-\newcommand{\resetctx}{\helper{reset\_ctx}}
+\newcommand{\clearctx}{\helper{clear\_ctx}}
 \newcommand{\getstore}{\helper{get\_store}}
 \newcommand{\setstore}{\helper{set\_store}}
 \newcommand{\prependinstr}{\helper{prepend\_instr}}
@@ -151,6 +150,7 @@
 \newcommand{\updateslice}{\helper{update\_slice}}
 \newcommand{\updatedot}{\helper{update\_dot}}
 \newcommand{\getendinstr}{\helper{get\_end\_instr}}
+\newcommand{\isendinstr}{\helper{is\_end\_instr}}
 \newcommand{\istrue}{\helper{is\_true}}
 \newcommand{\isframe}{\helper{is\_frame}}
 \newcommand{\isctx}{\helper{is\_ctx}}
@@ -192,7 +192,7 @@
   \text{Continuation}\quad & K &\ni& k &::=& ~ \mt &\quad\text{(Empty)} \\
     &&&& | & ~ \toplevelcall ~ (s, \seq v) &\quad\text{(Top-level Call)} \\
     &&&& | & ~ \call ~ (s, s, \seq v, k) &\quad\text{(Call)} \\
-    &&&& | & ~ \exe ~ (wi, k) &\quad\text{(Execute)} \\
+    &&&& | & ~ \exe ~ (\seq{wi}, k) &\quad\text{(Execute)} \\
     &&&& | & ~ \wasm ~ (\seq c, k) &\quad\text{(Wasm)} \\
     &&&& | & ~ \algo ~ (\seq i, \mu, \seq c, k) &\quad\text{(Algorithm)} \\
     &&&& | & ~ \ret ~ (v, k) &\quad\text{(Return)} \\
@@ -218,7 +218,6 @@
     &&&& | & ~ \returnreli &\quad\text{(Return Relation)} \\
     &&&& | & ~ \returnfunci ~ e &\quad\text{(Return Function)} \\
     &&&& | & ~ \executei ~ e &\quad\text{(Execute)} \\
-    &&&& | & ~ \executeseqi ~ e &\quad\text{(Execute Sequence)} \\
     &&&& | & ~ \calli ~ (s, s, \seq{e}) &\quad\text{(Let Call)} \\
     &&&& | & ~ \replacei ~ (e, \seq{p}, e) &\quad\text{(Replace)} \\
 \end{array}
@@ -258,7 +257,7 @@
     &&&& | & ~ \subop &\quad\text{(Subtraction)} \\
     &&&& | & ~ \mulop &\quad\text{(Multiplication)} \\
     &&&& | & ~ \divop &\quad\text{(Division)} \\
-    &&&& | & ~ \modop &\quad\text{(Modular)} \\
+    &&&& | & ~ \modop &\quad\text{(Modulo)} \\
     &&&& | & ~ \expop &\quad\text{(Exponential)} \\
     &&&& | & ~ \implop &\quad\text{(Implication)} \\
     &&&& | & ~ \equivop &\quad\text{(Equivalence)} \\
@@ -268,8 +267,8 @@
     &&&& | & ~ \neop &\quad\text{(Not Equal)} \\
     &&&& | & ~ \ltop &\quad\text{(Less Than)} \\
     &&&& | & ~ \gtop &\quad\text{(Greater Than)} \\
-    &&&& | & ~ \leop &\quad\text{(Less or Equal)} \\
-    &&&& | & ~ \geop &\quad\text{(Greater or Equal)} \\
+    &&&& | & ~ \leop &\quad\text{(Less Than or Equal)} \\
+    &&&& | & ~ \geop &\quad\text{(Greater Than or Equal)} \\
 \end{array}
 \end{align*}
 \newpage
@@ -306,7 +305,7 @@ continuation.
 An algorithm is either a relation or a function, corresponding to the relation
 and the function definitions in the DSL.
 % Wasm state
-A Wasm state consists of a Wasm value stack, an Wasm instruction stack, and a
+A Wasm state consists of a Wasm value stack, a Wasm instruction stack, and a
 store.
 % Wasm value & instruction
 A Wasm value and instruction are expressed as AL values, particularly in the
@@ -314,13 +313,13 @@ form of $\casev$.
 % store
 A store is expressed as a sequence of field name and AL value pairs.
 % continuation
-A continuation is \mt{} for an empty continuation, \call{} for a function call
-with let binding, \exe{} for executing a given Wasm instruction $wi$, \wasm{}
-for executing a Wasm instruction in the instruction stack, \algo{} for
-interpreting AL instructions in a algorithm, or \ret{} for returning from an AL
-function.
+A continuation is \mt{} for an empty continuation, \toplevelcall{} for
+top-level function call, \call{} for a function call with let binding, \exe{}
+for executing given Wasm instructions, \wasm{} for executing a Wasm instruction
+in the instruction stack, \algo{} for interpreting AL instructions in an
+algorithm, or \ret{} for returning from an AL function.
 % env
-An environment is a finite mapping from a variable name to an AL value.
+An environment is a finite mapping from variable names to AL values.
 % context
 A context is an AL value, particularyly in the form of \casev{}.
 % instruction
@@ -330,32 +329,31 @@ nondeterministically choosing a branch, \enteri{} for entering a block,
 \popctxi{} for popping a context, \popi{} for popping a Wasm value, \popni{}
 for popping $n$ Wasm values, \popalli{} for popping all Wasm values within a
 context, \leti{} for let binding, \trapi{} for trapping, \returnreli{} for
-returning an AL relation, \returnfunci{} for returning an AL function,
-\executei{} for executing a Wasm instruction, \executeseqi{} for executing a
-Wasm instruction sequence, \calli{} for an AL function call with let binding,
-or \replacei{} for replacing some mutable data structure.
+returning from an AL relation, \returnfunci{} for returning from an AL
+function, \executei{} for executing given Wasm instructions, \calli{} for an AL
+function call with let binding, or \replacei{} for replacing some mutable data
+structure.
 % expression
-An expression is variable, number, boolean, function name, list, record (or
-struct), tuple, tagged tuple, unary operation, binary operation, access to
-elements of a data structure, update of elements in a data structure, list
-concatenation, record composition, membership checking, choosing an element from
-a data structure, getting length, tag checking, getting current context,
-checking context kind, iteration, match relation, or type relation.
+An expression is a variable, number, boolean, function name, list, record (or
+struct), tuple, tagged tuple, unary or binary operation, data structure access
+or update, list concatenation, record composition, membership check, element
+selection, length retrieval, tag check, context retrieval, context kind check,
+iteration, match relation, or type relation.
 % value
-A value is number, boolean, function name, list, record, tuple, tagged tuple,
+A value is a number, boolean, function name, list, record, tuple, tagged tuple,
 trap, or store.
 
 
 % terminology
-State, value, function, and instruction exist in both Wasm and AL. In this
-section, we abbreviate AL-specific terms (AL state, AL value, AL function and
-AL instruction) as simply state, value, function, and instruction, while
-keeping the Wasm terms unchanged.
+In this section, AL-specific terms (state, value, function, and instruction)
+are abbreviated as simply state, value, function, and instruction, while Wasm
+terms remain unchanged.
 
 
 
 
-%% Syntax
+\newpage
+%% Semantics
 \section{Semantics of AL}
 \label{semantics}
 
@@ -377,86 +375,94 @@ keeping the Wasm terms unchanged.
   (\seq{a}, w, \call ~ (s_{var}, s_{name}, \seq v, k)) \leadsto
   (\seq{a}, w, \createalgo(\seq a, s_{name}, \seq v, \call ~ (s_{var}, s_{name}, \seq v, k))) \\
 %
-% Execute
+% Execute-empty
+\newline \\
+  \\
+  \hline
+  (\seq{a}, w, \exe ~ (\epsilon, k)) \leadsto (\seq{a}, w, k) \\
+%
+% Execute-instr
 \newline \\
   \casev ~ (s, \seq v) = wi \\
   \hline
-  (\seq{a}, w, \exe ~ (wi, k)) \leadsto (\seq{a}, w, \createalgo(\seq a, s, \seq v, \mt)) \\
+  (\seq{a}, w, \exe ~ (wi ~ \seq{wi}, k)) \leadsto
+  (\seq{a}, w, \createalgo(\seq a, s, \seq v, \exe ~ (\seq{wi}, k))) \\
 %
 % Wasm-empty
 \newline \\
-  \seq c = \epsilon \\
+  \\
   \hline
-  (\seq{a}, w, \wasm ~ (\seq c, k)) \leadsto (\seq{a}, w, k) \\
+  (\seq{a}, w, \wasm ~ (\epsilon, k)) \leadsto (\seq{a}, w, k) \\
 %
 % Wasm-instr
 \newline \\
-  \seq c \not= \epsilon \qquad
   (w', \casev ~ (s, \seq v)) = \popwasminstr(w) \\
   \hline
-  (\seq{a}, w, \wasm ~ (\seq c, k))
+  (\seq{a}, w, \wasm ~ (c^+, k))
   \leadsto
   (\seq{a}, w', \createalgo(\seq a, s, \seq v, \wasm ~ (\seq c, k))) \\
 %
 % Al-empty
 \newline \\
-  \seq i = \epsilon \\
+  \\
   \hline
-  (\seq{a}, w, \algo ~ (\seq i, \mu, \seq c, k)) \leadsto (\seq{a}, w, k) \\
+  (\seq{a}, w, \algo ~ (\epsilon, \mu, \seq c, k)) \leadsto (\seq{a}, w, k) \\
 %
 % Al-instr
 \newline \\
-  \seq i = i_0 ~ \seq{i_1} \qquad \seq{a}, w, \algo ~ (\seq{i_1}, \mu, \seq c, k) \vdash i_0 \Rightarrow (w', k') \\
+  \seq{a}, w, \algo ~ (\seq{i_1}, \mu, \seq c, k) \vdash i_0 \Rightarrow (w', k') \\
   \hline
-  (\seq{a}, w, \algo ~ (\seq i, \mu, \seq c, k)) \leadsto (\seq{a}, w', k') \\
+  (\seq{a}, w, \algo ~ (i_0 ~ \seq{i_1}, \mu, \seq c, k)) \leadsto (\seq{a}, w', k') \\
 %
 % Return
 \newline \\
-  \mu = \getenv(k) \qquad k' = \setenv(k, \mu[s_0 \mapsto v]) \\
+  \mu = \getenv(k) \qquad k' = \setenv(k, \mu[s_{var} \mapsto v]) \\
   \hline
-  (\seq{a}, w, \ret ~ (v, \call ~ (s_0, s_1, \seq v, k)) \leadsto (\seq a, w, k') \\
+  (\seq{a}, w, \ret ~ (v, \call ~ (s_{var}, s_{name}, \seq v, k)) \leadsto (\seq a, w, k') \\
 \end{gather*}
 
 The semantics of AL is defined by a state transition system.
 % TopLevelCall
 Given the algorithms $\seq a$ generated from the DSL and the Wasm state $w$, a
-top-level function $str$ can be invoked with arguments $\seq v$ to perform
+top-level function $s$ can be invoked with arguments $\seq v$ to perform
 either module instantiation or function invocation:
-$(\seq a, w, \toplevelcall ~ (str, \seq v))$.
-\toplevelcall{} changes to \algo{} with the function body instructions and
-\mt{} continuation nested within it.
+$(\seq a, w, \toplevelcall ~ (s, \seq v))$.
+\toplevelcall{} changes to \algo{} with the function name $s$, the arguments
+$\seq v$, and \mt{}.
 % Empty
-Here, \mt{} is an empty continuation, representing the end of the transition,
-so no further transition occurs.
+\mt{} is an empty continuation, representing the end of the transition, so no
+further transition occurs.
 % Call
-Similarly to \toplevelcall{}, \call{} changes to \algo{}, but with the current
-continuation nested within it.
+Similarly to \toplevelcall{}, \call{} changes to \algo{} with the function name
+$s_{name}$ and the arguments $\seq v$, but with the current continuation nested
+within it.
+%After the call, a return value is bound by $s_{var}$ in the \ret{} transition.
 % Execute
-\exe{} executes a given Wasm instruction $wi$.
-The execution involves looking up the corresponding relation definition and
-changing the continuation to \algo{} with the body of that relation.
+\exe{} executes a Wasm instruction sequence $\seq{wi}$ one by one, each
+containing a relation name $s$ and arguments $\seq v$.
+The continuation changes to \algo{} with the relation name, the arguments, and
+the current continuation, with the Wasm instruction being popped.
 % Wasm
 In \wasm{} continuation, a Wasm instruction is popped from the Wasm
 instruction stack and executed until the context sequence $\seq c$ is
 exhausted.
-This execution changes the continuation to \algo{}, with current continuation
-nested within it.
+This execution changes the continuation to \algo{}, with the relation name $s$,
+the arguments $\seq v$, and the current continuation nested within it.
 % Algo
-In \algo{} continuation, the body instructions are executed sequentially.
-During execution, the continuation can change to \call{}, \exe{}, \wasm{},
-or \ret{}.
-The semantics of each instruction will be detailed separately.
+In \algo{} continuation, the body instructions $\seq i$ are executed
+sequentially, allowing transitions to \call{}, \exe{}, \wasm{}, \ret{}, or
+\algo{}.
 % Return
 The execution of a function call concludes with a return instruction, changing
 the continuation to \ret{} with a return value $v$.
-If the function call originates from \call{}, the result is assigned to a
-variable.
+If the function call originates from \call{}, the result is assigned to the
+variable $s_{var}$.
 If it originates from \toplevelcall{}, the inner continuation $k$ is always
-\mt, so the entire execution completes with a return value $v'$:
+\mt, so the entire execution completes with a return value $v$:
 $
 (\seq a, w, \toplevelcall ~ (s, \seq v))
 \leadsto^*
-(\seq a, w', \ret ~ (v', \mt))
+(\seq a, w', \ret ~ (v, \mt))
 $.
 
 
@@ -465,22 +471,22 @@ $.
 %% Instruction
 
 \begin{gather*}
-  \text{NOTE: input cont is always \algo} \\
+  \text{NOTE: the input continuation $k$ is always \algo} \\
   \seq{a}, ~ w, ~ k \vdash i \Rightarrow w, ~ k \\
 %
 % If-true
 \newline \\
   w, \getenv(k) \vdash e \Rightarrow v \qquad
-  \istrue(v) \qquad k' = \prependinstr(k, \seq{i_1}) \\
+  \istrue(v) \\
   \hline
-  \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, k') \\
+  \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(k, \seq{i_1})) \\
 %
 % If-false
 \newline \\
-  \qquad w, \getenv(k) \vdash e \Rightarrow v \qquad
-  \neg \istrue(v) \qquad k' = \prependinstr(k, \seq{i_2}) \\
+  w, \getenv(k) \vdash e \Rightarrow v \qquad
+  \neg \istrue(v) \\
   \hline
-  \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, k') \\
+  \seq{a}, w, k \vdash \ifi ~ (e, \seq{i_1}, \seq{i_2}) \Rightarrow (w, \prependinstr(k, \seq{i_2})) \\
 %
 % Either-1
 \newline \\
@@ -505,7 +511,7 @@ $.
   \hline
   \seq{a}, w, k \vdash \enteri ~ (e_1, e_2)
   \Rightarrow
-  ((v_1 ~ \seq{wv}, \seq{v_2} ~ \seq{wi_{end}}~ \seq{wi}, sto), \wasm ~ (v_1 ~ \seq c, \resetctx(k))) \\
+  ((v_1 ~ \seq{wv}, \seq{v_2} ~ \seq{wi_{end}}~ \seq{wi}, sto), \wasm ~ (v_1 ~ \seq c, \clearctx(k))) \\
 %
 % PushCtx
 \newline \\
@@ -587,16 +593,9 @@ $.
 %
 % Execute
 \newline \\
-  w, \getenv(k) \vdash e \Rightarrow v \\
+  w, \getenv(k) \vdash e \Rightarrow \listv ~ \seq v \\
   \hline
-  \seq{a}, w, k \vdash \executei ~ e \Rightarrow (w, \exe ~ (v, k)) \\
-%
-% ExecuteSeq
-\newline \\
-  w, \getenv(k) \vdash e \Rightarrow \listv ~ \seq v \qquad
-  k' = \fold(\execute, \seq v, k) \\
-  \hline
-  \seq{a}, w, k \vdash \executeseqi ~ e \Rightarrow (w, k') \\
+  \seq{a}, w, k \vdash \executei ~ e \Rightarrow (w, \exe ~ (\seq v, k)) \\
 %
 % Call-fname
 \newline \\
@@ -636,63 +635,70 @@ $.
   \Rightarrow (\setstore(w, sto), k) \\
 \end{gather*}
 
-Given the algorithms $\seq a$, Wasm state $w$, and continuation, executing an
+Given algorithms $\seq a$, a Wasm state $w$, and a continuation $k$, executing an
 instruction produces an updated Wasm state and a new continuation.
-Here, the input continuation is always \algo{}, but instead of enumerating all
-arguments individually, we encapsulate them within the \algo{} continuation.
+The input continuation is always \algo{}, with the arguments encapsulated
+within it rather than enumerated individually.
 % If
-\ifi{} instruction evaluates a $e$ and selects the corresponding branch.
+\ifi{} instruction evaluates $e$ and branches to $\seq i_1$ if the result is
+true, or $\seq i_2$ otherwise.
 % Either
-\eitheri{} instruction nondeterministically selects a branch.
+\eitheri{} instruction nondeterministically selects either $\seq i_1$ or $\seq
+i_2$.
 % Enter
-\enteri{} instruction is a key instruction to describe Wasm control flow.
-It evaluates $e_1$ and pushes the context $v_1$ to the Wasm value stack.
-It also evaluates $e_2$ to get Wasm instruction sequence $\seq{v_2}$.
-Then, it appends end instruction of pushed contexts including $v_1$, and pushes
-them to the Wasm instruction stack.
-Finally, it resets the contexts of the continuation.
-% PushCtx
-\pushctxi{} instruction evaluates $e$, pushes the context and add the context
-in the continuation.
-% Push
-\pushi{} instruction evaluates $e$ and pushes the value to the Wasm value
+\enteri{} instruction evaluates $e_1$, pushing the resulting context $v_1$ to
+the Wasm value stack.
+It evaluates $e_2$ to get a Wasm instruction sequence $\seq{v_2}$.
+Then, end instructions of the context $v_1$ and the contexts $\seq c$ in the
+continuation $k$ are appended to $\seq v_2$ and pushed to the Wasm instruction
 stack.
+Finally, it changes the continuation to \wasm{} with the contexts $c$ and
+the continuation $k$ with its contexts cleared.
+% PushCtx
+\pushctxi{} instruction evaluates $e$, pushing the resulting context $v$ to the
+Wasm value stack and the continuation $k$.
+% Push
+\pushi{} instruction evaluates $e$, pushing the resulting value to the Wasm
+value stack.
 % PopCtx
-\popctxi{} instruction is another key instruction to describe Wasm control
-flow.
-It pops all the Wasm value until context inclusively and the Wasm instructions
-until end instruction inclusively.
-It also pops the context in the continuation.
-Then, it assign the context to $e$.
+\popctxi{} instruction pops all Wasm value up to and including a context
+$wv_{ctx}$ from the Wasm value stack and all Wasm instructions up to and
+including an end instruction from the Wasm instruction stack.
+It also pops the context in the continuation $k$.
+Then, it assign the context $wv_{ctx}$ to $e$.
 % Pop
-\popi{} instruction pops a Wasm value and assign the value to $e$.
+\popi{} instruction pops a Wasm value from the Wasm value stack and assign the
+value to $e$.
 % PopN
-\popn{} instruction evalutes $e_2$ to get n and pops n Wasm values and assign
-the values to $e_1$.
+\popni{} instruction evalutes $e_2$ to get $n$, pops $n$ Wasm values from the
+Wasm value stack, and assign the values to $e_1$.
 % PopAll
-\popalli{} instruction pops all the Wasm value until context exclusively and
-assign the values to $e_1$.
+\popalli{} instruction pops all the Wasm values up to, but not including, a
+context from the Wasm value stack and assign the values to $e$.
 % Let
-\leti{} instruction evaluates $e_2$ and assign the value to $e_1$.
+\leti{} instruction evaluates $e_2$ and assign the resulting value to $e_1$.
 % Trap
-\trapi{} instruction terminates the execution with \trapv{}.
+\trapi{} instruction results in \ret{} with \trapv{} and \mt{} to terminates
+the execution.
 % ReturnRel
-\returnreli{} instruction pops a continuation.
+\returnreli{} instruction results in the inner continuation $k$, indicating a
+return from a relation algorithm.
 % ReturnFunc
-\returnfunci{} instruction evaluates $e$, pops a continuation, and results in
-\ret{} with the resulting value.
+\returnfunci{} instruction evaluates $e$, results in \ret{} with the resulting
+value and the inner continuation $k$.
 % Execute
-\executei{} instruction evaluates $e$ and result in a \exe{} with the value.
-% Execute Sequence
-\executeseqi{} instruction evaluates $e$ and result in a nesting \exe{}.
+\executei{} instruction evaluates $e$ and result in \exe{} with the resulting
+values $\seq v$ and the current continuation $k$.
 % Call
-\calli{} instruction checks the environment and if $s_1$ exists, gets the
-function name in the environment, and if not, uses $s_1$ as the function name.
-It evaluates $\seq e$ and construct \call{} with binding variable, the function
-name, and the values.
+The \calli{} instruction checks the environment; if $s_1$ exists, it gets the
+function name; otherwise, it uses $s_1$ as the function name.
+It evaluates $\seq e$ and construct \call{} with binding variable $s_0$, the
+function name, and the resulting values.
+% Replace
 \replacei{} evaluates $e_1$ and $e_2$ to $v_1$ and $v_2$.
-If $v_1$ is frame, access the frame with $p$ and update the value to $v_2$.
-If $v_1$ is store, access the store with $p$ and update the value to $v_2$.
+If $v_1$ is frame, it accesses the frame with $p$ and update the value to
+$v_2$; if $v_1$ is store, it accesses the store with $p$ and update the value
+to $v_2$.
 
 
 
@@ -1017,7 +1023,7 @@ excessively verbose.
 \newline \\
   &\exit_{WasmInstr}(wi ~ \seq{wi}) =
     \begin{cases}
-      \seq{wi} &\quad\quad \premise{if}\quad ~ \helper{is\_end}(wi) \\
+      \seq{wi} &\quad\quad \premise{if}\quad ~ \isendinstr(wi) \\
       \exit_{WasmInstr}(\seq{wi}) &\quad\quad \premise{otherwise} \\
     \end{cases}
   \\
@@ -1054,9 +1060,9 @@ excessively verbose.
 \newline \\
   &\addctx(\algo ~ (\seq i, \mu, \seq c, k), c') = \algo ~ (\seq i, \mu, c' ~ \seq c, k) \\
 %
-% reset_ctx
+% clear_ctx
 \newline \\
-  &\resetctx(\algo ~ (\seq i, \mu, \seq c, k)) = \algo ~ (\seq i, \mu, \epsilon, k) \\
+  &\clearctx(\algo ~ (\seq i, \mu, \seq c, k)) = \algo ~ (\seq i, \mu, \epsilon, k) \\
 %
 % get_store
 \newline \\
@@ -1189,13 +1195,27 @@ excessively verbose.
 %
 % get_end_algo
 \newline \\
-  &\getendinstr(\casev ~ (\text{"LABEL"}, \seq v)) = \casev ~ (\text{"EXTING"}, \epsilon) \\
-  &\getendinstr(\casev ~ (\text{"FRAME"}, \seq v)) = \casev ~ (\text{"RETURNING"}, \epsilon) \\
+  &\getendinstr(v) =
+  \begin{cases}
+    \casev ~ (\text{"EXITING"}, \epsilon) &\quad\quad\premise{if}\quad v = \casev ~ (\text{"LABEL"}, \seq v)\\
+    \casev ~ (\text{"RETURNING"}, \epsilon) &\quad\quad\premise{if}\quad v = \casev ~ (\text{"FRAME"}, \seq v)
+  \end{cases} \\
+%
+% is_end_instr
+\newline \\
+  &\isendinstr(wi) =
+  \begin{cases}
+    true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{"EXITING"}, \epsilon) \quad\lor\quad wi = \casev ~ (\text{"RETURNING"}, \epsilon)\\
+    false &\quad\quad\premise{otherwise}
+  \end{cases} \\
 %
 % is_true
 \newline \\
-  &\istrue(\boolv ~ b) = b \\
-  &\istrue(\listv ~ \seq v) = \forall v \in \seq v. \istrue (v) \\
+  &\istrue(\boolv ~ b) =
+  \begin{cases}
+  b &\quad\quad\premise{if}\quad v = \boolv ~ b \\
+  \forall v \in \seq v. \istrue (v) &\quad\quad\premise{if}\quad v = \listv ~ \seq v \\
+  \end{cases} \\
 %
 % is_frame
 \newline \\
@@ -1212,7 +1232,7 @@ excessively verbose.
   &\isctx(v) =
   \begin{cases}
     true
-    &\quad\quad\premise{if}\quad v = (\casev ~ (\text{"FRAME"}, \seq v) \quad\lor\quad \casev ~ (\text{"LABEL"}, \seq v)) \\
+    &\quad\quad\premise{if}\quad v = \casev ~ (\text{"FRAME"}, \seq v) \quad\lor\quad v = \casev ~ (\text{"LABEL"}, \seq v) \\
     false &\quad\quad\premise{otherwise}\\
   \end{cases}
 %
