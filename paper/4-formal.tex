@@ -336,9 +336,9 @@ structure.
 % expression
 An expression is a variable, number, boolean, function name, list, record (or
 struct), tuple, tagged tuple, unary or binary operation, data structure access
-or update, list concatenation, record composition, membership check, element
-selection, length retrieval, tag check, context retrieval, context kind check,
-iteration, match relation, or type relation.
+or update, list or record concatenation, membership check, element selection,
+length retrieval, tag check, context retrieval, context kind check, iteration,
+match relation, or type relation.
 % value
 A value is a number, boolean, function name, list, record, tuple, tagged tuple,
 trap, or store.
@@ -438,7 +438,7 @@ $s_{name}$ and the arguments $\seq v$, but with the current continuation nested
 within it.
 %After the call, a return value is bound by $s_{var}$ in the \ret{} transition.
 % Execute
-\exe{} executes a Wasm instruction sequence $\seq{wi}$ one by one, each
+\exe{} executes the Wasm instruction sequence $\seq{wi}$ one by one, each
 containing a relation name $s$ and arguments $\seq v$.
 The continuation changes to \algo{} with the relation name, the arguments, and
 the current continuation, with the Wasm instruction being popped.
@@ -648,7 +648,7 @@ i_2$.
 % Enter
 \enteri{} instruction evaluates $e_1$, pushing the resulting context $v_1$ to
 the Wasm value stack.
-It evaluates $e_2$ to get a Wasm instruction sequence $\seq{v_2}$.
+It evaluates $e_2$ to get the Wasm instruction sequence $\seq{v_2}$.
 Then, end instructions of the context $v_1$ and the contexts $\seq c$ in the
 continuation $k$ are appended to $\seq v_2$ and pushed to the Wasm instruction
 stack.
@@ -739,7 +739,7 @@ to $v_2$.
 \newline \\
   \seq{(s, v)} =
     [ ~
-      s, v
+      (s, v)
     ~ | ~
       (s, e) \leftarrow \seq{(s, e)}; ~ w, \mu \vdash e \Rightarrow v
     ~ ] \\
@@ -843,14 +843,14 @@ to $v_2$.
     )
   \\
   \seq{\mu_2} = \fold(f, \seq{s}, \duplicateenv(\mu, \seq{s})) \qquad
-  \seq{v_1} =
+  \seq{v'} =
     [ ~
-      v_1
+      v'
     ~ | ~
-      \mu_3 \leftarrow \seq {\mu_2}; ~ w, \mu_3 \vdash e_1 \Rightarrow v_1
+      \mu_3 \leftarrow \seq {\mu_2}; ~ w, \mu_3 \vdash e \Rightarrow v'
     ~ ] \\
   \hline
-  w, \mu \vdash \itere ~ (e_1, \listiter, \seq{s}) \Rightarrow \listv ~ \seq{v_1} \\
+  w, \mu \vdash \itere ~ (e, \listiter, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
 %
 % Iter-n
 \newline \\
@@ -916,49 +916,57 @@ value.
 \nume{}, \boole{}, and \fnamee{} expressions directly reduce to \numv{},
 \boolv{}, and \fnamev{}, respectively.
 % Tuple Case List Struct
-\liste{}, \stre{}, \tupe{}, and \casee{} expressions evaluate inner expressions
-and reduce to \listv{}, \strv{}, \tupv{}, and \casev{}, respectively.
-% Un Bin
-\une{} and \bine{} expression evaluates inner expressions and perform \unop{}
-and \binop{}.
-% Acc
-\acce{} expression accesses the elements of a data structure.
-% Upd
-\upde{} expression update a value of a data structure.
-% Cat Comp
-\cate{} and \compe{} expressions concatenate two lists and records,
+\liste{}, \stre{}, \tupe{}, and \casee{} expressions evaluate their
+sub-expressions and reduce to \listv{}, \strv{}, \tupv{}, and \casev{},
 respectively.
+% Un Bin
+\une{} and \bine{} expression evaluate their sub-expressions and perform
+\unop{} and \binop{}, respectively.
+% Acc
+\acce{} expression evaluates $e$ and accesses the resulting value using a path
+$p$.
+% Upd
+\upde{} expression evaluates $e_1$ and $e_2$ to $v_1$ and $v_2$, and updates
+the value at location $v_1$ along paths $\seq p$ to the value $v_2$.
+% Cat Comp
+\cate{} and \compe{} expressions each evaluate two sub-expressions,
+concatenating the resulting lists and resulting records, respectively.
 % Mem
-\meme{} expression performs membership check.
-% Choose
-\choosee{} expression chooses an element of a datastructure.
-% Len
-\lene{} expression gets a length of a data structure.
+\meme{} expression evaluates $e_1$ and $e_2$ to the value $v_1$ and $\listv ~
+\seq v_2$, and checks whether $v_1$ is a member of $\seq v_2$.
+% Choose Len
+\choosee{} and \lene{} expression each evaluate $e$ to the list value $\listv
+~ \seq v$, choosing an element from the list and calculating the length of the
+list, respectively.
 % IsCaseOf
-\iscaseofe{} expression checks a tag of a tagged tuple.
+\iscaseofe{} expression evaluates $e$ to the tagged tuple $\casev ~ (s', \seq
+v)$ and checks whether the tag $s'$ matches $s$.
 % GetCurCtx
-\getcurctxe{} expression gets the current context.
+\getcurctxe{} expression retrieves the current context from the Wasm value
+stack.
 % CtxKind
-\ctxkinde{} expression checks the kind of the current context.
+\ctxkinde{} expression retrieves the current context $\casev ~ (s', \seq v)$
+and checks whether the kind $s'$ matches $s$.
 % Iter
 \itere{} expression behaves differently depending on $iter$.
-\listiter{} and \listniter{} are basically the same.
+\listiter{} and \listniter{} are essentially equivalent.
 They assume that the all the values mapped to the variables $\seq s$ by the
-envinronment $\mu${} are \listv{} with same length.
-\listniter{} restricts the length to $n$ obtained from evaluating $e_2$,
-while \listiter{} allows any length.
-It generates a sequence of environments where the k-th environment maps each
-variables to the k-th elements of the \listv{}.
-Each environment is then used to evaluate $e_1$, and the resulting values are
-wrapped to \listv{}.
+envinronment $\mu${} are list values with same length.
+\listniter{} restricts the length to $n$, which is obtained from evaluating
+$e_2$, while \listiter{} allows any length.
+It generates a sequence of environments $\mu_2$ where the k-th environment maps
+each variables to the k-th elements of the list.
+Each environment $\mu_3$ is respectively used to evaluate $e_1$, resulting in
+the list value $\listv ~ \seq{v'}$.
 \listidxiter{} behaves similarly except that the variables $\seq s$ are
 unbound.
 It evaluates $e_2$ to obtain $n$ and then behaves like \listniter{} as if
-$\listv ~ [0 ~ ... ~ n-1]$ was bound to the variables.
+the list values [0 ... n-1] was bound to the variables $s$.
 % IsValid Match HasType
-\matche{} and \hastypee{} expressions evaluate inner exressions and perform
+\matche{} and \hastypee{} expressions evaluate their sub-exressions and perform
 \match{} and \hastype{}, respectively.
-Note that \match{} and \hastype{} are implementations of Wasm static semantics.
+Note that \match{} and \hastype{} represent the match relation and the type
+relation in the Wasm static semantics.
 Their formalization is omitted as they are highly specific to Wasm and
 excessively verbose.
 
