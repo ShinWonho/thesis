@@ -216,7 +216,7 @@
     &&&& | & ~ \returnfunci ~ e &\quad\text{(Return Function)} \\
     &&&& | & ~ \executei ~ e &\quad\text{(Execute)} \\
     &&&& | & ~ \calli ~ (s, s, \seq{e}) &\quad\text{(Let Call)} \\
-    &&&& | & ~ \replacei ~ (e, \seq{p}, e) &\quad\text{(Replace)} \\
+    &&&& | & ~ \replacei ~ (e, p^+, e) &\quad\text{(Replace)} \\
 \end{array}
 \end{align*}
 \newpage
@@ -235,7 +235,7 @@
     &&&& | & ~ \une ~ (unop, e) &\quad\text{(Unary Operation)} \\
     &&&& | & ~ \bine ~ (binop, e, e) &\quad\text{(Binary Operation)} \\
     &&&& | & ~ \acce ~ (e, p) &\quad\text{(Access)} \\
-    &&&& | & ~ \upde ~ (e, \seq{p}, e) &\quad\text{(Update)} \\
+    &&&& | & ~ \upde ~ (e, p^+, e) &\quad\text{(Update)} \\
     &&&& | & ~ \cate ~ (e, e) &\quad\text{(Concatenation)} \\
     &&&& | & ~ \compe ~ (e, e) &\quad\text{(Composition)} \\
     &&&& | & ~ \meme ~ (e, e) &\quad\text{(Membership)} \\
@@ -622,21 +622,21 @@ $.
 \newline \\
 \text{NOTE: $e_1$ is either store or current frame} \\
   \mu = \getenv(k) \qquad
-  w, \mu \vdash e_1 \Rightarrow v_1 \qquad
-  \isframe(v_1) \qquad
-  w, \mu \vdash e_2 \Rightarrow v_2 \qquad
-  v_3 = \update(w, \mu, v_1, \seq p, v_2) \\
+  w, \mu \vdash e_1 \Rightarrow  \casev ~ (\text{"FRAME"}, v_{11} ~ v_{12}) \qquad
+  w, \mu \vdash e_2 \Rightarrow v_2 \\
+  v_3 = \update(w, \mu, v_{12}, p^+, v_2) \\
   \hline
-  \seq{a}, w, k \vdash \replacei ~ (e_1, \seq{p}, e_2) \Rightarrow (\setcurframe(w, v_3), k) \\
+  \seq{a}, w, k \vdash \replacei ~ (e_1, p^+, e_2) \Rightarrow
+  (\setcurframe(w, \casev ~ (\text{"FRAME"}, v_{11} ~ v_3)), k) \\
 %
 % Replace-store
 \newline \\
   \mu = \getenv(k) \qquad
   w, \mu \vdash e_1 \Rightarrow \storev \qquad
   w, \mu \vdash e_2 \Rightarrow v_2 \\
-  sto = \update(w, \mu, \strv (\getstore(w)), \seq p, v_2) \\
+  \strv ~ sto = \update(w, \mu, \strv (\getstore(w)), p^+, v_2) \\
   \hline
-  \seq{a}, w, k \vdash \replacei ~ (e_1, \seq{p}, e_2)
+  \seq{a}, w, k \vdash \replacei ~ (e_1, p^+, e_2)
   \Rightarrow (\setstore(w, sto), k) \\
 \end{gather*}
 
@@ -785,7 +785,7 @@ to $v_2$.
 \newline \\
   w, \mu \vdash e_1 \Rightarrow v_1 \qquad w, \mu \vdash e_2 \Rightarrow v_2 \\
   \hline
-  w, \mu \vdash \upde ~ (e_1, \seq p, e_2) \Rightarrow \update(w, \mu, v_1, \seq p, v_2) \\
+  w, \mu \vdash \upde ~ (e_1, p^+, e_2) \Rightarrow \update(w, \mu, v_1, p^+, v_2) \\
 %
 % Cat
 \newline \\
