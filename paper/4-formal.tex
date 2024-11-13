@@ -126,7 +126,6 @@
 \newcommand{\createalgo}{\helper{create\_algo}}
 \newcommand{\execute}{\helper{execute}}
 \newcommand{\exit}{\helper{exit}}
-\newcommand{\duplicateenv}{\helper{duplicate\_env}}
 \newcommand{\getenv}{\helper{get\_env}}
 \newcommand{\setenv}{\helper{set\_env}}
 \newcommand{\getctx}{\helper{get\_ctx}}
@@ -154,8 +153,6 @@
 \newcommand{\istrue}{\helper{is\_true}}
 \newcommand{\isframe}{\helper{is\_frame}}
 \newcommand{\isctx}{\helper{is\_ctx}}
-\newcommand{\zip}{\helper{zip}}
-\newcommand{\fold}{\helper{fold}}
 % Hardcode
 \newcommand{\assign}{\helper{assign}}
 \newcommand{\binop}{\helper{binop}}
@@ -504,14 +501,18 @@ $.
 \newline \\
   (\seq{wv}, \seq{wi}, sto) = w \qquad
   \mu = \getenv(k) \qquad
-  \seq c = \getctx(k) \\
+  c_1 ~ ... ~ c_n = \getctx(k) \\
   w, \mu \vdash e_1 \Rightarrow v_1 \qquad
-  w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \qquad
-  \seq{wi_{end}} = [ ~ \getendinstr(c) ~ | ~ c \leftarrow v_1 ~ \seq c ~ ] \\
+  w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{v_2} \\
+  wi = \getendinstr(v_1) \qquad
+  wi_1 = \getendinstr(c_1) \quad ... \quad wi_n = \getendinstr(c_n) \\
   \hline
   \seq{a}, w, k \vdash \enteri ~ (e_1, e_2)
   \Rightarrow
-  ((v_1 ~ \seq{wv}, \seq{v_2} ~ \seq{wi_{end}}~ \seq{wi}, sto), \wasm ~ (v_1 ~ \seq c, \clearctx(k))) \\
+  (
+    (v_1 ~ \seq{wv}, \seq{v_2} ~ wi ~ wi_1 ~ ... ~ wi_n ~ \seq{wi}, sto),
+    \wasm ~ (v_1 ~ c_1 ~ ... ~ c_n, \clearctx(k))
+  ) \\
 %
 % PushCtx
 \newline \\
@@ -600,18 +601,22 @@ $.
 % Call-fname
 \newline \\
   \mu = \getenv(k) \qquad
-  \fnamev ~ s_2 = \mu(s_1) \qquad
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  \fnamev ~ s_3 = \mu(s_2) \qquad
+  w, \mu \vdash e_1 \Rightarrow v_1 \quad ... \quad
+  w, \mu \vdash e_n \Rightarrow v_n \\
   \hline
-  \seq{a}, w, k \vdash \calli ~ (s_0, s_1, \seq e) \Rightarrow (w, \call ~ (s_0, s_2, \seq v, k)) \\
+  \seq{a}, w, k \vdash \calli ~ (s_1, s_2, e_1 ~ ... ~ e_n) \Rightarrow
+  (w, \call ~ (s_1, s_3, v_1 ~ ... ~ v_n, k)) \\
 %
 % Call-fname
 \newline \\
   \mu = \getenv(k) \qquad
-  s_1 \not\in \domain(\mu) \qquad
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  s_2 \not\in \domain(\mu) \qquad
+  w, \mu \vdash e_1 \Rightarrow v_1 \quad ... \quad
+  w, \mu \vdash e_n \Rightarrow v_n \\
   \hline
-  \seq{a}, w, k \vdash \calli ~ (s_0, s_1, \seq e) \Rightarrow (w, \call ~ (s_0, s_1, \seq v, k)) \\
+  \seq{a}, w, k \vdash \calli ~ (s_1, s_2, \seq e) \Rightarrow
+  (w, \call ~ (s_1, s_2, v_1 ~ ... ~ v_n, k)) \\
 %
 % Replace-frame
 \newline \\
@@ -731,32 +736,32 @@ to $v_2$.
 %
 % List
 \newline \\
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  w, \mu \vdash e_1 \Rightarrow v_1 \quad ... \quad
+  w, \mu \vdash e_n \Rightarrow v_n \\
   \hline
-  w, \mu \vdash \liste ~ \seq{e} \Rightarrow \listv ~ \seq{v} \\
+  w, \mu \vdash \liste ~ e_1 ~ ... ~ e_n \Rightarrow \listv ~ v_1 ~ ... ~ v_n \\
 %
 % Str
 \newline \\
-  \seq{(s, v)} =
-    [ ~
-      (s, v)
-    ~ | ~
-      (s, e) \leftarrow \seq{(s, e)}; ~ w, \mu \vdash e \Rightarrow v
-    ~ ] \\
+  w, \mu \vdash e_1 \Rightarrow v_1 \quad ... \quad
+  w, \mu \vdash e_n \Rightarrow v_n \\
   \hline
-  w, \mu \vdash \stre ~ \seq{(s, e)} \Rightarrow \strv ~ \seq{(s, v)} \\
+  w, \mu \vdash \stre ~ (s_1, e_1) ~ ... ~ (s_n, e_n) \Rightarrow
+  \strv ~ (s_1, v_1) ~ ... ~ (s_n, v_n) \\
 %
 % Tup
 \newline \\
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  w, \mu \vdash e_1 \Rightarrow v_1 \quad ... \quad
+  w, \mu \vdash e_n \Rightarrow v_n \\
   \hline
-  w, \mu \vdash \tupe ~ \seq{e} \Rightarrow \tupv ~ \seq{v} \\
+  w, \mu \vdash \tupe ~ e_1 ~ ... ~ e_n \Rightarrow \tupv ~ v_1 ~ ... ~ v_n \\
 %
 % Case
 \newline \\
-  \seq{v} = [ ~ v ~ | ~ e \leftarrow \seq{e}; ~ w, \mu \vdash e \Rightarrow v ~ ] \\
+  w, \mu \vdash e_1 \Rightarrow v_1 \quad ... \quad
+  w, \mu \vdash e_n \Rightarrow v_n \\
   \hline
-  w, \mu \vdash \casee ~ (s, \seq{e}) \Rightarrow \casev ~ (s, \seq{v}) \\
+  w, \mu \vdash \casee ~ (s, e_1 ~ ... ~ e_n) \Rightarrow \casev ~ (s, v_1 ~ ... ~ v_n) \\
 %
 % Un
 \newline \\
@@ -836,63 +841,39 @@ to $v_2$.
 %
 % Iter-
 \newline \\
-  f =
-    (\lambda ~ s ~ acc. ~
-      \listv ~ \seq v = \mu(s); ~
-      [ ~ \mu_1[s \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
-    )
-  \\
-  \seq{\mu_2} = \fold(f, \seq{s}, \duplicateenv(\mu, \seq{s})) \qquad
-  \seq{v'} =
-    [ ~
-      v'
-    ~ | ~
-      \mu_3 \leftarrow \seq {\mu_2}; ~ w, \mu_3 \vdash e \Rightarrow v'
-    ~ ] \\
+  \,~\mu(s_1) = \listv ~ (v_{11} ~ ... ~ v_{1n}) \quad ... \quad
+  \mu(s_m) = \listv ~ (v_{m1} ~ ... ~ v_{mn}) \\
+  \mu_1 = \mu[s_1 \mapsto v_{11}, ~ ... ~ s_m \mapsto v_{m1}] \quad ... \quad
+  \mu_n = \mu[s_1 \mapsto v_{1n}, ~ ... ~ s_m \mapsto v_{mn}] \\
+  w, \mu_1 \vdash e \Rightarrow v_1 \quad ... \quad
+  w, \mu_n \vdash e \Rightarrow v_n \\
   \hline
-  w, \mu \vdash \itere ~ (e, \listiter, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
+  w, \mu \vdash \itere ~ (e, \listiter, s_1 ~ ... ~ s_m) \Rightarrow
+  \listv ~ v_1 ~ ... ~ v_n \\
 %
 % Iter-n
 \newline \\
   w, \mu \vdash e_2 \Rightarrow \numv ~ n \\
-  f_i =
-    (\lambda ~ x ~ acc. ~
-      \listv ~ \seq v = \mu(x); ~
-      [ ~ \mu_1[s \mapsto v] ~ | ~ (v, \mu_1) \leftarrow \zip (\seq v, acc) ~ ]
-    )
-  \\
-  \seq{\mu_2} = \fold(f, \seq{s}, \mu^n) \qquad
-  \seq{v'} =
-    [ ~
-      v'
-    ~ | ~
-      \mu_3 \leftarrow \seq {\mu_2}; ~ w, \mu_3 \vdash e_1 \Rightarrow v'
-    ~ ] \\
+  \,~\mu(s_1) = \listv ~ (v_{11} ~ ... ~ v_{1n}) \quad ... \quad
+  \mu(s_m) = \listv ~ (v_{m1} ~ ... ~ v_{mn}) \\
+  \mu_1 = \mu[s_1 \mapsto v_{11}, ~ ... ~ s_m \mapsto v_{m1}] \quad ... \quad
+  \mu_n = \mu[s_1 \mapsto v_{1n}, ~ ... ~ s_m \mapsto v_{mn}] \\
+  w, \mu_1 \vdash e \Rightarrow v_1 \quad ... \quad
+  w, \mu_n \vdash e \Rightarrow v_n \\
   \hline
-  w, \mu \vdash \itere ~ (e_1, \listniter ~ e_2, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
+  w, \mu \vdash \itere ~ (e_1, \listniter ~ e_2, s_1 ~ ... s_m) \Rightarrow
+  \listv ~ v_1 ~ ... ~ v_n \\
 %
 % Iter-idx
 \newline \\
-  w, \mu \vdash e_2 \Rightarrow \listv ~ n \qquad
-  \seq{\mu_1} =
-    [ ~
-      \fold(
-        (\lambda ~ x ~ acc. ~ acc[x \mapsto \numv ~ i]),
-        \seq{s},
-        \mu
-      )
-    ~ | ~
-      i \leftarrow [0 ~ .. ~ n-1]
-    ~ ]
-  \\
-  \seq{v'} =
-    [ ~
-      v'
-    ~ | ~
-      \mu_2 \leftarrow \seq {\mu_1}; ~ w, \mu_2 \vdash e_1 \Rightarrow v'
-    ~ ] \\
+  w, \mu \vdash e_2 \Rightarrow \numv ~ n \\
+  \mu_1 = \mu[s_1 \mapsto \numv ~ 0, ~ ... ~ s_m \mapsto \numv ~ 0] \quad ... \quad
+  \mu_n = \mu[s_1 \mapsto \numv ~ n, ~ ... ~ s_m \mapsto \numv ~ n] \\
+  w, \mu_1 \vdash e \Rightarrow v_1 \quad ... \quad
+  w, \mu_n \vdash e \Rightarrow v_n \\
   \hline
-  w, \mu \vdash \itere ~ (e_1, \listidxiter ~ e_2, \seq{s}) \Rightarrow \listv ~ \seq{v'} \\
+  w, \mu \vdash \itere ~ (e_1, \listidxiter ~ e_2, s_1 ~ ... ~ s_m) \Rightarrow
+  \listv ~ v_1 ~ ... ~ v_n \\
 %
 % Match
 \newline \\
@@ -1025,7 +1006,8 @@ excessively verbose.
 % exit_cont-wasm_nonzero
   &\exit_{K}(\wasm ~ (c ~ \seq{c}, k)) = \wasm ~ (\seq{c}, k) \\
 % exit_cont-al
-  &\exit_{K}(\algo ~ (\seq i, \mu, \seq c, k)) = \algo ~ (\seq i, \mu, \seq c, \exit(k)) \\
+  &\exit_{K}(\algo ~ (\seq i, \mu, epsilon, k)) = \algo ~ (\seq i, \mu, \seq c, \exit(k)) \\
+  &\exit_{K}(\algo ~ (\seq i, \mu, c ~ \seq c, k)) = \algo ~ (\seq i, \mu, \seq c, k) \\
 %
 % exit_wasm_instr-end
 \newline \\
@@ -1040,13 +1022,6 @@ excessively verbose.
 \newline \\
   &\exit_{WasmValue}(\seq{wv}) = \seq{wv_1}
   \quad\quad\premise{if}\quad ~ (\seq{wv_0}, \seq{wv_1}) = \splitctx(\seq{wv}) \\
-%
-% duplicate_env-empty
-\newline \\
-  &\duplicateenv(\mu, epsilon) = \mu \\
-% duplicate_env-nonempty
-  &\duplicateenv(\mu, s ~ \seq{s}) = \mu^{|\seq v|}
-  \quad\quad\premise{if}\quad ~ \listv ~ \seq v = \mu(s) \\
 %
 % get_env
 \newline \\
@@ -1243,15 +1218,6 @@ excessively verbose.
     &\quad\quad\premise{if}\quad v = \casev ~ (\text{"FRAME"}, \seq v) \quad\lor\quad v = \casev ~ (\text{"LABEL"}, \seq v) \\
     false &\quad\quad\premise{otherwise}\\
   \end{cases}
-%
-% zip
-\newline \\
-  &\zip(eps, eps) = eps \\
-  &\zip(x ~ \seq{x}, y ~ \seq{y}) = (x, y) ~ \zip (\seq{x}, \seq{y}) \\
-%
-% fold
-\newline \\
-  &\fold(f, x^n, acc) = f(x_0, f(x_1, ~ ... ~ f(x_{n-2}, f(x_{n-1}, acc)) ~ ... ~ ))
 \end{align*}
 
 
