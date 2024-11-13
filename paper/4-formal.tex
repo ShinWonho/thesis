@@ -556,10 +556,10 @@ $.
 %
 % PopAll
 \newline \\
-  (\seq{wv_0}, \seq{wv_1}) = \splitctx(wv) \qquad
+  (\seq{wv_0}, \seq{wv_1}) = \splitctx(\seq{wv}) \qquad
   \mu' = \assign(\getenv(k), e, \listv ~ \seq{wv_0}) \\
   \hline
-  \seq{a}, (\seq{wv}, \seq{wi}, sto), e \vdash \popalli ~ e
+  \seq{a}, (\seq{wv}, \seq{wi}, sto), k \vdash \popalli ~ e
   \Rightarrow
   ((\seq{wv_1}, \seq{wi}, sto), \setenv(k, \mu')) \\
 %
@@ -1006,7 +1006,7 @@ excessively verbose.
 %
 % split_ctx
 \newline \\
-&\text{NOTE: an input of is\_ctx (WasmValue sequence) contains at least one context} \\
+  &\text{NOTE: an input of \splitctx{} (WasmValue sequence) contains at least one context} \\
   &\splitctx(wv ~ \seq{wv}) =
     \begin{cases}
       (\epsilon, wv ~ \seq{wv}) &\quad\quad \premise{if}\quad ~ \isctx(wv) \\
@@ -1219,7 +1219,7 @@ excessively verbose.
 %
 % is_true
 \newline \\
-  &\istrue(\boolv ~ b) =
+  &\istrue(v) =
   \begin{cases}
   b &\quad\quad\premise{if}\quad v = \boolv ~ b \\
   \forall v \in \seq v. \istrue (v) &\quad\quad\premise{if}\quad v = \listv ~ \seq v \\
