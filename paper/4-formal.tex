@@ -346,16 +346,17 @@ algorithm, or \ret{} for returning from an AL function.
 % Env
 An environment is a finite mapping from variable names to AL values.
 % Context
-An AL context consists of
+An AL context consists of a sequence of Wasm instruction sequence, an
+environment, a sequence of Wasm context, and a continuation.
 % Value
 An AL value is a number, boolean, function name, list, record, tuple, tagged tuple,
 trap, or store.
 
 
 % Terminology
-In this section, AL-specific terms (state, value, function, and instruction)
-are abbreviated as simply state, value, function, and instruction, while Wasm
-terms remain unchanged.
+In this section, AL-specific terms (state, context, value, function, and
+instruction) are abbreviated as simply state, context, value, function, and
+instruction, while Wasm terms remain unchanged.
 
 
 
@@ -658,72 +659,73 @@ $.
   \Rightarrow (\setstore(w, sto), c) \\
 \end{gather*}
 
-% TODO: wv -> wc/we, k -> algo c, free variables
-Given algorithms $\seq a$, a Wasm state $w$, and a continuation $k$, executing an
-instruction produces an updated Wasm state and a new continuation.
-The input continuation is always \algo{}, with the arguments encapsulated
-within it rather than enumerated individually.
+Given algorithms $\seq a$, a Wasm state $w$, and a context $c$, executing an
+instruction $i$ produces an updated Wasm state $w$ and a continuation $k$.
 % If
-\ifi{} instruction evaluates $e$ and branches to $\seq i_1$ if the result is
-true, or $\seq i_2$ otherwise.
+$\ifi ~ (e, i_1^*, i_2^*)${} evaluates $e$ and branches to $\seq i_1$ if the
+result is true, or $\seq i_2$ otherwise.
 % Either
-\eitheri{} instruction nondeterministically selects either $\seq i_1$ or $\seq
-i_2$.
+$\eitheri ~ (i_1^*, i_2^*)${} nondeterministically selects either $i_1^*$ or
+$i_2^*$.
 % Enter
-\enteri{} instruction evaluates $e_1$, pushing the resulting Wasm context $v_1$
-to the Wasm value stack.
-It evaluates $e_2$ to get the Wasm instruction sequence $\seq{v_2}$.
-Then, end instructions of the Wasm context $v_1$ and the Wasm contexts
-$\seq{wc}$ in the
-continuation $k$ are appended to $\seq v_2$ and pushed to the Wasm instruction
-stack.
-Finally, it changes the continuation to \wasm{} with the Wasm contexts $c$ and
-the continuation $k$ with its Wasm contexts cleared.
+$\enteri ~ (e_1, e_2)${} evaluates $e_1$, pushing the resulting Wasm context
+$wc$ to the interleaved stack.
+It evaluates $e_2$ to get the Wasm instruction sequence $wi_1^*$.
+Then, end instructions of the Wasm context $wc$ and the Wasm contexts
+$wc_1 ~ ... ~ wc_n$ in the context $c$ are appended to $wi_1^*$ and pushed to
+the Wasm instruction stack.
+Finally, it changes the continuation to
+$\wasm ~ (wc ~ wc_1 ~ ... ~ wc_n, \algo ~ (i^*, \mu, \epsilon, k))${}.
 % PushCtx
-\pushctxi{} instruction evaluates $e$, pushing the resulting Wasm context $v$
-to the Wasm value stack and the continuation $k$.
+$\pushctxi ~ e${} evaluates $e$, pushing the resulting Wasm context $wc$ to the
+interleaved stack and the context $c$.
 % Push
-\pushi{} instruction evaluates $e$, pushing the resulting value to the Wasm
-value stack.
+$\pushi ~ e${} evaluates $e$, pushing the resulting value $wv$ to the
+interleaved stack.
 % PopCtx
-\popctxi{} instruction pops all Wasm value up to and including a Wasm context
-$wv_{ctx}$ from the Wasm value stack and all Wasm instructions up to and
-including an end instruction from the Wasm instruction stack.
-It also pops the Wasm context in the continuation $k$.
-Then, it assign the Wasm context $wv_{ctx}$ to $e$.
+$\popctxi ~ e${} pops all Wasm values up to and including a Wasm context $wc$
+from the interleaved stack and all Wasm instructions up to and including an end
+instruction from the Wasm instruction stack.
+It also pops a Wasm context in the context $c$.
+Then, it assign the Wasm context $wc$ to $e$.
 % Pop
-\popi{} instruction pops a Wasm value from the Wasm value stack and assign the
+$\popi ~ e${} pops a Wasm value $wv$ from the interleaved stack and assign the
 value to $e$.
 % PopN
-\popni{} instruction evalutes $e_2$ to get $n$, pops $n$ Wasm values from the
-Wasm value stack, and assign the values to $e_1$.
+$\popni ~ (e_1, e_2)${} evalutes $e_2$ to get a number $n$, pops $n$ Wasm
+values from the interleaved stack, and assign the values to $e_1$.
 % PopAll
-\popalli{} instruction pops all the Wasm values up to, but not including, a
-Wasm context from the Wasm value stack and assign the values to $e$.
+$\popalli ~ e${} pops all the Wasm values up to, but not including, a
+Wasm context from the interleaved stack and assign the values to $e$.
 % Let
-\leti{} instruction evaluates $e_2$ and assign the resulting value to $e_1$.
+$\leti ~ (e_1, e_2)${} evaluates $e_2$ and assigns the resulting value to
+$e_1$.
 % Trap
-\trapi{} instruction results in \ret{} with \trapv{} and \mt{} to terminates
-the execution.
+\trapi{} results in $\ret ~ (\trapv{}, \mt{})$ to terminate the execution.
 % ReturnRel
-\returnreli{} instruction results in the inner continuation $k$, indicating a
+\returnreli{} results in the continuation $k$ in the context $c$, indicating a
 return from a relation algorithm.
 % ReturnFunc
-\returnfuni{} instruction evaluates $e$, results in \ret{} with the resulting
-value and the inner continuation $k$.
+$\returnfuni ~ e${} evaluates $e$ to $v$, resulting in $\ret ~ (v, k)${} where
+$k$ is the continuation in the context $c$.
 % Execute
-\executei{} instruction evaluates $e$ and result in \exe{} with the resulting
-values $\seq v$ and the current continuation $k$.
+\executei{} evaluates $e$ to obtain a Wasm instruction sequence $wi^*$ and
+result in $\exe ~ (wi^*, \algo ~ c)${}.
 % Call
-The \calli{} instruction checks the environment; if $s_1$ exists, it gets the
-function name; otherwise, it uses $s_1$ as the function name.
-It evaluates $\seq e$ and construct \call{} with binding variable $s_0$, the
-function name, and the resulting values.
-% Replace
-replacei{} evaluates $e_1$ and $e_2$ to $v_1$ and $v_2$.
-If $v_1$ is frame, it accesses the frame with $p$ and update the value to
-$v_2$; if $v_1$ is store, it accesses the store with $p$ and update the value
-to $v_2$.
+$\calli ~ (s_1, s_2, e_1 ~ ... ~ e_n)${} checks if $s_2$ is bound in the
+envinronment.
+If it is, it retrieves the function name $s_3$ from the environment $\mu$;
+otherwise, it uses $s_2$ as the function name.
+It evaluates $\seq e$ to $v^*$ and results in $\call ~ (s_1, s_{name}, v_1 ~ ...
+~ v_n)${} where $s_{name}$ is the function name.
+% ReplaceFrame
+\replaceframei{} retrieves the current frame $\casev ~ (\text{"FRAME"}, v_1
+v_2)${} in the Wasm context $w$.
+It then evaluate $e$ to $v$, updating the value at location $v_2$ along paths
+$p^+$ to $v$.
+% ReplaceFrame
+\replacestorei{} evaluate $e$ to $v$, updating the value at location $\strv ~
+sto$ along paths $p^+$ to v.
 
 
 
