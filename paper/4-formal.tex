@@ -121,9 +121,9 @@
 
 
 % Helper function
-\newcommand{\domain}{\helper{domain}}
 \newcommand{\getalgoname}{\helper{get\_algo\_name}}
 \newcommand{\lookup}{\helper{lookup}}
+\newcommand{\assign}{\helper{assign}}
 \newcommand{\createalgo}{\helper{create\_algo}}
 \newcommand{\exit}{\helper{exit}}
 \newcommand{\getenv}{\helper{get\_env}}
@@ -151,8 +151,8 @@
 \newcommand{\isendinstr}{\helper{is\_end\_instr}}
 \newcommand{\istrue}{\helper{is\_true}}
 \newcommand{\isframe}{\helper{is\_frame}}
-% Hardcode
-\newcommand{\assign}{\helper{assign}}
+% Omit definition
+\newcommand{\domain}{\helper{domain}}
 \newcommand{\binop}{\helper{binop}}
 % Reference interpreter
 \newcommand{\match}{\helper{match}}
@@ -547,19 +547,20 @@ $.
 %
 % PopCtx
 \newline \\
-  (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \qquad
-  \mu = \assign(\getenv(c), e, wc) \\
+  (\seq{we}, \seq{wi}, sto) = w \qquad
+  (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \\
+  \mu = \getenv(c) \cdot \assign(e, wc) \qquad
   \seq{wi'} = \exit(\seq{wi}) \qquad
   c' = \popwasmctx_{C}(c) \\
   \hline
-  \seq{a}, (\seq{we}, \seq{wi}, sto), c \vdash \popctxi ~ e
+  \seq{a}, w, c \vdash \popctxi ~ e
   \Rightarrow
   ((\seq{we'}, \seq{wi'}, sto), \algo ~ (\setenv(c', \mu))) \\
 %
 % Pop
 \newline \\
   (w', wv) = \pop(w) \qquad
-  \mu' = \assign(\getenv(c), e, wv) \\
+  \mu' = \getenv(c) \cdot \assign(e, wv) \\
   \hline
   \seq{a}, w, c \vdash \popi ~ e \Rightarrow (w', \algo ~ (\setenv(c, \mu'))) \\
 %
@@ -568,7 +569,7 @@ $.
   \mu = \getenv(c) \qquad
   w, \mu \vdash e_2 \Rightarrow \numv ~ n \\
   (w', wv^n) = \popn(w, n) \qquad
-  \mu' = \assign(\mu, e_1, \listv ~ wv^n) \\
+  \mu' = \mu \cdot \assign(e_1, \listv ~ wv^n) \\
   \hline
   \seq{a}, w, c \vdash \popni ~ (e_1, e_2) \Rightarrow
   (w', \algo ~ (\setenv(c, \mu'))) \\
@@ -576,7 +577,7 @@ $.
 % PopAll
 \newline \\
   (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \qquad
-  \mu' = \assign(\getenv(c), e, \liste ~ \seq{wv}) \\
+  \mu' = \getenv(c) \cdot \assign(e, \liste ~ \seq{wv}) \\
   \hline
   \seq{a}, (\seq{we}, \seq{wi}, sto), c \vdash \popalli ~ e
   \Rightarrow
@@ -586,7 +587,7 @@ $.
 \newline \\
   \mu = \getenv(c) \qquad
   w, \mu \vdash e_2 \Rightarrow v \qquad
-  \mu' = \assign(\mu, e_1, v) \\
+  \mu' = \mu \cdot \assign(e_1, v) \\
   \hline
   \seq{a}, w, c \vdash \leti ~ (e_1, e_2)
   \Rightarrow
@@ -999,6 +1000,30 @@ excessively verbose.
     \end{cases}
   \\
 %
+% assign
+\newline \\
+  &\assign(\vare ~ s, v) = [s \mapsto v] \\
+  &\assign(\itere ~ (e, iter, s^*), v) = \assign(e, v) \\
+  &\assign(\tupe ~ e_1 ~ ... ~ e_n, \tupv ~ v_1 ~ ... ~ v_n) =
+    \assign(e_1, v_1) \cdot ~ ... ~ \cdot \assign(e_n, v_n) \\
+  &\assign(\liste ~ e_1 ~ ... ~ e_n, \listv ~ v_1 ~ ... ~ v_n) =
+    \assign(e_1, v_1) \cdot ~ ... ~ \cdot \assign(e_n, v_n) \\
+  &\assign(\casee ~ (s, e_1 ~ ... ~ e_n), \casev ~ (s, v_1 ~ ... ~ v_n)) =
+    \assign(e_1, v_1) \cdot ~ ... ~ \cdot \assign(e_n, v_n) \\
+  &\assign(
+    w,
+    \mu,
+    \stre ~ (s_1, e_1) ~ ... ~ (s_2, e_n),
+    \strv ~ (s_1, v_1) ~ ... ~ (s_n, v_n)
+  ) =
+    \assign(e_1, v_1) \cdot ~ ... ~ \cdot \assign(e_n, v_n) \\
+  &\assign(\cate ~ (\liste ~ e_1 ~ ... ~ e_m, e), \listv v_1 ~ ... ~ v_n) =
+    \assign(e_1, v_1) \cdot ~ ... ~ \cdot \assign(e_m, v_m) \cdot
+    \assign(e, \listv ~ v_{m+1} ~ ... ~ v_n) \\
+  &\assign(\cate ~ (e, \liste ~ e_1 ~ ... ~ e_m), \listv v_1 ~ ... ~ v_n) =
+    \assign(e, \listv ~ v_1 ~ ... ~ v_{n-m}) \cdot
+    \assign(e_1, v_{n-m+1}) \cdot ~ ... ~ \cdot \assign(e_m, v_n) \\
+%
 % create_algo
 \newline \\
   &\createalgo(\seq a, s, \seq v, k) =
@@ -1006,7 +1031,7 @@ excessively verbose.
   &\qquad\qquad\qquad\qquad\premise{if}\quad
   (\rel ~ (s, \seq e, \seq i) \quad\lor\quad \fun ~ (s, \seq e, \seq i)) = \lookup(\seq a, s)
   \quad\land\quad
-  \mu = \assign([\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \mu = \assign(w, [\text{"s"} \mapsto \storev], \seq e, \seq v) \\
 %
 % split_ctx
 \newline \\
