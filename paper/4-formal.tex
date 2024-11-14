@@ -125,7 +125,6 @@
 \newcommand{\getalgoname}{\helper{get\_algo\_name}}
 \newcommand{\lookup}{\helper{lookup}}
 \newcommand{\createalgo}{\helper{create\_algo}}
-\newcommand{\execute}{\helper{execute}}
 \newcommand{\exit}{\helper{exit}}
 \newcommand{\getenv}{\helper{get\_env}}
 \newcommand{\setenv}{\helper{set\_env}}
@@ -134,6 +133,7 @@
 \newcommand{\setstore}{\helper{set\_store}}
 \newcommand{\prependinstr}{\helper{prepend\_instr}}
 \newcommand{\popwasminstr}{\helper{pop\_wasm\_instr}}
+\newcommand{\popwasmctx}{\helper{pop\_wasm\_ctx}}
 \newcommand{\push}{\helper{push}}
 \newcommand{\pop}{\helper{pop}}
 \newcommand{\popn}{\helper{popn}}
@@ -546,10 +546,10 @@ $.
 %
 % PopCtx
 \newline \\
-  wc ~ \seq{we'} = \exit_{WasmEntry}(\seq{we}) \qquad
+  (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \qquad
   \mu = \assign(\getenv(c), e, wc) \\
-  \seq{wi'} = \exit_{WasmInstr}(\seq{wi}) \qquad
-  c' = \exit_{C}(c) \\
+  \seq{wi'} = \exit(\seq{wi}) \qquad
+  c' = \popwasmctx_{C}(c) \\
   \hline
   \seq{a}, (\seq{we}, \seq{wi}, sto), c \vdash \popctxi ~ e
   \Rightarrow
@@ -574,12 +574,12 @@ $.
 %
 % PopAll
 \newline \\
-  (\seq{wv}, \seq{we'}) = \splitctx(\seq{we}) \qquad
+  (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \qquad
   \mu' = \assign(\getenv(c), e, \liste ~ \seq{wv}) \\
   \hline
   \seq{a}, (\seq{we}, \seq{wi}, sto), c \vdash \popalli ~ e
   \Rightarrow
-  ((\seq{we'}, \seq{wi}, sto), \algo ~ (\setenv(c, \mu'))) \\
+  ((wc ~ \seq{we'}, \seq{wi}, sto), \algo ~ (\setenv(c, \mu'))) \\
 %
 % Let
 \newline \\
@@ -849,9 +849,9 @@ to $v_2$.
 %
 % GetCurCtx
 \newline \\
-  v_{ctx} = \getcurctx(w, s) \\
+  wc = \getcurctx(w, s) \\
   \hline
-  w, \mu \vdash \getcurctxe ~ s \Rightarrow v_{ctx} \\
+  w, \mu \vdash \getcurctxe ~ s \Rightarrow wc \\
 %
 % CtxKind
 \newline \\
@@ -1005,46 +1005,44 @@ excessively verbose.
 \newline \\
   &\splitctx(we ~ \seq{we}) =
     \begin{cases}
-      (\epsilon, wc ~ \seq{we})
+      (\epsilon, wc, \seq{we})
       &\quad\quad \premise{if}\quad
       we = wc \\
-      (wv ~ \seq{wv}, \seq{we'})
+      (wv ~ \seq{wv}, wc, \seq{we'})
       &\quad\quad \premise{if}\quad
       we = wv \quad\land\quad
-      (\seq{wv}, \seq{we'}) = \splitctx(\seq{we})
+      (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we})
     \end{cases}
   \\
 %
-% execute
+% pop-wasm-ctx_context
 \newline \\
-  &\execute(v, k) = \exe(v, k) \\
+  &\popwasmctx_{C}((\seq i, \mu, epsilon, k)) = (\seq i, \mu, \epsilon, \popwasmctx_K(k)) \\
+  &\popwasmctx_{C}((\seq i, \mu, wc ~ \seq{wc}, k)) = (\seq i, \mu, wc^*, k) \\
 %
-% exit_context
 \newline \\
-  &\exit_{C}((\seq i, \mu, epsilon, k)) = (\seq i, \mu, \epsilon, \exit_K(k)) \\
-  &\exit_{C}((\seq i, \mu, c ~ \seq c, k)) = (\seq i, \mu, \seq c, k) \\
+% pop-wasm-ctx_cont-call
+  &\popwasmctx_{K}(\call ~ (s_1, s_2, \seq v, k)) =
+    \call ~ (s_1, s_2, \seq v, (\popwasmctx_K(k)) \\
+% pop-wasm-ctx_cont-execute
+  &\popwasmctx_{K}(\exe ~ (v, k)) = \exe ~ (v, (\popwasmctx_K(k)) \\
+% pop-wasm-ctx_cont-wasm_0
+  &\popwasmctx_{K}(\wasm ~ (\epsilon, k)) = \wasm ~ (\epsilon, \popwasmctx_{K}(k)) \\
+% pop-wasm-ctx_cont-wasm_nonzero
+  &\popwasmctx_{K}(\wasm ~ (wc ~ \seq{wc}, k)) = \wasm ~ (\seq{wc}, k) \\
+% pop-wasm-ctx_cont-al
+  &\popwasmctx_{K}(\algo ~ c) = \algo ~ (\popwasmctx_C(c)) \\
+% pop-wasm-ctx_cont-ret
+  &\popwasmctx_{K}(\ret ~ (v, k)) = \ret ~ (v, \popwasmctx_K(k)) \\
 %
-% exit_cont-wasm_0
+% exit
 \newline \\
-  &\exit_{K}(\wasm ~ (\epsilon, k)) = \wasm ~ (\epsilon, \exit_{K}(k)) \\
-% exit_cont-wasm_nonzero
-  &\exit_{K}(\wasm ~ (c ~ \seq{c}, k)) = \wasm ~ (\seq{c}, k) \\
-% exit_cont-al
-  &\exit_{K}(\algo ~ c) = \algo ~ (\exit_C(c)) \\
-%
-% exit_wasm_instr-end
-\newline \\
-  &\exit_{WasmInstr}(wi ~ \seq{wi}) =
+  &\exit(wi ~ \seq{wi}) =
     \begin{cases}
       \seq{wi} &\quad\quad \premise{if}\quad ~ \isendinstr(wi) \\
-      \exit_{WasmInstr}(\seq{wi}) &\quad\quad \premise{otherwise} \\
+      \exit(\seq{wi}) &\quad\quad \premise{otherwise} \\
     \end{cases}
   \\
-%
-% exit_wasm_entry
-\newline \\
-  &\exit_{WasmEntry}(\seq{we}) = \seq{we_1}
-  \quad\quad\premise{if}\quad ~ (\seq{we_0}, \seq{we_1}) = \splitctx(\seq{we}) \\
 %
 % get_env
 \newline \\
@@ -1098,31 +1096,31 @@ excessively verbose.
 %
 % get_cur_ctx
 \newline \\
-  &\getcurctx((\seq{wv}, \seq{wi}, sto)) =
-  wv_{ctx} \quad\quad\premise{if}\quad ~ (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \\
+  &\getcurctx((\seq{we}, \seq{wi}, sto)) =
+  wc \quad\quad\premise{if}\quad ~ (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \\
 %
 % get_cur_frame-frame
 \newline \\
-  &\getcurframe((\seq{wv}, \seq{wi}, sto)) =
+  &\getcurframe((\seq{we}, \seq{wi}, sto)) =
     \begin{cases}
-      wv_{ctx} &\quad\quad\premise{if}\quad
-      (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \quad\land\quad \isframe(wv_{ctx})\\
-      \getcurframe(\seq{wv_1}) &\quad\quad\premise{if}\quad
-      (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \quad\land\quad \neg \isframe(wv_{ctx}) \\
+      wc &\quad\quad\premise{if}\quad
+      (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \quad\land\quad \isframe(wc)\\
+      \getcurframe(\seq{we'}) &\quad\quad\premise{if}\quad
+      (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \quad\land\quad \neg \isframe(wc) \\
     \end{cases}
   \\
 %
 % set_cur_frame-frame
 \newline \\
-  &\setcurframe((\seq{wv}, \seq{wi}, sto), v_{frame})
+  &\setcurframe((\seq{we}, \seq{wi}, sto), wc_{frame})
   =
   \begin{cases}
-    (\seq{wv_0} ~ v_{frame} ~ \seq{wv_1}, \seq{wi}, sto) \\
+    (\seq{wv} ~ wc_{frame} ~ \seq{we'}, \seq{wi}, sto) \\
     \qquad\qquad\qquad\quad\premise{if}\quad
-    (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \quad \isframe(wv_{ctx}) \\
-    (\seq{wv_0} ~ wv_{ctx} ~ \setcurframe(\seq{wv_1}, v_{frame}), \seq{wi}, sto) \\
+    (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \quad \isframe(wc) \\
+    (\seq{wv} ~ wc ~ \setcurframe(\seq{we'}, wc_{frame}), \seq{wi}, sto) \\
     \qquad\qquad\qquad\quad\premise{if}\quad
-    (\seq{wv_0}, wv_{ctx} ~ \seq{wv_1}) = \splitctx(\seq{wv}) \quad \neg \isframe(wv_{ctx}) \\
+    (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \quad \neg \isframe(wc) \\
   \end{cases}
   \\
 %
@@ -1212,7 +1210,8 @@ excessively verbose.
   &\istrue(v) =
   \begin{cases}
   b &\quad\quad\premise{if}\quad v = \boolv ~ b \\
-  \forall v \in \seq v. \istrue (v) &\quad\quad\premise{if}\quad v = \listv ~ \seq v \\
+    \istrue(v_1) ~ \land ~ ... ~ \istrue(v_n) &\quad\quad\premise{if}\quad
+    v = \listv ~ v_1 ~ ... ~ v_n \\
   \end{cases} \\
 %
 % is_frame
