@@ -43,10 +43,11 @@
 \newcommand{\trapi}{\symbol{TrapI}}
 \newcommand{\nopi}{\symbol{NopI}}
 \newcommand{\returnreli}{\symbol{ReturnRelI}}
-\newcommand{\returnfunci}{\symbol{ReturnFuncI}}
+\newcommand{\returnfuni}{\symbol{ReturnFunI}}
 \newcommand{\executei}{\symbol{ExecuteI}}
 \newcommand{\calli}{\symbol{CallI}}
-\newcommand{\replacei}{\symbol{ReplaceI}}
+\newcommand{\replaceframei}{\symbol{ReplaceFrameI}}
+\newcommand{\replacestorei}{\symbol{ReplaceStoreI}}
 
 % Expression
 \newcommand{\vare}{\symbol{VarE}}
@@ -170,8 +171,7 @@
 \begin{array}{lcccrlr}
 %
 % Algorithm
-  \text{Algorithm}\quad& A &\ni& a &::=& ~ \rel ~ (s, \seq e, \seq i) &\quad\text{(Relation)} \\
-  &&&& | & ~ \fun ~ (s, \seq e, \seq i) &\quad\text{(Function)} \\
+  \text{Algorithm}\quad& A &\ni& a &::=& ~ \rel ~ (s, \seq e, \seq i) ~ | ~ \fun ~ (s, \seq e, \seq i) \\
 %
 % Instruction
   \text{Instruction}\quad& I &\ni& i &::=& ~ \ifi ~ (e, \seq i, \seq i) &\quad\text{(If)} \\
@@ -186,10 +186,11 @@
     &&&& | & ~ \leti ~ (e, e) &\quad\text{(Let)} \\
     &&&& | & ~ \trapi &\quad\text{(Trap)} \\
     &&&& | & ~ \returnreli &\quad\text{(Return Relation)} \\
-    &&&& | & ~ \returnfunci ~ e &\quad\text{(Return Function)} \\
+    &&&& | & ~ \returnfuni ~ e &\quad\text{(Return Function)} \\
     &&&& | & ~ \executei ~ e &\quad\text{(Execute)} \\
     &&&& | & ~ \calli ~ (s, s, \seq{e}) &\quad\text{(Let Call)} \\
-    &&&& | & ~ \replacei ~ (e, p^+, e) &\quad\text{(Replace)} \\
+    &&&& | & ~ \replaceframei ~ (p^+, e) &\quad\text{(Replace Frame)} \\
+    &&&& | & ~ \replacestorei ~ (p^+, e) &\quad\text{(Replace Store)} \\
 %
 % Expression
   \text{Expression}\quad& E &\ni& e &::=& ~ \vare ~ s &\quad\text{(Variable)} \\
@@ -253,10 +254,10 @@ nondeterministically choosing a branch, \enteri{} for entering a block,
 \popctxi{} for popping a Wasm context, \popi{} for popping a Wasm value,
 \popni{} for popping $n$ Wasm values, \popalli{} for popping all Wasm values
 within a Wasm context, \leti{} for let binding, \trapi{} for trapping,
-\returnreli{} for returning from an AL relation, \returnfunci{} for returning
+\returnreli{} for returning from an AL relation, \returnfuni{} for returning
 from an AL function, \executei{} for executing given Wasm instructions,
-\calli{} for an AL function call with let binding, or \replacei{} for replacing
-some mutable data structure.
+\calli{} for an AL function call with let binding, or \replaceframei{} or
+\replacestorei for replacing a frame or a store.
 % expression
 An expression is a variable, number, boolean, AL function name, list, record
 (or struct), tuple, tagged tuple, unary or binary operation, data structure
@@ -606,7 +607,7 @@ $.
 \newline \\
   w, \mu \vdash e \Rightarrow v \\
   \hline
-  \seq{a}, w, (\seq{i}, \mu, wc^*, k) \vdash \returnfunci ~ e \Rightarrow
+  \seq{a}, w, (\seq{i}, \mu, wc^*, k) \vdash \returnfuni ~ e \Rightarrow
   (w, \ret ~ (v, k)) \\
 %
 % Execute
@@ -635,27 +636,25 @@ $.
   \hline
   \seq{a}, w, c \vdash \calli ~ (s_1, s_2, \seq e) \Rightarrow
   (w, \call ~ (s_1, s_2, v_1 ~ ... ~ v_n, \algo ~ c)) \\
-% TODO: get cur frame ...
 %
 % Replace-frame
 \newline \\
 \text{NOTE: $e_1$ is either store or current frame} \\
   \mu = \getenv(c) \qquad
-  w, \mu \vdash e_1 \Rightarrow  \casev ~ (\text{"FRAME"}, v_{11} ~ v_{12}) \qquad
-  w, \mu \vdash e_2 \Rightarrow v_2 \\
-  v_3 = \update(w, \mu, v_{12}, p^+, v_2) \\
+  \casev ~ (\text{"FRAME"}, v_1 ~ v_2) = \getcurframe(w) \qquad
+  w, \mu \vdash e \Rightarrow v \\
+  wc = \casev ~ (\text{"FRAME"}, v_1 ~ \update(w, \mu, v_2, p^+, v)) \\
   \hline
-  \seq{a}, w, c \vdash \replacei ~ (e_1, p^+, e_2) \Rightarrow
-  (\setcurframe(w, \casev ~ (\text{"FRAME"}, v_{11} ~ v_3)), \algo ~ c) \\
+  \seq{a}, w, c \vdash \replaceframei ~ (p^+, e) \Rightarrow
+  (\setcurframe(w, wc), \algo ~ c) \\
 %
 % Replace-store
 \newline \\
   \mu = \getenv(c) \qquad
-  w, \mu \vdash e_1 \Rightarrow \storev \qquad
-  w, \mu \vdash e_2 \Rightarrow v_2 \\
-  \strv ~ sto = \update(w, \mu, \strv (\getstore(w)), p^+, v_2) \\
+  w, \mu \vdash e \Rightarrow v \\
+  \strv ~ sto = \update(w, \mu, \strv ~ (\getstore(w)), p^+, v) \\
   \hline
-  \seq{a}, w, c \vdash \replacei ~ (e_1, p^+, e_2)
+  \seq{a}, w, c \vdash \replacestorei ~ (p^+, e)
   \Rightarrow (\setstore(w, sto), c) \\
 \end{gather*}
 
@@ -710,7 +709,7 @@ the execution.
 \returnreli{} instruction results in the inner continuation $k$, indicating a
 return from a relation algorithm.
 % ReturnFunc
-\returnfunci{} instruction evaluates $e$, results in \ret{} with the resulting
+\returnfuni{} instruction evaluates $e$, results in \ret{} with the resulting
 value and the inner continuation $k$.
 % Execute
 \executei{} instruction evaluates $e$ and result in \exe{} with the resulting
@@ -721,7 +720,7 @@ function name; otherwise, it uses $s_1$ as the function name.
 It evaluates $\seq e$ and construct \call{} with binding variable $s_0$, the
 function name, and the resulting values.
 % Replace
-\replacei{} evaluates $e_1$ and $e_2$ to $v_1$ and $v_2$.
+replacei{} evaluates $e_1$ and $e_2$ to $v_1$ and $v_2$.
 If $v_1$ is frame, it accesses the frame with $p$ and update the value to
 $v_2$; if $v_1$ is store, it accesses the store with $p$ and update the value
 to $v_2$.
