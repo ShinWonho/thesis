@@ -211,7 +211,7 @@
     &&&& | & ~ \choosee ~ e &\quad\text{(Choose)} \\
     &&&& | & ~ \lene ~ e &\quad\text{(Length)} \\
     &&&& | & ~ \iscaseofe ~ (e, s) &\quad\text{(Check Tag)} \\
-    &&&& | & ~ \getcurctxe ~ s &\quad\text{(Get Current Context)} \\
+    &&&& | & ~ \getcurctxe  &\quad\text{(Get Current Context)} \\
     &&&& | & ~ \ctxkinde ~ s &\quad\text{(Context Kind)} \\
     &&&& | & ~ \itere ~ (e, iter, \seq{s}) &\quad\text{(Iteration)} \\
     &&&& | & ~ \matche ~ (e, e) &\quad\text{(Match)} \\
@@ -660,7 +660,7 @@ $.
 \end{gather*}
 
 Given algorithms $\seq a$, a Wasm state $w$, and a context $c$, executing an
-instruction $i$ produces an updated Wasm state $w$ and a continuation $k$.
+instruction $i$ produces an updated Wasm state and a continuation.
 % If
 $\ifi ~ (e, i_1^*, i_2^*)${} evaluates $e$ and branches to $\seq i_1$ if the
 result is true, or $\seq i_2$ otherwise.
@@ -851,13 +851,13 @@ sto$ along paths $p^+$ to v.
 %
 % GetCurCtx
 \newline \\
-  wc = \getcurctx(w, s) \\
+  wc = \getcurctx(w) \\
   \hline
-  w, \mu \vdash \getcurctxe ~ s \Rightarrow wc \\
+  w, \mu \vdash \getcurctxe \Rightarrow wc \\
 %
 % CtxKind
 \newline \\
-  \casev (s', \seq v) = \getcurctx(w, s) \\
+  \casev (s', \seq v) = \getcurctx(w) \\
   \hline
   w, \mu \vdash \ctxkinde ~ s \Rightarrow \boolv ~ (s = s') \\
 %
@@ -911,63 +911,67 @@ sto$ along paths $p^+$ to v.
   w, \mu \vdash \hastypee ~ (e, s) \Rightarrow \boolv ~ (\hastype(v, s)) \\
 \end{gather*}
 
-Given Wasm state $w$, and an environment $\mu$, an expression evaluates to a
-value.
+Given a Wasm state $w$, and an environment $\mu$, an expression $e$ evaluates
+to a value.
 % Var
-\vare{} expression looks up the environment and gets the value.
+$\vare ~ s${} expression looks up the environment $\mu$ and gets the value.
 % Num Bool Fname
-\nume{}, \boole{}, and \fnamee{} expressions directly reduce to \numv{},
-\boolv{}, and \fnamev{}, respectively.
+$\nume ~ n${}, $\boole ~ b${}, and $\fnamee ~ s${} expressions directly reduce
+to $\numv ~ n${}, $\boolv ~ b${}, and $\fnamev ~ s${}, respectively.
 % Tuple Case List Struct
-\liste{}, \stre{}, \tupe{}, and \casee{} expressions evaluate their
-sub-expressions and reduce to \listv{}, \strv{}, \tupv{}, and \casev{},
-respectively.
+$\liste ~ e_1 ~ ... ~ e_n${}, $\stre ~ (s_1, e_1) ~ ... ~ (s_n, e_n)${}, $\tupe
+~ e_1 ~ ... ~ e_n${}, and $\casee ~ (s, e_1 ~ ... ~ e_n)${} expressions
+evaluate their sub-expressions and reduce to $\listv ~ v_1 ~ ... ~ v_n${},
+$\strv ~ (s_1, v_1) ~ ... ~ (s_n, v_n)${}, $\tupv ~ v_1 ~ ... ~ v_n${}, and
+$\casev ~ (s, v_1 ~ ... ~ v_n)${}, respectively.
 % Un Bin
-\une{} and \bine{} expression evaluate their sub-expressions and perform
-\unop{} and \binop{}, respectively.
+$\une ~ (unop, e)${} and $\bine ~ (binop, e_1, e_2)${} expression evaluate
+their sub-expressions and perform \unop{} and \binop{}, respectively.
 % Acc
-\acce{} expression evaluates $e$ and accesses the resulting value using a path
-$p$.
+$\acce ~ (e, p)${} expression evaluates $e$ and accesses the resulting value
+$v$ using a path $p$.
 % Upd
-\upde{} expression evaluates $e_1$ and $e_2$ to $v_1$ and $v_2$, and updates
-the value at location $v_1$ along paths $\seq p$ to the value $v_2$.
+$\upde ~ (e_1, p^+, e_2)${} expression evaluates $e_1$ and $e_2$ to $v_1$ and
+$v_2$, updating the value at location $v_1$ along paths $p^+$ to the value
+$v_2$.
 % Cat Comp
-\cate{} and \compe{} expressions each evaluate two sub-expressions,
-concatenating the resulting lists and resulting records, respectively.
+$\cate ~ (e_1, e_2)${} and $\compe ~ (e_1, e_2)${} expressions each evaluate
+two sub-expressions $e_1$ and $e_2$, concatenating the resulting lists and
+resulting records, respectively.
 % Mem
-\meme{} expression evaluates $e_1$ and $e_2$ to the value $v_1$ and $\listv ~
-\seq v_2$, and checks whether $v_1$ is a member of $\seq v_2$.
+$\meme ~ (e_1, e_2)${} expression evaluates $e_1$ and $e_2$ to $v_1$ and
+$\listv ~ \seq v_2$, and checks whether $v_1$ is a member of $\seq v_2$.
 % Choose Len
-\choosee{} and \lene{} expression each evaluate $e$ to the list value $\listv
-~ \seq v$, choosing an element from the list and calculating the length of the
+$\choosee ~ e$ and $\lene ~ e${} expression each evaluate $e$ to the list value
+$\listv ~ \seq v$, choosing an element from the list and calculating the length of the
 list, respectively.
 % IsCaseOf
-\iscaseofe{} expression evaluates $e$ to the tagged tuple $\casev ~ (s', \seq
-v)$ and checks whether the tag $s'$ matches $s$.
+$\iscaseofe ~ (e, s)${} expression evaluates $e$ to the tagged tuple $\casev ~
+(s', \seq v)$ and checks whether the tag $s'$ matches $s$.
 % GetCurCtx
-\getcurctxe{} expression retrieves the current Wasm context from the Wasm value
-stack.
+\getcurctxe{} expression retrieves the current Wasm context from the
+interleaved stack.
 % CtxKind
-\ctxkinde{} expression retrieves the current Wasm context $\casev ~ (s', \seq
-v)$ and checks whether the kind $s'$ matches $s$.
+$\ctxkinde ~ s${} expression retrieves the current Wasm context $\casev ~ (s',
+\seq v)$ and checks whether the kind $s'$ matches $s$.
 % Iter
-\itere{} expression behaves differently depending on $iter$.
-\listiter{} and \listniter{} are essentially equivalent.
+$\itere ~ (e, iter, s^*)${} expression behaves differently depending on $iter$.
+\listiter{} and $\listniter ~ e_2${} are essentially equivalent.
 They assume that the all the values mapped to the variables $\seq s$ by the
 envinronment $\mu${} are list values with same length.
-\listniter{} restricts the length to $n$, which is obtained from evaluating
-$e_2$, while \listiter{} allows any length.
+$\listniter ~ e_2${} restricts the length to $n$, which is obtained from
+evaluating $e_2$, while \listiter{} allows any length.
 It generates a sequence of environments $\mu_2$ where the k-th environment maps
-each variables to the k-th elements of the list.
+each variables to the k-th elements of each list.
 Each environment $\mu_3$ is respectively used to evaluate $e_1$, resulting in
 the list value $\listv ~ \seq{v'}$.
-\listidxiter{} behaves similarly except that the variables $\seq s$ are
+$\listidxiter ~ e_2${} behaves similarly except that the variables $\seq s$ are
 unbound.
-It evaluates $e_2$ to obtain $n$ and then behaves like \listniter{} as if
-the list values [0 ... n-1] was bound to the variables $s$.
+It evaluates $e_2$ to obtain $n$ and then behaves like $\listniter ~ e_2${} as
+if the list values [0 ... n-1] were bound to the variables $s$.
 % IsValid Match HasType
-\matche{} and \hastypee{} expressions evaluate their sub-exressions and perform
-\match{} and \hastype{}, respectively.
+$\matche ~ (e_1, e_2)${} and $\hastypee ~ (e, s)${} expressions evaluate their
+sub-exressions and perform \match{} and \hastype{}, respectively.
 Note that \match{} and \hastype{} represent the match relation and the type
 relation in the Wasm static semantics.
 Their formalization is omitted as they are highly specific to Wasm and
@@ -987,6 +991,7 @@ excessively verbose.
 %
 % lookup
 \newline \\
+  &\lookup(\epsilon, s) = \epsilon \\
   &\lookup(a ~ \seq{a}, s) =
     \begin{cases}
       a &\quad\quad \premise{if}\quad ~ s = \getalgoname(a) \\
@@ -1005,6 +1010,7 @@ excessively verbose.
 %
 % split_ctx
 \newline \\
+  &\splitctx(\epsilon) = (\epsilon, \epsilon, \epsilon) \\
   &\splitctx(we ~ \seq{we}) =
     \begin{cases}
       (\epsilon, wc, \seq{we})
@@ -1013,7 +1019,7 @@ excessively verbose.
       (wv ~ \seq{wv}, wc, \seq{we'})
       &\quad\quad \premise{if}\quad
       we = wv \quad\land\quad
-      (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we})
+      (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \\
     \end{cases}
   \\
 %
@@ -1023,6 +1029,10 @@ excessively verbose.
   &\popwasmctx_{C}((\seq i, \mu, wc ~ \seq{wc}, k)) = (\seq i, \mu, wc^*, k) \\
 %
 \newline \\
+% pop-wasm-ctx_cont-mt
+  &\popwasmctx_{K}(\mt) = \epsilon \\
+% pop-wasm-ctx_cont-toplevelcall
+  &\popwasmctx_{K}(\toplevelcall ~ (s, v^*)) = \epsilon \\
 % pop-wasm-ctx_cont-call
   &\popwasmctx_{K}(\call ~ (s_1, s_2, \seq v, k)) =
     \call ~ (s_1, s_2, \seq v, (\popwasmctx_K(k)) \\
@@ -1212,7 +1222,7 @@ excessively verbose.
   &\istrue(v) =
   \begin{cases}
   b &\quad\quad\premise{if}\quad v = \boolv ~ b \\
-    \istrue(v_1) ~ \land ~ ... ~ \istrue(v_n) &\quad\quad\premise{if}\quad
+    \istrue(v_1) ~ \land ~ ... ~ \land ~ \istrue(v_n) &\quad\quad\premise{if}\quad
     v = \listv ~ v_1 ~ ... ~ v_n \\
   \end{cases} \\
 %
