@@ -256,8 +256,8 @@ nondeterministically choosing a branch, \enteri{} for entering a block,
 within a Wasm context, \leti{} for let binding, \trapi{} for trapping,
 \returnreli{} for returning from an AL relation, \returnfuni{} for returning
 from an AL function, \executei{} for executing given Wasm instructions,
-\calli{} for an AL function call with let binding, or \replaceframei{} or
-\replacestorei for replacing a frame or a store.
+\calli{} for an AL function call with let binding, \replaceframei{} for
+replacing a frame, or \replacestorei{} for replacing a store.
 % expression
 An expression is a variable, number, boolean, AL function name, list, record
 (or struct), tuple, tagged tuple, unary or binary operation, data structure
@@ -331,12 +331,14 @@ continuation.
 A Wasm state consists of an interleaved stack, a Wasm instruction stack, and a
 store.
 % Wasm Entry
-An interleaved stack consists of two entries: a Wasm value and a Wasm context.
+An interleaved stack contains two types of entries: a Wasm value and a Wasm
+context.
 % Wasm Value & Wasm Context & Wasm Instruction
-A Wasm value, a Wasm context, and a Wasm instruction each are expressed as an
+Each of a Wasm value, a Wasm context, and a Wasm instruction is expressed as an
 AL value $\casev$.
 % Store
-A store is expressed as a sequence of field name and AL value pairs.
+A store is expressed as a sequence of pairs, each consisting of a field name
+and an AL value.
 % Continuation
 A continuation is \mt{} for an empty continuation, \toplevelcall{} for
 top-level function call, \call{} for a function call with let binding, \exe{}
@@ -346,8 +348,8 @@ algorithm, or \ret{} for returning from an AL function.
 % Env
 An environment is a finite mapping from variable names to AL values.
 % Context
-An AL context consists of a sequence of Wasm instruction sequence, an
-environment, a sequence of Wasm context, and a continuation.
+An AL context consists of a sequence of Wasm instruction, an environment, a
+sequence of Wasm contexts, and a continuation.
 % Value
 An AL value is a number, boolean, function name, list, record, tuple, tagged tuple,
 trap, or store.
@@ -355,7 +357,7 @@ trap, or store.
 
 % Terminology
 In this section, AL-specific terms (state, context, value, function, and
-instruction) are abbreviated as simply state, context, value, function, and
+instruction) are referred to simply as state, context, value, function, and
 instruction, while Wasm terms remain unchanged.
 
 
@@ -433,43 +435,42 @@ instruction, while Wasm terms remain unchanged.
 
 The semantics of AL is defined by a state transition system.
 % TopLevelCall
-Given the algorithms $\seq a$ generated from the DSL and the Wasm state $w$, a
+Given algorithms $\seq a$ generated from the DSL and a Wasm state $w$, a
 top-level function $s$ can be invoked with arguments $\seq v$ to perform
 either module instantiation or function invocation:
 $(\seq a, w, \toplevelcall ~ (s, \seq v))$.
-$\toplevelcall ~ (s, \seq v)${} changes to \algo{} with the function name $s$, the arguments
-$\seq v$, and \mt{}.
+$\toplevelcall ~ (s, \seq v)${} transitions to \algo{} with the function name
+$s$, the arguments $\seq v$, and \mt{}.
 % Empty
 \mt{} is an empty continuation, representing the end of the transition, so no
 further transition occurs.
 % Call
-Similarly to top-level call, $\call~ (s_{var}, s_{name}, \seq v, k)${} changes
-to \algo{} with the function name $s_{name}$ and the arguments $\seq v$, but
-with the current continuation nested within it.
-%After the call, a return value is bound by $s_{var}$ in the \ret{} transition.
+Similarly to the top-level call, $\call~ (s_{var}, s_{name}, \seq v, k)${}
+transitionsto \algo{} with the function name $s_{name}$ and the arguments $\seq
+v$, but with the current continuation nested within it.
 % Execute
-$\exe ~ (\seq{wi}, k)${} executes the Wasm instruction sequence $\seq{wi}$ one
-by one, each containing a relation name and arguments.
-The continuation changes to \algo{} with the relation name, the arguments, and
-the current continuation, with the Wasm instruction being popped.
+$\exe ~ (\seq{wi}, k)${} executes each Wasm instruction in the sequence
+$\seq{wi}$ one by one, each containing a relation name and arguments.
+The continuation transitions to \algo{} with the relation name, the arguments,
+and the current continuation, with the Wasm instruction being popped.
 % Wasm
 In $\wasm ~ (\seq{wc}, k)${}, a Wasm instruction is popped from
 the Wasm instruction stack and executed until the Wasm context sequence
 $\seq{wc}$ is exhausted.
-This execution changes the continuation to \algo{}, with the relation name and
-the arguments of the Wasm instruction, and the current continuation nested
+This execution transitions the continuation to \algo{}, with the relation name
+and the arguments of the Wasm instruction, and the current continuation nested
 within it.
 % Algo
-In $\algo ~ (\seq i, \mu, \seq{wc}, k)${}, the body instructions $\seq i$ are
-executed sequentially, allowing transitions to \call{}, \exe{}, \wasm{},
-\ret{}, or \algo{}.
+In $\algo ~ (\seq i, \mu, \seq{wc}, k)${}, the body instructions $\seq i$
+execute sequentially, allowing transitions to \call{}, \exe{}, \wasm{}, \ret{},
+or \algo{}.
 % Return
-The execution of a function call concludes with a return instruction, changing
-the continuation to $\ret ~ v${}.
+The execution of a function call concludes with a return instruction, which
+changes the continuation to $\ret ~ v${}.
 If the function call originates from \call{}, the return value $v$ is assigned
 to the variable $s_{var}$.
 If it originates from \toplevelcall{}, the inner continuation $k$ is always
-\mt, so the entire execution completes with the return value $v$:
+\mt, so the entire execution concludes with the return value $v$:
 $
 (\seq a, w, \toplevelcall ~ (s, \seq v))
 \leadsto^*
@@ -643,9 +644,9 @@ $.
 \newline \\
 \text{NOTE: $e_1$ is either store or current frame} \\
   \mu = \getenv(c) \qquad
-  \casev ~ (\text{"FRAME"}, v_1 ~ v_2) = \getcurframe(w) \qquad
+  \casev ~ (\text{``FRAME"}, v_1 ~ v_2) = \getcurframe(w) \qquad
   w, \mu \vdash e \Rightarrow v \\
-  wc = \casev ~ (\text{"FRAME"}, v_1 ~ \update(w, \mu, v_2, p^+, v)) \\
+  wc = \casev ~ (\text{``FRAME"}, v_1 ~ \update(w, \mu, v_2, p^+, v)) \\
   \hline
   \seq{a}, w, c \vdash \replaceframei ~ (p^+, e) \Rightarrow
   (\setcurframe(w, wc), \algo ~ c) \\
@@ -671,8 +672,8 @@ $i_2^*$.
 % Enter
 $\enteri ~ (e_1, e_2)${} evaluates $e_1$, pushing the resulting Wasm context
 $wc$ to the interleaved stack.
-It evaluates $e_2$ to get the Wasm instruction sequence $wi_1^*$.
-Then, end instructions of the Wasm context $wc$ and the Wasm contexts
+It then evaluates $e_2$ to obtain the Wasm instruction sequence $wi_1^*$.
+Then, the end instructions of the Wasm context $wc$ and the Wasm contexts
 $wc_1 ~ ... ~ wc_n$ in the context $c$ are appended to $wi_1^*$ and pushed to
 the Wasm instruction stack.
 Finally, it changes the continuation to
@@ -687,14 +688,14 @@ interleaved stack.
 $\popctxi ~ e${} pops all Wasm values up to and including a Wasm context $wc$
 from the interleaved stack and all Wasm instructions up to and including an end
 instruction from the Wasm instruction stack.
-It also pops a Wasm context in the context $c$.
+It also pops a Wasm context from the context $c$.
 Then, it assign the Wasm context $wc$ to $e$.
 % Pop
 $\popi ~ e${} pops a Wasm value $wv$ from the interleaved stack and assign the
 value to $e$.
 % PopN
-$\popni ~ (e_1, e_2)${} evalutes $e_2$ to get a number $n$, pops $n$ Wasm
-values from the interleaved stack, and assign the values to $e_1$.
+$\popni ~ (e_1, e_2)${} evaluates $e_2$ to obtain a number $n$, pops $n$ Wasm
+values from the interleaved stack, and assigns the values to $e_1$.
 % PopAll
 $\popalli ~ e${} pops all the Wasm values up to, but not including, a
 Wasm context from the interleaved stack and assign the values to $e$.
@@ -714,18 +715,18 @@ $k$ is the continuation in the context $c$.
 result in $\exe ~ (wi^*, \algo ~ c)${}.
 % Call
 $\calli ~ (s_1, s_2, e_1 ~ ... ~ e_n)${} checks if $s_2$ is bound in the
-envinronment.
+environment.
 If it is, it retrieves the function name $s_3$ from the environment $\mu$;
 otherwise, it uses $s_2$ as the function name.
-It evaluates $\seq e$ to $v^*$ and results in $\call ~ (s_1, s_{name}, v_1 ~ ...
+It evaluates $\seq e$ to $v^*$, resulting in $\call ~ (s_1, s_{name}, v_1 ~ ...
 ~ v_n)${} where $s_{name}$ is the function name.
 % ReplaceFrame
-\replaceframei{} retrieves the current frame $\casev ~ (\text{"FRAME"}, v_1
+\replaceframei{} retrieves the current frame $\casev ~ (\text{``FRAME"}, v_1
 v_2)${} in the Wasm context $w$.
-It then evaluate $e$ to $v$, updating the value at location $v_2$ along paths
+It then evaluates $e$ to $v$, updating the value at location $v_2$ along paths
 $p^+$ to $v$.
 % ReplaceFrame
-\replacestorei{} evaluate $e$ to $v$, updating the value at location $\strv ~
+\replacestorei{} evaluates $e$ to $v$, updating the value at location $\strv ~
 sto$ along paths $p^+$ to v.
 
 
@@ -912,67 +913,66 @@ sto$ along paths $p^+$ to v.
   w, \mu \vdash \hastypee ~ (e, s) \Rightarrow \boolv ~ (\hastype(v, s)) \\
 \end{gather*}
 
-Given a Wasm state $w$, and an environment $\mu$, an expression $e$ evaluates
+Given a Wasm state $w$ and an environment $\mu$, an expression $e$ evaluates
 to a value.
 % Var
-$\vare ~ s${} expression looks up the environment $\mu$ and gets the value.
+$\vare ~ s${} looks up the environment $\mu$ and gets the value.
 % Num Bool Fname
-$\nume ~ n${}, $\boole ~ b${}, and $\fnamee ~ s${} expressions directly reduce
-to $\numv ~ n${}, $\boolv ~ b${}, and $\fnamev ~ s${}, respectively.
+$\nume ~ n${}, $\boole ~ b${}, and $\fnamee ~ s${} directly reduce to $\numv ~
+n${}, $\boolv ~ b${}, and $\fnamev ~ s${}, respectively.
 % Tuple Case List Struct
 $\liste ~ e_1 ~ ... ~ e_n${}, $\stre ~ (s_1, e_1) ~ ... ~ (s_n, e_n)${}, $\tupe
-~ e_1 ~ ... ~ e_n${}, and $\casee ~ (s, e_1 ~ ... ~ e_n)${} expressions
-evaluate their sub-expressions and reduce to $\listv ~ v_1 ~ ... ~ v_n${},
-$\strv ~ (s_1, v_1) ~ ... ~ (s_n, v_n)${}, $\tupv ~ v_1 ~ ... ~ v_n${}, and
-$\casev ~ (s, v_1 ~ ... ~ v_n)${}, respectively.
+~ e_1 ~ ... ~ e_n${}, and $\casee ~ (s, e_1 ~ ... ~ e_n)${} evaluate their
+sub-expressions and reduce to $\listv ~ v_1 ~ ... ~ v_n${}, $\strv ~ (s_1, v_1)
+~ ... ~ (s_n, v_n)${}, $\tupv ~ v_1 ~ ... ~ v_n${}, and $\casev ~ (s, v_1 ~ ...
+~ v_n)${}, respectively.
 % Un Bin
-$\une ~ (unop, e)${} and $\bine ~ (binop, e_1, e_2)${} expression evaluate
-their sub-expressions and perform \unop{} and \binop{}, respectively.
+$\une ~ (unop, e)${} and $\bine ~ (binop, e_1, e_2)${} evaluate their
+sub-expressions and perform \unop{} and \binop{}, respectively.
 % Acc
-$\acce ~ (e, p)${} expression evaluates $e$ and accesses the resulting value
-$v$ using a path $p$.
+$\acce ~ (e, p)${} evaluates $e$ and accesses the resulting value $v$ using a
+path $p$.
 % Upd
-$\upde ~ (e_1, p^+, e_2)${} expression evaluates $e_1$ and $e_2$ to $v_1$ and
-$v_2$, updating the value at location $v_1$ along paths $p^+$ to the value
-$v_2$.
+$\upde ~ (e_1, p^+, e_2)${} evaluates $e_1$ and $e_2$ to $v_1$ and $v_2$,
+updating the value at location $v_1$ along paths $p^+$ to the value $v_2$.
 % Cat Comp
-$\cate ~ (e_1, e_2)${} and $\compe ~ (e_1, e_2)${} expressions each evaluate
-two sub-expressions $e_1$ and $e_2$, concatenating the resulting lists and
+$\cate ~ (e_1, e_2)${} and $\compe ~ (e_1, e_2)${} each evaluate two
+sub-expressions $e_1$ and $e_2$, concatenating the resulting lists and
 resulting records, respectively.
 % Mem
-$\meme ~ (e_1, e_2)${} expression evaluates $e_1$ and $e_2$ to $v_1$ and
-$\listv ~ \seq v_2$, and checks whether $v_1$ is a member of $\seq v_2$.
+$\meme ~ (e_1, e_2)${} evaluates $e_1$ and $e_2$ to $v_1$ and $\listv ~ \seq
+v_2$, and checks whether $v_1$ is a member of $\seq v_2$.
 % Choose Len
-$\choosee ~ e$ and $\lene ~ e${} expression each evaluate $e$ to the list value
-$\listv ~ \seq v$, choosing an element from the list and calculating the length of the
+$\choosee ~ e$ and $\lene ~ e${} each evaluate $e$ to the list value $\listv ~
+\seq v$, choosing an element from the list and calculating the length of the
 list, respectively.
 % IsCaseOf
-$\iscaseofe ~ (e, s)${} expression evaluates $e$ to the tagged tuple $\casev ~
-(s', \seq v)$ and checks whether the tag $s'$ matches $s$.
+$\iscaseofe ~ (e, s)${} evaluates $e$ to the tagged tuple $\casev ~ (s', \seq
+v)$ and checks whether the tag $s'$ matches $s$.
 % GetCurCtx
-\getcurctxe{} expression retrieves the current Wasm context from the
-interleaved stack.
+\getcurctxe{} retrieves the current Wasm context from the interleaved stack.
 % CtxKind
-$\ctxkinde ~ s${} expression retrieves the current Wasm context $\casev ~ (s',
-\seq v)$ and checks whether the kind $s'$ matches $s$.
+$\ctxkinde ~ s${} retrieves the current Wasm context $\casev ~ (s', \seq v)$
+and checks whether the kind $s'$ matches $s$.
 % Iter
-$\itere ~ (e, iter, s^*)${} expression behaves differently depending on $iter$.
+$\itere ~ (e, iter, s^*)${} behaves differently depending on $iter$.
 \listiter{} and $\listniter ~ e_2${} are essentially equivalent.
-They assume that the all the values mapped to the variables $\seq s$ by the
-envinronment $\mu${} are list values with same length.
-$\listniter ~ e_2${} restricts the length to $n$, which is obtained from
-evaluating $e_2$, while \listiter{} allows any length.
-It generates a sequence of environments $\mu_2$ where the k-th environment maps
-each variables to the k-th elements of each list.
-Each environment $\mu_3$ is respectively used to evaluate $e_1$, resulting in
-the list value $\listv ~ \seq{v'}$.
+They assume that all the values mapped to the variables $\seq s$ by the
+environment $\mu${} are list values with the same length $n$.
+$\listniter ~ e_2${} checks whether the number $n$ matches the result of
+evaluating $e_2$, while \listiter{} allows any number.
+It generates a sequence of environments $\mu_1 ~ ... ~ \mu_n$ where the k-th
+environment maps each variable to the k-th elements of each list.
+Each environment is used to evaluate $e_1$, producing a sequence of values $v_1
+~ ... ~ v_n$.
+Finally, it results in $\listv ~ v_1 ~ ... ~ v_n$.
 $\listidxiter ~ e_2${} behaves similarly except that the variables $\seq s$ are
 unbound.
 It evaluates $e_2$ to obtain $n$ and then behaves like $\listniter ~ e_2${} as
-if the list values [0 ... n-1] were bound to the variables $s$.
+if a list of values [0 ... n-1] were bound to the variables $s^*$.
 % IsValid Match HasType
-$\matche ~ (e_1, e_2)${} and $\hastypee ~ (e, s)${} expressions evaluate their
-sub-exressions and perform \match{} and \hastype{}, respectively.
+$\matche ~ (e_1, e_2)${} and $\hastypee ~ (e, s)${} evaluate their
+sub-expressions and perform \match{} and \hastype{}, respectively.
 Note that \match{} and \hastype{} represent the match relation and the type
 relation in the Wasm static semantics.
 Their formalization is omitted as they are highly specific to Wasm and
@@ -1031,7 +1031,7 @@ excessively verbose.
   &\qquad\qquad\qquad\qquad\premise{if}\quad
   (\rel ~ (s, \seq e, \seq i) \quad\lor\quad \fun ~ (s, \seq e, \seq i)) = \lookup(\seq a, s)
   \quad\land\quad
-  \mu = \assign(w, [\text{"s"} \mapsto \storev], \seq e, \seq v) \\
+  \mu = \assign(w, [\text{``s"} \mapsto \storev], \seq e, \seq v) \\
 %
 % split_ctx
 \newline \\
@@ -1230,15 +1230,15 @@ excessively verbose.
 \newline \\
   &\getendinstr(wc) =
   \begin{cases}
-    \casev ~ (\text{"EXITING"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{"LABEL"}, \seq v)\\
-    \casev ~ (\text{"RETURNING"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{"FRAME"}, \seq v)
+    \casev ~ (\text{``EXITING"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``LABEL"}, \seq v)\\
+    \casev ~ (\text{``RETURNING"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``FRAME"}, \seq v)
   \end{cases} \\
 %
 % is_end_instr
 \newline \\
   &\isendinstr(wi) =
   \begin{cases}
-    true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{"EXITING"}, \epsilon) \quad\lor\quad wi = \casev ~ (\text{"RETURNING"}, \epsilon)\\
+    true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{``EXITING"}, \epsilon) \quad\lor\quad wi = \casev ~ (\text{``RETURNING"}, \epsilon)\\
     false &\quad\quad\premise{otherwise}
   \end{cases} \\
 %
