@@ -90,22 +90,38 @@ standardization effort.
 
 
 % SpecTec
-To alleviate this problem, we had been developing SpecTec, a framework for
+To mitigate this problem, we \red{had been} developing SpecTec, a framework for
 mechanizing WebAssembly specification.
-It provides DSL to define Wasm syntax and semantics in a declarative style
-similar to the formal notation.
-It type-checks DSL to prevent meta-level specification errors, and generates
-many artifacts including the specification document, a Wasm interpreter, and
-mechanized definitions for theorem provers.
-
-
-% AL
-To express 
+It provides domain specific language (DSL) that enables the declarative
+definition of Wasm syntax and semantics, akin to the formal notation.
+Additionally, to capture the pseudocode-like structure of the prose notation,
+SpecTec incorporates an imperative language, \textit{AL}.
+SpecTec performs type-checking on the DSL to prevent meta-level specification
+errors, translates the DSL into AL, and generates various artifacts, including
+the specification document, a Wasm interpreter, and mechanized definitions for
+theorem provers, along with the DSL and AL.
+Notably, AL plays a central role in the generation of the Wasm interpreter,
+bridging the gap between formal specification and executable code.
 
 
 % problem
-However, AL cannot describe Wasm control flow correctly
+However, at that time, AL was unable to capture the Wasm control flow
+correctly.
+The Wasm interpreter generated using AL produced wrong results when running
+Wasm official test suites.
+Additionally, the lack of formal semantics or a formalized definition for AL
+made it difficult to identify and address the fundamental issues in its design.
+Since running tests is the primary method for assessing the correctness of the
+specification, this limitation hindered the development of both the generated
+interpreter and the specification itself.
+This underscored the need for a more robust approach to formally define AL and
+ensure its alignment with Wasm's complex semantics.
+
+
+
 
 
 % contribution
 build AL's computation model for Wasm, formalize AL semantics
+
+
