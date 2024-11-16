@@ -41,3 +41,71 @@
   \item ???
   \end{itemize}
 \end{itemize}
+
+
+% breif overview
+WebAssembly (Wasm)~\cite{wasm} is a low-level bytecode language that is safe, fast,
+portable, and compact.
+It is widely used as a compilation target for web applications.
+Beyond web development, Wasm's advantages are also deployed in areas such as
+edge computing~\cite{wasm-edge}, IoT~\cite{wasm-iot}, and
+blockchain~\cite{wasm-block}.
+
+
+% risk of implementation divergence
+There are numerous Wasm engines, with all major browsers implementing their own
+multi-tiered versions~\cite{v8, spidermonkey, webkit}.
+Additionally, specialized engines target specific domains, such as embedded
+systems and edge computing.
+However, ensuring portability across these diverse implementations introduces
+the risk of divergence among them.
+
+
+% rigorous standardization -> spec is rigorous: formal notation & prose notation
+To address this challenge, Wasm has been rigorously standardized by the
+W3C~\cite{wasm-w3c}.
+The Wasm specification is particularly rigorous, describing its semantics in
+two complementary forms: formal notation and prose notation.
+The formal notation employs mathematical rules to succinctly define the
+semantics, supporting proofs such as type soundness.
+Conversely, the prose notation uses pseudocode-like algorithms to explain the
+semantics through step-by-step instructions.
+Since most Wasm users and engine developers are less familiar with mathematical
+formalism, they primarily rely on the prose notation.
+
+
+% challenging specification process
+The demanding standardization process places a significant burden on
+specification authors.
+Crafting this specification document is labor-intensive, and as Wasm evolves,
+the manual effort required becomes increasingly challenging to scale.
+Moreover, the dual requirement of maintaining both the formal notation and
+prose notation exacerbates these difficulties.
+The formal notation is written in LaTeX, and the prose notation is authored
+in reStructuredText; neither of which is particularly user-friendly for
+collaborative review.
+This lack of accessibility in the specification's tooling increases the
+likelihood of inconsistensies and errors, further complicating the
+standardization effort.
+
+
+% SpecTec
+To alleviate this problem, we had been developing SpecTec, a framework for
+mechanizing WebAssembly specification.
+It provides DSL to define Wasm syntax and semantics in a declarative style
+similar to the formal notation.
+It type-checks DSL to prevent meta-level specification errors, and generates
+many artifacts including the specification document, a Wasm interpreter, and
+mechanized definitions for theorem provers.
+
+
+% AL
+To express 
+
+
+% problem
+However, AL cannot describe Wasm control flow correctly
+
+
+% contribution
+build AL's computation model for Wasm, formalize AL semantics
