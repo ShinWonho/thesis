@@ -4,45 +4,6 @@
 \label{ch:intro}
 \noindent
 
-\begin{itemize}
-\item Wasm
-  \begin{itemize}
-  \item is low-level bytecode language, platform-indep, ...
-  \item is compile target for Web applications
-  \item is used in wide area such as IoT, ...
-  \end{itemize}
-\item Wasm Spec
-  \begin{itemize}
-  \item descibes syntax and semantics of Wasm
-  \item should be rigorous because ... (brief explanation for two format)
-  \item has two format to describe semantics (formal\&prose notation)
-  \item formal notation is written in math expression: concise, clear, amenable to proofs, ...
-  \item prose notation is step by step instruction written English: vague (in some part), amenable to developing engines
-  \end{itemize}
-\item SpecTec
-  \begin{itemize}
-  \item is proposed to alleviate spec writing process
-  \item is accepted by Wasm committee to be an official Wasm specification tool
-  \item define AL to describe Wasm semantics in prose notation
-  \item AL is designed to be similar to prose notation (describe with fig)
-  \item implement AL interpreter to make the spec executable
-  \item executable spec passes official wasm test $\leftarrow$ correctness
-  \end{itemize}
-\item Problem
-  \begin{itemize}
-  \item no semantics in AL
-  \item prose notation is still vague unless read AL interpreter code
-  \item ???
-  \end{itemize}
-\item Contribution
-  \begin{itemize}
-  \item formalize AL syntax$\&$semantics
-  \item make prose notation clear to understand
-  \item ???
-  \end{itemize}
-\end{itemize}
-
-
 % breif overview
 WebAssembly (Wasm)~\cite{wasm} is a low-level bytecode language that is safe, fast,
 portable, and compact.
@@ -97,18 +58,19 @@ definition of Wasm syntax and semantics, akin to the formal notation.
 Additionally, to capture the pseudocode-like structure of the prose notation,
 SpecTec incorporates an imperative language, \textit{AL}.
 SpecTec performs type-checking on the DSL to prevent meta-level specification
-errors, translates the DSL into AL, and generates various artifacts, including
-the specification document, a Wasm interpreter, and mechanized definitions for
-theorem provers, along with the DSL and AL.
-Notably, AL plays a central role in the generation of the Wasm interpreter,
-bridging the gap between formal specification and executable code.
+errors, translates the DSL into AL.
+One notable aspect of AL is that it is executable, meaning any specification
+written in AL serves as a Wasm interpreter program.
+This bridges the gap between formal specification and executable code.
+Futhermore, SpecTec generates various artifacts, including the specification
+document, mechanized definitions for theorem provers.
 
 
 % problem
 However, at that time, AL was unable to capture the Wasm control flow
 correctly.
-The Wasm interpreter generated using AL produced wrong results when running
-Wasm official test suites.
+The Wasm interpreter defined in AL produced incorrect results when running Wasm
+official test suites.
 Additionally, the lack of formal semantics or a formalized definition for AL
 made it difficult to identify and address the fundamental issues in its design.
 Since running tests is the primary method for assessing the correctness of the
@@ -118,10 +80,22 @@ This underscored the need for a more robust approach to formally define AL and
 ensure its alignment with Wasm's complex semantics.
 
 
-
+% in this paper
+In this paper, we present a formal model for how AL describes Wasm control flow.
+Using this model, we identify the underlying issues and the necessary changes
+to improve it.
+Based on these insight, we formalize AL's syntax and semantics to accurately
+capture Wasm control flow.
+We then implement an AL interpreter according to this formalization and
+evaluate its correctness.
+The interpreter successfully passes all tests in the Wasm official test suite,
+as well as tests from proposals.
 
 
 % contribution
-build AL's computation model for Wasm, formalize AL semantics
-
-
+The contributions of this paper are as follows:
+\begin{itemize}
+  \item We propose a formal model for Wasm control flow in AL (\S3)
+  \item We formalize syntax and semantics of AL (\S4)
+  \item We implement an AL interpreter based on the formalization (\S5)
+\end{itemize}
