@@ -333,36 +333,36 @@ nothing.
 \red{TODO: Change to array} \\
 \red{TODO: Change naming for $c$}
 \begin{align}
-  &c^* \vdash call(\$brAndReturning); ~ \wasm ~ (\seq{c}, ~ k)
+  &c^* \vdash call(\$brAndReturning); ~ \wasm ~ (c^*, ~ k)
   \label{eq:resolve-1} \\
-  &\leadsto c^* \vdash \epsilon; ~ \algo ~ ([ ~ \pushctxi, ~ \enteri ~ ], ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k))
+  &\leadsto c^* \vdash \epsilon; ~ \algo ~ ([ ~ \pushctxi, ~ \enteri ~ ], ~ \epsilon, ~ \wasm ~ (c^*, ~ k))
   \label{eq:resolve-2} \\
-  &\leadsto Frame, ~ c^* \vdash \epsilon; ~ \algo ~ ([ ~ \enteri ~ ], ~ [ ~ Frame ~ ], ~ \wasm ~ (\seq{c}, ~ k))
+  &\leadsto Frame, ~ c^* \vdash \epsilon; ~ \algo ~ ([ ~ \enteri ~ ], ~ [ ~ Frame ~ ], ~ \wasm ~ (c^*, ~ k))
   \label{eq:resolve-3} \\
   &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (br ~ \epsilon), ~ (unreachable), ~ (exiting), ~ (returning); \\
-  &\quad\quad \wasm ~ ([ ~ Label(\epsilon), ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k)))
+  &\quad\quad \wasm ~ ([ ~ Label(\epsilon), ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k)))
   \label{eq:resolve-4} \\
   &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (unreachable), ~ (exiting), ~ (returning); \\
-  &\quad\quad \algo ~ ([ ~ \popctxi, ~ \executei ~ ], ~ \epsilon, ~ \wasm ~ ([ ~ Label(\epsilon), ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k))))
+  &\quad\quad \algo ~ ([ ~ \popctxi, ~ \executei ~ ], ~ \epsilon, ~ \wasm ~ ([ ~ Label(\epsilon), ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
   \label{eq:resolve-5} \\
   &\leadsto Frame, ~ c^* \vdash (returning); ~
-    \algo ~ ([ ~ \executei ~ ], ~ \epsilon, ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k))))
+    \algo ~ ([ ~ \executei ~ ], ~ \epsilon, ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
   \label{eq:resolve-6} \\
   &\leadsto Frame, ~ c^* \vdash (returning); ~
-    \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k))))
+    \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
   \label{eq:resolve-7} \\
-  &\leadsto Frame, ~ c^* \vdash (returning); ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k)))
+  &\leadsto Frame, ~ c^* \vdash (returning); ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k)))
   \label{eq:resolve-8} \\
   &\leadsto Frame, ~ c^* \vdash \epsilon; ~
-    \algo ~ ([ ~ \popctxi ~ ], ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k))))
+    \algo ~ ([ ~ \popctxi ~ ], ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
   \label{eq:resolve-9} \\
   &\leadsto c^* \vdash \epsilon; ~
-    \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k))))
+    \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
   \label{eq:resolve-10} \\
-  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k)))
+  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k)))
   \label{eq:resolve-11} \\
-  &\leadsto c^* \vdash \epsilon; ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\seq{c}, ~ k))
+  &\leadsto c^* \vdash \epsilon; ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))
   \label{eq:resolve-12} \\
-  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (\seq{c}, ~ k)
+  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (c^*, ~ k)
   \label{eq:resolve-13}
 \end{align}
