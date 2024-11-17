@@ -116,6 +116,7 @@ instruction of the caller instruction.
 \end{figure}
 
 \section{Control flow in SpecTec prose}
+\label{sec:spectecp}
 
 % control flow structure in SpecTec prose
 However, the \spectecp{} assumes a different model to explain the control flow
@@ -263,7 +264,7 @@ the problem.
 %%%%%%%%
 
 % an example of buggy test case
-\textbf{Example 5.1}
+\begin{example}
 \begin{verbatim}
   // function definition of $br-returning
   (func  $brAndReturning (br 0) (unreachable))
@@ -271,8 +272,10 @@ the problem.
   // function call
   (call $brAndReturning)
 \end{verbatim}
+\label{ex:bug}
+\end{example}
 
-Example 5.1 contains a function that has only a \texttt{br} instruction, and a
+\cref{ex:bug} contains a function that has only a \texttt{br} instruction, and a
 \texttt{call} insstruction.
 According to the \officialp{}, when the function \texttt{\$brAndReturning} is
 called, a frame is pushed to the stack, and the block of the function
@@ -309,60 +312,3 @@ and when a block is entered, exiting label and returning from a function is
 appended according to the sequence.
 
 
-% simplified version of AL algorithm of call, br, and returning from a function
-\begin{verbatim}
-Call fname:
-  PushCtx Frame
-  Enter get_function_body(fname) with Label(\epsilon)
-
-Br 0:
-  PopCtx Label(instr*)
-  ExecuteSeq instr*
-
-Returning from a function:
-  PopCtx Frame
-\end{verbatim}
-
-The code above is simplified version of \spectecp{} of \texttt{call},
-\texttt{br}, and \texttt{returning from a function}.
-By using the semantics defined in \cref{ch:semantics}, the example 5.1 results
-in the same result with the \officialp{}; $call(\$brAndReturning)$ does
-nothing.
-
-
-\red{TODO: Change to array} \\
-\red{TODO: Change naming for $c$}
-\begin{align}
-  &c^* \vdash call(\$brAndReturning); ~ \wasm ~ (c^*, ~ k)
-  \label{eq:resolve-1} \\
-  &\leadsto c^* \vdash \epsilon; ~ \algo ~ ([ ~ \pushctxi, ~ \enteri ~ ], ~ \epsilon, ~ \wasm ~ (c^*, ~ k))
-  \label{eq:resolve-2} \\
-  &\leadsto Frame, ~ c^* \vdash \epsilon; ~ \algo ~ ([ ~ \enteri ~ ], ~ [ ~ Frame ~ ], ~ \wasm ~ (c^*, ~ k))
-  \label{eq:resolve-3} \\
-  &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (br ~ \epsilon), ~ (unreachable), ~ (exiting), ~ (returning); \\
-  &\quad\quad \wasm ~ ([ ~ Label(\epsilon), ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k)))
-  \label{eq:resolve-4} \\
-  &\leadsto Label(\epsilon), ~ Frame, ~ c^* \vdash (unreachable), ~ (exiting), ~ (returning); \\
-  &\quad\quad \algo ~ ([ ~ \popctxi, ~ \executei ~ ], ~ \epsilon, ~ \wasm ~ ([ ~ Label(\epsilon), ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
-  \label{eq:resolve-5} \\
-  &\leadsto Frame, ~ c^* \vdash (returning); ~
-    \algo ~ ([ ~ \executei ~ ], ~ \epsilon, ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
-  \label{eq:resolve-6} \\
-  &\leadsto Frame, ~ c^* \vdash (returning); ~
-    \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
-  \label{eq:resolve-7} \\
-  &\leadsto Frame, ~ c^* \vdash (returning); ~ \wasm ~ ([ ~ Frame ~ ], ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k)))
-  \label{eq:resolve-8} \\
-  &\leadsto Frame, ~ c^* \vdash \epsilon; ~
-    \algo ~ ([ ~ \popctxi ~ ], ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
-  \label{eq:resolve-9} \\
-  &\leadsto c^* \vdash \epsilon; ~
-    \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))))
-  \label{eq:resolve-10} \\
-  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (\epsilon, ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k)))
-  \label{eq:resolve-11} \\
-  &\leadsto c^* \vdash \epsilon; ~ \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (c^*, ~ k))
-  \label{eq:resolve-12} \\
-  &\leadsto c^* \vdash \epsilon; ~ \wasm ~ (c^*, ~ k)
-  \label{eq:resolve-13}
-\end{align}

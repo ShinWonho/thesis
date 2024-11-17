@@ -51,6 +51,19 @@
 \usepackage{amssymb}
 \usepackage[capitalise,nameinlink]{cleveref}
 
+\newcounter{example} % Define a counter for examples
+
+% Define the "example" environment
+\newenvironment{example}{%
+    \refstepcounter{example} % Update the counter and make it referenceable
+    \textbf{Example~\theexample}%
+}{}
+
+\crefname{example}{Example}{Examples} % Singular and plural forms
+\Crefname{example}{Example}{Examples} % For capitalized references
+\crefformat{example}{\textbf{#2Example~#1#3}}
+
+
 \allowdisplaybreaks
 
 \newcommand{\red}[1]{\textcolor{red}{#1}}

@@ -1,7 +1,7 @@
 % !TEX root = main.tex
 
 \chapter{Formalization}
-\label{ch:Formalization}
+\label{ch:formal}
 \noindent
 
 
@@ -135,7 +135,7 @@ kind check, iteration, match relation, or type relation.
   \text{Wasm Value}\quad& WV &\ni& wv &::=& ~ \casev ~ (s, \seq v) \\
 %
 % Wasm Context
-  \text{Wasm Context}\quad& WC &\ni& wc &::=& ~ \casev ~ (s, \seq v) \\
+  \text{Wasm Context}\quad& WC &\ni& wc &::=& ~ \casev ~ (\text{``Label"}, \seq v) ~ | ~ \casev ~ (\text{``Frame"}, \seq v) \\
 %
 % Wasm Instruction
   \text{Wasm Instruction}\quad& WI &\ni& wi &::=& ~ \casev ~ (s, \seq v) \\
@@ -189,6 +189,7 @@ context.
 % Wasm Value & Wasm Context & Wasm Instruction
 Each of a Wasm value, a Wasm context, and a Wasm instruction is expressed as an
 AL value $\casev$.
+In particular, the tag of a Wasm context is either ``Label" or ``Frame".
 % Store
 A store is expressed as a sequence of pairs, each consisting of a field name
 and an AL value.
@@ -497,9 +498,9 @@ $.
 \newline \\
 \text{NOTE: $e_1$ is either store or current frame} \\
   \mu = \getenv(c) \qquad
-  \casev ~ (\text{``FRAME"}, v_1 ~ v_2) = \getcurframe(w) \qquad
+  \casev ~ (\text{``Frame"}, v_1 ~ v_2) = \getcurframe(w) \qquad
   w, \mu \vdash e \Rightarrow v \\
-  wc = \casev ~ (\text{``FRAME"}, v_1 ~ \update(w, \mu, v_2, p^+, v)) \\
+  wc = \casev ~ (\text{``Frame"}, v_1 ~ \update(w, \mu, v_2, p^+, v)) \\
   \hline
   \seq{a}, w, c \vdash \replaceframei ~ (p^+, e) \Rightarrow
   (\setcurframe(w, wc), \algo ~ c) \\
@@ -574,7 +575,7 @@ otherwise, it uses $s_2$ as the function name.
 It evaluates $\seq e$ to $v^*$, resulting in $\call ~ (s_1, s_{name}, v_1 ~ ...
 ~ v_n)${} where $s_{name}$ is the function name.
 % ReplaceFrame
-\replaceframei{} retrieves the current frame $\casev ~ (\text{``FRAME"}, v_1
+\replaceframei{} retrieves the current frame $\casev ~ (\text{``Frame"}, v_1
 v_2)${} in the Wasm context $w$.
 It then evaluates $e$ to $v$, updating the value at location $v_2$ along paths
 $p^+$ to $v$.
@@ -1083,15 +1084,15 @@ excessively verbose.
 \newline \\
   &\getendinstr(wc) =
   \begin{cases}
-    \casev ~ (\text{``EXITING"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``LABEL"}, \seq v)\\
-    \casev ~ (\text{``RETURNING"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``FRAME"}, \seq v)
+    \casev ~ (\text{``Exiting"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Label"}, \seq v)\\
+    \casev ~ (\text{``Returning"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Frame"}, \seq v)
   \end{cases} \\
 %
 % is_end_instr
 \newline \\
   &\isendinstr(wi) =
   \begin{cases}
-    true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{``EXITING"}, \epsilon) \quad\lor\quad wi = \casev ~ (\text{``RETURNING"}, \epsilon)\\
+    true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{``Exiting"}, \epsilon) \quad\lor\quad wi = \casev ~ (\text{``Returning"}, \epsilon)\\
     false &\quad\quad\premise{otherwise}
   \end{cases} \\
 %
