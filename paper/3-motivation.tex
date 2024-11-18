@@ -28,13 +28,15 @@ point of the block or the end of the block.
 
 
 % an example of Wasm control flow in official prose
-\textbf{Example 1}
+\begin{example}
+\label{ex:br}
 \begin{verbatim}
   // infinite loop
   (loop (result i32) (i32.const 42) (br 0) (unreachable) end) (unreachable)
 \end{verbatim}
+\end{example}
 
-Example 1 is a WebAssembly code example that has \texttt{loop} and
+\cref{ex:br} is a WebAssembly code example that has \texttt{loop} and
 \texttt{unreachable}
 Here, result type of the \texttt{loop} is \texttt{i32} and the \texttt{loop}
 has a block of three instructions: \texttt{i32.const}, \texttt{br}, and
@@ -79,13 +81,15 @@ the point after the end of the block.
 
 
 % an example of exiting label in official prose
-\textbf{Example 2}
+\begin{example}
+\label{ex:exit}
 \begin{verbatim}
   // exiting label
   (loop (result i32) (i32.const 42) end) (f64.const 3.14)
 \end{verbatim}
+\end{example}
 
-Example 2 is a WebAssembly code example that has \texttt{loop} whose block is
+\cref{ex:exit} is a WebAssembly code example that has \texttt{loop} whose block is
 only \texttt{i32.const}, and \texttt{f32.const}
 When the \texttt{loop} instruction is executed, it enters the block with a label.
 After \texttt{i32.const} is executed, the end of the block is reached.
@@ -180,7 +184,7 @@ When entering a block, an \texttt{end} is appended to the end of the block.
   \label{eq:loop-4}
 \end{align}
 
-Consider example 1 above.
+Consider \cref{ex:br} above.
 If we assume some control structure $c^*$ is given, the code can be expressed
 like \cref{eq:loop-1}.
 \cref{fig:spectec-loop} is the \spectecp{} of the \texttt{loop} instruction.
@@ -206,7 +210,8 @@ Therefore, it explains the same behavior in a different point of view.
 \red{TODO: Also use example 3 to explain function call in official prose}
 
 % an example of function call in official prose
-\textbf{Example 3}
+\begin{example}
+\label{ex:invoke}
 \begin{verbatim}
   // function definition of $push42
   (func $push42 (result i32) (i32.const 42))
@@ -214,6 +219,7 @@ Therefore, it explains the same behavior in a different point of view.
   // function call
   (call $push42) (f32.const 3.14)
 \end{verbatim}
+\end{example}
 
 \red{TODO: Change to array} \\
 \begin{align}
@@ -228,7 +234,7 @@ Therefore, it explains the same behavior in a different point of view.
   c^* \vdash \epsilon \label{eq:call-5}
 \end{align}
 
-Example 3 contains a function definition whose body is \texttt{i32.const}, a
+\cref{ex:invoke} contains a function definition whose body is \texttt{i32.const}, a
 \texttt{call} instruction followed by a \texttt{f32.const} instruction, which
 can be expressed in \cref{eq:call-1}.
 By invoking a function, it pushes a frame and enters the block with a label in
@@ -265,6 +271,7 @@ the problem.
 
 % an example of buggy test case
 \begin{example}
+\label{ex:bug}
 \begin{verbatim}
   // function definition of $br-returning
   (func  $brAndReturning (br 0) (unreachable))
@@ -272,7 +279,6 @@ the problem.
   // function call
   (call $brAndReturning)
 \end{verbatim}
-\label{ex:bug}
 \end{example}
 
 \cref{ex:bug} contains a function that has only a \texttt{br} instruction, and a
