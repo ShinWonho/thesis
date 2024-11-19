@@ -37,26 +37,26 @@ formalism, they primarily rely on the prose notation.
 
 \begin{figure}[t]
     \centerline{\includegraphics[width=15cm]{fig/testop}}
-    \caption[Enter the caption title here]{\texttt{testop} instruction} \label{fig:testop}
+    \caption[\texttt{testop} instruction in official specification document]
+      {\texttt{testop} instruction in official specification document}
+      \label{fig:testop}
     \centerline{\includegraphics[width=15cm]{fig/spectec-testop}}
-    \caption[Enter the caption title here]{SpecTec \texttt{testop} instruction} \label{fig:spectec-testop}
+    \caption[\texttt{testop} instruction in SpecTec specification document]
+      {\texttt{testop} instruction in SpecTec specification document}
+      \label{fig:spectec-testop}
 \end{figure}
 
 
 % challenging specification process
 The demanding standardization process places a significant burden on
-specification authors.
-Crafting this specification document is labor-intensive, and as Wasm evolves,
-the manual effort required becomes increasingly challenging to scale.
-Moreover, the dual requirement of maintaining both the formal notation and
-prose notation exacerbates these difficulties.
-The formal notation is written in LaTeX, and the prose notation is authored
-in reStructuredText; neither of which is particularly user-friendly for
-collaborative review.
-This lack of accessibility in the specification's tooling increases the
-likelihood of inconsistensies and errors, further complicating the
-standardization effort.
-
+specification authors, \red{particularly in maintaining consistency and correctness.
+Crafting the specification document is labor-intensive, which becomes
+increasingly difficult to scale as Wasm evolves.
+This challenge is compounded by the dual requirement to maintain both a formal
+notation, written in LaTeX, and a prose notation, authored in reStructuredText.
+The separate and user-unfriendly nature of these formats hinders collaborative
+review and increases the risk of discrepancies and errors between the two
+notations, further complicating the standardization process.}
 
 % SpecTec
 To mitigate this problem, we \red{propose} SpecTec, a framework for mechanizing
