@@ -22,7 +22,7 @@ $(MAIN).pdf: $(wildcard *.tex)
 
 
 # Rule to compile the bibliography
-$(MAIN).bbl: $(MAIN).tex # reference.bib
+$(MAIN).bbl: $(MAIN).tex
 	$(LATEX) $(MAIN)
 	$(BIBTEX) $(MAIN)
 	$(LATEX) $(MAIN)

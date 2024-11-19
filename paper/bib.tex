@@ -1,0 +1,964 @@
+%%
+%% 참고문헌 시작
+%% bibliography
+%% It can be changed but should include sufficient information.
+\begin{thebibliography}{00}
+
+\bibitem{wasm} Andreas Rossberg, \textit{WebAssembly Specification (Release 2.0)}, 2022, \url{https://webassembly.github.io/spec/core/}
+
+\bibitem{lucet} Pat Hickey, \textit{Lucet Takes WebAssembly Beyond the Browser}, 2019, \url{https://www.fastly.com/blog/announcing-lucet-fastly-native-webassembly-compiler-runtime}
+
+\bibitem{cloudflare} Kenton Varda, \textit{Introducing Cloudflare Workers: Run JavaScript Service Workers at the Edge}, 2017, \url{https://blog.cloudflare.com/introducing-cloudflare-workers/}
+
+\bibitem{wasm-iot} Hall, Adam and Ramachandran, Umakishore, \textit{An Execution Model for Serverless Functions at the Edge}, 2019,
+ Proceedings of the International Conference on Internet of Things Design and Implementation, 225–236, Association for Computing Machinery, \url{https://doi.org/10.1145/3302505.3310084}, 10.1145/3302505.3310084
+
+%% @online{anon,
+%%   title = {Anonymous for double-blind review},
+%%   author = {Anonymous},
+%%   year = {2023},
+%%   url = {https://github.com/}
+%% }
+%% @article{Watt2018MechanisingAV,
+%%   title={Mechanising and verifying the WebAssembly specification},
+%%   author={Conrad Watt},
+%%   journal={Proceedings of the 7th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+%%   year={2018},
+%%   url={https://dl.acm.org/doi/10.1145/3167082}
+%% }
+%% @inproceedings{10.5555/3077629.3077658,
+%% author = {Reid, Alastair},
+%% title = {Trustworthy Specifications of ARM® V8-A and v8-M System Level Architecture},
+%% year = {2016},
+%% isbn = {9780983567868},
+%% publisher = {FMCAD Inc},
+%% address = {Austin, Texas},
+%% abstract = {Processor specifications are of critical importance for verifying programs, compilers, operating systems/hypervisors, and, of course, for verifying microprocessors themselves. But to be useful, the scope of these specifications must be sufficient for the task, the specification must be applicable to processors of interest and the specification must be trustworthy.This paper describes a 5 year project to change ARM's existing architecture specification process so that machine-readable, executable specifications can be automatically generated from the same materials used to generate ARM's conventional architecture documentation. We have developed executable specifications of both ARM's A-class and M-class processor architectures that are complete enough and trustworthy enough that we have used them to formally verify ARM processors using bounded model checking. In particular, our specifications include the semantics of the most security sensitive parts of the processor: the memory and register protection mechanisms and the exception mechanisms that trigger transitions between different modes. Most importantly, we have applied a diverse set of methods including ARM's internal processor test suites to improve our trust in the specification using many other expressions of the architectural specification such as ARM's simulators, testsuites and processors to defend against common-mode failure. In the process, we have also found bugs in all those artifacts: testing specifications is very much a two-way street.While there have been previous specifications of ARM processors, their scope has excluded the system architecture, their applicability has excluded newer processors and M-class, and their trustworthiness has not been established as thoroughly.Our focus has been on enabling the formal verification of ARM processors but, recognising the value of this specification for verifying software, we are currently preparing a public release of the machine-readable specification.},
+%% booktitle = {Proceedings of the 16th Conference on Formal Methods in Computer-Aided Design},
+%% pages = {161–168},
+%% numpages = {8},
+%% location = {Mountain View, California},
+%% series = {FMCAD '16}
+%% }
+%% @article{jung_krebbers_jourdan_bizjak_birkedal_dreyer_2018,
+%% title={Iris from the ground up: A modular foundation for higher-order concurrent separation logic}, volume={28}, DOI={10.1017/S0956796818000151}, journal={Journal of Functional Programming}, publisher={Cambridge University Press}, author={Ralf Jung and Robbert Krebbers and Jacques{-}Henri Jourdan and Ales Bizjak and Lars Birkedal and Derek Dreyer}, year={2018}, pages={e20}
+%% }
+%% @article{10.1007/s10817-017-9437-1,
+%% author = {Lammich, Peter},
+%% title = {Refinement to Imperative HOL},
+%% year = {2019},
+%% issue_date = {April 2019},
+%% publisher = {Springer-Verlag},
+%% address = {Berlin, Heidelberg},
+%% volume = {62},
+%% number = {4},
+%% issn = {0168-7433},
+%% url = {https://doi.org/10.1007/s10817-017-9437-1},
+%% doi = {10.1007/s10817-017-9437-1},
+%% month = {apr},
+%% pages = {481–503},
+%% numpages = {23},
+%% keywords = {Isabelle/HOL, Imperative HOL, Stepwise refinement, Separation logic, Refinement calculus}
+%% }
+%% @article{10.1145/3591265,
+%% author = {Rao, Xiaojia and Georges, A\"{\i}na Linn and Legoupil, Maxime and Watt, Conrad and Pichon-Pharabod, Jean and Gardner, Philippa and Birkedal, Lars},
+%% title = {Iris-Wasm: Robust and Modular Verification of WebAssembly Programs},
+%% year = {2023},
+%% issue_date = {June 2023},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% volume = {7},
+%% number = {PLDI},
+%% url = {https://doi.org/10.1145/3591265},
+%% doi = {10.1145/3591265},
+%% journal = {Proc. ACM Program. Lang.},
+%% month = {jun},
+%% articleno = {151},
+%% numpages = {25},
+%% keywords = {higher-order logic, formal verification, WebAssembly, separation logic}
+%% }
+%% @article{10.1145/3591224,
+%% author = {Watt, Conrad and Trela, Maja and Lammich, Peter and M\"{a}rkl, Florian},
+%% title = {WasmRef-Isabelle: A Verified Monadic Interpreter and Industrial Fuzzing Oracle for WebAssembly},
+%% year = {2023},
+%% issue_date = {June 2023},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% volume = {7},
+%% number = {PLDI},
+%% url = {https://doi.org/10.1145/3591224},
+%% doi = {10.1145/3591224},
+%% journal = {Proc. ACM Program. Lang.},
+%% month = {jun},
+%% articleno = {110},
+%% numpages = {24},
+%% keywords = {refinement, virtual machine, WasmCert, theorem proving}
+%% }
+%% @misc{breitner2023wasm,
+%%       title={Wasm SpecTec: Engineering a Formal Language Standard}, 
+%%       author={Joachim Breitner and Philippa Gardner and Jaehyun Lee and Sam Lindley and Matija Pretnar and Xiaojia Rao and Andreas Rossberg and Sukyoung Ryu and Wonho Shin and Conrad Watt and Dongjun Youn},
+%%       year={2023},
+%%       eprint={2311.07223},
+%%       archivePrefix={arXiv},
+%%       primaryClass={cs.PL}
+%% }
+%% @inproceedings{Moura2015TheLT,
+%%   title={The Lean Theorem Prover (System Description)},
+%%   author={Leonardo Mendonça de Moura and Soonho Kong and Jeremy Avigad and Floris van Doorn and Jakob von Raumer},
+%%   booktitle={CADE},
+%%   year={2015},
+%%   url={https://api.semanticscholar.org/CorpusID:232990}
+%% }
+%% @inproceedings{Watt2021Two,
+%%   author = {Watt, Conrad and Rao, Xiaojia and Pichon-Pharabod, Jean and Bodin, Martin and Gardner, Philippa},
+%%   title = {Two Mechanisations of WebAssembly 1.0},
+%%   booktitle = {Proceedings of the 24\textsuperscript{th} international symposium of Formal Methods (FM21), Beijing, China; November 20-25, 2021},
+%%   year = {2021},
+%%   editor = {Huisman, Marieke and Pasareanu, Corina S. and Zhan, Naijun},
+%%   series = {Lecture Notes in Computer Science},
+%%   volume = {13047},
+%%   pages = {61--79},
+%%   publisher = {Springer},
+%%   url = {https://doi.org/10.1007/978-3-030-90870-6\_4},
+%%   doi = {10.1007/978-3-030-90870-6\_4},
+%% }
+%% @online{wasmspecrepo,
+%%   title = {WebAssembly specification, reference interpreter, and test suite.},
+%%   author = {{WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly}
+%% }
+%% 
+%% @online{lucet,
+%%   title = {Lucet Takes WebAssembly Beyond the Browser},
+%%   author = {Pat Hickey},
+%%   year = {2019},
+%%   url = {https://www.fastly.com/blog/announcing-lucet-fastly-native-webassembly-compiler-runtime}
+%% }
+%% 
+%% @online{sphinx,
+%%   title = {Sphinx},
+%%   author = {Sphinx Project},
+%%   year = {2008},
+%%   url = {https://www.sphinx-doc.org/}
+%% }
+%% 
+%% @online{mathjax,
+%%   title = {MathJax},
+%%   author = {The MathJax Consortium},
+%%   year = {2009},
+%%   url = {https://www.mathjax.org/}
+%% }
+%% 
+%% @online{cloudflare,
+%%   title = {Introducing Cloudflare Workers: Run JavaScript Service Workers at the Edge},
+%%   author = {Kenton Varda},
+%%   year = {2017},
+%%   url = {https://blog.cloudflare.com/introducing-cloudflare-workers/}
+%% }
+%% 
+%% @inproceedings{wasm-iot,
+%%  author = {Hall, Adam and Ramachandran, Umakishore},
+%%  title = {An Execution Model for Serverless Functions at the Edge},
+%%  year = {2019},
+%%  isbn = {9781450362832},
+%%  publisher = {Association for Computing Machinery},
+%%  address = {New York, NY, USA},
+%%  url = {https://doi.org/10.1145/3302505.3310084},
+%%  doi = {10.1145/3302505.3310084},
+%%  booktitle = {Proceedings of the International Conference on Internet of Things Design and Implementation},
+%%  pages = {225–236}
+%% }
+%% 
+%% @inproceedings{wasm-embedded,
+%%   author={Wallentowitz, Stefan and Kersting, Bastian and Dumitriu, Dan Mihai},
+%%   booktitle={2022 11th Mediterranean Conference on Embedded Computing (MECO)}, 
+%%   title={Potential of WebAssembly for Embedded Systems}, 
+%%   year={2022},
+%%   pages={1-4},
+%%   doi={10.1109/MECO55406.2022.9797106}
+%% }
+%% 
+%% @online{wasm-blockchain,
+%%   title = {WebAssembly (WASM) in Blockchain},
+%%   author = {Ata Tekeli},
+%%   year = {2022},
+%%   url = {https://blog.devgenius.io/webassembly-wasm-in-blockchain-f651a8ac767b}
+%% }
+%% 
+%% @online{wasm-process,
+%%   title = {WebAssembly W3C Process},
+%%   author = {WebAssembly Community Group},
+%%   year = {2017},
+%%   url = {https://github.com/WebAssembly/meetings/blob/main/process/phases.md}
+%% }
+%% 
+%% @online{wasm-simd,
+%%   title = {SIMD Proposal for WebAssembly},
+%%   author = {Deepti Gandluri and {WebAssembly Community Group}},
+%%   year = {2021},
+%%   url = {https://github.com/WebAssembly/simd/}
+%% }
+%% 
+%% @online{wasm-exc,
+%%   title = {Exception Handling Proposal for WebAssembly},
+%%   author = {Heejin Ahn and {WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/exception-handling/}
+%% }
+%% 
+%% @online{wasm-threads,
+%%   title = {Threads Proposal for WebAssembly},
+%%   author = {Ben Smith and Conrad Watt and {WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/threads/}
+%% }
+%% 
+%% @online{wasm-gc,
+%%   title = {GC Proposal for WebAssembly},
+%%   author = {Andreas Rossberg and {WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/gc/}
+%% }
+%% 
+%% @online{wasm-tce,
+%%   title = {Tail Call Proposal for WebAssembly},
+%%   author = {Andreas Rossberg and {WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/tail-call/}
+%% }
+%% 
+%% @online{wasm-frt,
+%%   title = {Function Reference Types Proposal for WebAssembly},
+%%   author = {Andreas Rossberg and {WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/function-references/}
+%% }
+%% 
+%% @online{k,
+%%   title = {K Semantic Framework},
+%%   author = {Runtime Verification},
+%%   year = {2013},
+%%   url = {https://kframework.org/}
+%% }
+%% 
+%% @book{pltredex,
+%%   title = {Semantics Engineering with PLT Redex},
+%%   author = {Matthias Felleisen and Robert Bruce Findler and Matthew Flatt},
+%%   year = {2009},
+%%   publisher = "The MIT Press"
+%% }
+%% 
+%% @misc{ott,
+%%   author = {Peter Sewell and Zappa Nardelli, Francesco},
+%%   title = {Ott release, version 0.10.9},
+%%   month = aug,
+%%   year = {2007},
+%%   url = {http://www.cl.cam.ac.uk/~pes20/ott/}
+%% }
+%% 
+%% @online{skeleton,
+%%   title = {Skeletal Semantics},
+%%   author = {Alan Schmitt},
+%%   year = {2019},
+%%   url = {https://skeletons.inria.fr/}
+%% }
+%% 
+%% @online{spoofax,
+%%   title = {Spoofax: The Language Designer's Workbench},
+%%   author = {Spoofax Team},
+%%   year = {2010},
+%%   url = {https://spoofax.dev}
+%% }
+%% 
+%% @online{wasm-mvp,
+%%   title = {WebAssembly is now ready for browsers to use},
+%%   author = {Paul Krill},
+%%   year = {2017},
+%%   url = {https://www.infoworld.com/article/3176681/webassembly-is-now-ready-for-browsers-to-use.html}
+%% }
+%% 
+%% @online{wasm-w3c,
+%%   title = {WebAssembly Community Group},
+%%   author = {W3C Team},
+%%   year = {2015},
+%%   url = {https://www.w3.org/community/webassembly/}
+%% }
+%% 
+%% @online{js-standard,
+%%   title = {ES5, ES6, ES2016, ES.Next: What's going on with JavaScript versioning?},
+%%   author = {Ben McCormick},
+%%   year = {2015},
+%%   url = {https://benmccormick.org/2015/09/13/221134.html}
+%% }
+%% 
+%% @online{ecmascript,
+%%   title = {{ECMA-262, 14th edition, ECMAScript \textregistered 2023
+%%            Language Specification}},
+%%   author = {{ECMA International}},
+%%   year = {2023},
+%%   url = {https://262.ecma-international.org},
+%% }
+%% 
+%% @online{wasmspec,
+%%   author = "Andreas Rossberg (editor)",
+%%   title = {WebAssembly Specification (Release 2.0)},
+%%   year = {2022},
+%%   url = {https://webassembly.github.io/spec/core/}
+%% }
+%% 
+%% @inproceedings{animate,
+%%  author = {Berghofer, Stefan and Bulwahn, Lukas and Haftmann, Florian},
+%%  title = {Turning Inductive into Equational Specifications},
+%%  year = {2009},
+%%  isbn = {9783642033582},
+%%  publisher = {Springer-Verlag},
+%%  address = {Berlin, Heidelberg},
+%%  url = {https://doi.org/10.1007/978-3-642-03359-9_11},
+%%  doi = {10.1007/978-3-642-03359-9_11},
+%%  booktitle = {Proceedings of the 22nd International Conference on Theorem Proving in Higher Order Logics},
+%%  pages = {131–146},
+%%  series = {TPHOLs '09}
+%% }
+%% 
+%% @online{esmeta,
+%%   title = {{ESMeta: An ECMAScript specification metalanguage used for
+%%            automatically generating language-based tools}},
+%%   year = {2022},
+%%   url = {https://github.com/es-meta/esmeta}
+%% }
+%% 
+%% @inproceedings{jiset,
+%%   title = {{JISET: JavaScript IR-based Semantics Extraction Toolchain}},
+%%   author = {Park, Jihyeok and Park, Jihee and An, Seungmin and Ryu, Sukyoung},
+%%   booktitle = {Proceedings of the 35th IEEE/ACM International Conference on
+%%                Automated Software Engineering (ASE)},
+%%   pages = {647--658},
+%%   year = {2020},
+%%   organization = {IEEE},
+%%   doi = {10.1145/3324884.3416632},
+%% }
+%% @article{10.1145/1146809.1146811,
+%% author = {Klein, Gerwin and Nipkow, Tobias},
+%% title = {A Machine-Checked Model for a Java-like Language, Virtual Machine, and Compiler},
+%% year = {2006},
+%% issue_date = {July 2006},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% volume = {28},
+%% number = {4},
+%% issn = {0164-0925},
+%% url = {https://doi.org/10.1145/1146809.1146811},
+%% doi = {10.1145/1146809.1146811},
+%% abstract = {We introduce Jinja, a Java-like programming language with a formal semantics designed to exhibit core features of the Java language architecture. Jinja is a compromise between the realism of the language and the tractability and clarity of its formal semantics. The following aspects are formalised: a big and a small step operational semantics for Jinja and a proof of their equivalence, a type system and a definite initialisation analysis, a type safety proof of the small step semantics, a virtual machine (JVM), its operational semantics and its type system, a type safety proof for the JVM; a bytecode verifier, that is, a data flow analyser for the JVM, a correctness proof of the bytecode verifier with respect to the type system, and a compiler and a proof that it preserves semantics and well-typedness. The emphasis of this work is not on particular language features but on providing a unified model of the source language, the virtual machine, and the compiler. The whole development has been carried out in the theorem prover Isabelle/HOL.},
+%% journal = {ACM Trans. Program. Lang. Syst.},
+%% month = {jul},
+%% pages = {619–695},
+%% numpages = {77},
+%% keywords = {Java, operational semantics, theorem proving}
+%% }
+%% @inproceedings{10.1145/2535838.2535876,
+%% author = {Bodin, Martin and Chargueraud, Arthur and Filaretti, Daniele and Gardner, Philippa and Maffeis, Sergio and Naudziuniene, Daiva and Schmitt, Alan and Smith, Gareth},
+%% title = {A Trusted Mechanised JavaScript Specification},
+%% year = {2014},
+%% isbn = {9781450325448},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% url = {https://doi.org/10.1145/2535838.2535876},
+%% doi = {10.1145/2535838.2535876},
+%% abstract = {JavaScript is the most widely used web language for client-side applications. Whilst the development of JavaScript was initially just led by implementation, there is now increasing momentum behind the ECMA standardisation process. The time is ripe for a formal, mechanised specification of JavaScript, to clarify ambiguities in the ECMA standards, to serve as a trusted reference for high-level language compilation and JavaScript implementations, and to provide a platform for high-assurance proofs of language properties.We present JSCert, a formalisation of the current ECMA standard in the Coq proof assistant, and JSRef, a reference interpreter for JavaScript extracted from Coq to OCaml. We give a Coq proof that JSRef is correct with respect to JSCert and assess JSRef using test262, the ECMA conformance test suite. Our methodology ensures that JSCert is a comparatively accurate formulation of the English standard, which will only improve as time goes on. We have demonstrated that modern techniques of mechanised specification can handle the complexity of JavaScript.},
+%% booktitle = {Proceedings of the 41st ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+%% pages = {87–100},
+%% numpages = {14},
+%% keywords = {coq, javascript, mechanised semantics},
+%% location = {San Diego, California, USA},
+%% series = {POPL '14}
+%% }
+%% @inproceedings{10.5555/1883978.1883988,
+%% author = {Guha, Arjun and Saftoiu, Claudiu and Krishnamurthi, Shriram},
+%% title = {The Essence of Javascript},
+%% year = {2010},
+%% isbn = {3642141064},
+%% publisher = {Springer-Verlag},
+%% address = {Berlin, Heidelberg},
+%% abstract = {We reduce JavaScript to a core calculus structured as a small-step operational semantics. We present several peculiarities of the language and show that our calculus models them. We explicate the desugaring process that turns JavaScript programs into ones in the core. We demonstrate faithfulness to JavaScript using real-world test suites. Finally, we illustrate utility by defining a security property, implementing it as a type system on the core, and extending it to the full language.},
+%% booktitle = {Proceedings of the 24th European Conference on Object-Oriented Programming},
+%% pages = {126–150},
+%% numpages = {25},
+%% location = {Maribor, Slovenia},
+%% series = {ECOOP'10}
+%% }
+%% @inproceedings{10.1145/1190216.1190245,
+%% author = {Lee, Daniel K. and Crary, Karl and Harper, Robert},
+%% title = {Towards a Mechanized Metatheory of Standard ML},
+%% year = {2007},
+%% isbn = {1595935754},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% url = {https://doi.org/10.1145/1190216.1190245},
+%% doi = {10.1145/1190216.1190245},
+%% abstract = {We present an internal language with equivalent expressive power to Standard ML, and discuss its formalization in LF and the machine-checked verification of its type safety in Twelf. The internal language is intended to serve as the target of elaboration in an elaborative semantics for Standard ML in the style of Harper and Stone. Therefore, it includes all the programming mechanisms necessary to implement Standard ML, including translucent modules, abstraction, polymorphism, higher kinds, references, exceptions, recursive types, and recursive functions. Our successful formalization of the proof involved a careful interplay between the precise formulations of the various mechanisms, and required the invention of new representation and proof techniques of general interest.},
+%% booktitle = {Proceedings of the 34th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+%% pages = {173–184},
+%% numpages = {12},
+%% keywords = {twelf, type safety, language definitions, standard ML, mechanized metatheory, logical frameworks},
+%% location = {Nice, France},
+%% series = {POPL '07}
+%% }
+%% @inproceedings{10.1145/2628136.2628143,
+%% author = {Mulligan, Dominic P. and Owens, Scott and Gray, Kathryn E. and Ridge, Tom and Sewell, Peter},
+%% title = {Lem: reusable engineering of real-world semantics},
+%% year = {2014},
+%% isbn = {9781450328739},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% url = {https://doi.org/10.1145/2628136.2628143},
+%% doi = {10.1145/2628136.2628143},
+%% abstract = {Recent years have seen remarkable successes in rigorous engineering: using mathematically rigorous semantic models (not just idealised calculi) of real-world processors, programming languages, protocols, and security mechanisms, for testing, proof, analysis, and design. Building these models is challenging, requiring experimentation, dialogue with vendors or standards bodies, and validation; their scale adds engineering issues akin to those of programming to the task of writing clear and usable mathematics. But language and tool support for specification is lacking. Proof assistants can be used but bring their own difficulties, and a model produced in one, perhaps requiring many person-years effort and maintained over an extended period, cannot be used by those familiar with another.We introduce Lem, a language for engineering reusable large-scale semantic models. The Lem design takes inspiration both from functional programming languages and from proof assistants, and Lem definitions are translatable into OCaml for testing, Coq, HOL4, and Isabelle/HOL for proof, and LaTeX and HTML for presentation. This requires a delicate balance of expressiveness, careful library design, and implementation of transformations - akin to compilation, but subject to the constraint of producing usable and human-readable code for each target. Lem's effectiveness is demonstrated by its use in practice.},
+%% booktitle = {Proceedings of the 19th ACM SIGPLAN International Conference on Functional Programming},
+%% pages = {175–188},
+%% numpages = {14},
+%% keywords = {lem, proof assistants, real-world semantics, specification languages},
+%% location = {Gothenburg, Sweden},
+%% series = {ICFP '14}
+%% }
+%% @inproceedings{10.1145/2830772.2830775,
+%% author = {Gray, Kathryn E. and Kerneis, Gabriel and Mulligan, Dominic and Pulte, Christopher and Sarkar, Susmit and Sewell, Peter},
+%% title = {An integrated concurrency and core-ISA architectural envelope definition, and test oracle, for IBM POWER multiprocessors},
+%% year = {2015},
+%% isbn = {9781450340342},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% url = {https://doi.org/10.1145/2830772.2830775},
+%% doi = {10.1145/2830772.2830775},
+%% abstract = {Weakly consistent multiprocessors such as ARM and IBM POWER have been with us for decades, but their subtle programmer-visible concurrency behaviour remains challenging, both to implement and to use; the traditional architecture documentation, with its mix of prose and pseudocode, leaves much unclear.In this paper we show how a precise architectural envelope model for such architectures can be defined, taking IBM POWER as our example. Our model specifies, for an arbitrary test program, the set of all its allowable executions, not just those of some particular implementation. The model integrates an operational concurrency model with an ISA model for the fixed-point non-vector user-mode instruction set (largely automatically derived from the vendor pseudocode, and expressed in a new ISA description language). The key question is the interface between these two: allowing all the required concurrency behaviour, without overcommitting to some particular microarchitectural implementation, requires a novel abstract structure.Our model is expressed in a mathematically rigorous language that can be automatically translated to an executable test-oracle tool; this lets one either interactively explore or exhaustively compute the set of all allowed behaviours of intricate test cases, to provide a reference for hardware and software development.},
+%% booktitle = {Proceedings of the 48th International Symposium on Microarchitecture},
+%% pages = {635–646},
+%% numpages = {12},
+%% location = {Waikiki, Hawaii},
+%% series = {MICRO-48}
+%% }
+%% @inproceedings{10.1145/2535838.2535841,
+%% author = {Kumar, Ramana and Myreen, Magnus O. and Norrish, Michael and Owens, Scott},
+%% title = {CakeML: A Verified Implementation of ML},
+%% year = {2014},
+%% isbn = {9781450325448},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% url = {https://doi.org/10.1145/2535838.2535841},
+%% doi = {10.1145/2535838.2535841},
+%% abstract = {We have developed and mechanically verified an ML system called CakeML, which supports a substantial subset of Standard ML. CakeML is implemented as an interactive read-eval-print loop (REPL) in x86-64 machine code. Our correctness theorem ensures that this REPL implementation prints only those results permitted by the semantics of CakeML. Our verification effort touches on a breadth of topics including lexing, parsing, type checking, incremental and dynamic compilation, garbage collection, arbitrary-precision arithmetic, and compiler bootstrapping.Our contributions are twofold. The first is simply in building a system that is end-to-end verified, demonstrating that each piece of such a verification effort can in practice be composed with the others, and ensuring that none of the pieces rely on any over-simplifying assumptions. The second is developing novel approaches to some of the more challenging aspects of the verification. In particular, our formally verified compiler can bootstrap itself: we apply the verified compiler to itself to produce a verified machine-code implementation of the compiler. Additionally, our compiler proof handles diverging input programs with a lightweight approach based on logical timeout exceptions. The entire development was carried out in the HOL4 theorem prover.},
+%% booktitle = {Proceedings of the 41st ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+%% pages = {179–191},
+%% numpages = {13},
+%% keywords = {verified garbage collection., read-eval-print loop, machine code verification, compiler verification, compiler bootstrapping, ML, verified type checking, verified parsing},
+%% location = {San Diego, California, USA},
+%% series = {POPL '14}
+%% }
+%% @phdthesis{Kreb15,
+%%   author  = "Robbert Krebbers",
+%%   title   = "The C standard formalized in Coq",
+%%   school  = "Radboud University Nijmegen",
+%%   year    = "2015"
+%% }
+%% @TECHREPORT{Norrish98cformalised,
+%%     author = {Michael Norrish},
+%%     title = {C formalised in HOL},
+%%     institution = {},
+%%     year = {1998}
+%% }
+%% @article{JJKD17_RustBelt,
+%% author = {Jung, Ralf and Jourdan, Jacques-Henri and Krebbers, Robbert and Dreyer, Derek},
+%% title = {RustBelt: Securing the Foundations of the Rust Programming Language},
+%% year = {2017},
+%% issue_date = {January 2018},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% volume = {2},
+%% number = {POPL},
+%% url = {https://doi.org/10.1145/3158154},
+%% doi = {10.1145/3158154},
+%% abstract = {Rust is a new systems programming language that promises to overcome the seemingly fundamental tradeoff between high-level safety guarantees and low-level control over resource management. Unfortunately, none of Rust's safety claims have been formally proven, and there is good reason to question whether they actually hold. Specifically, Rust employs a strong, ownership-based type system, but then extends the expressive power of this core type system through libraries that internally use unsafe features. In this paper, we give the first formal (and machine-checked) safety proof for a language representing a realistic subset of Rust. Our proof is extensible in the sense that, for each new Rust library that uses unsafe features, we can say what verification condition it must satisfy in order for it to be deemed a safe extension to the language. We have carried out this verification for some of the most important libraries that are used throughout the Rust ecosystem.},
+%% journal = {Proc. ACM Program. Lang.},
+%% month = {dec},
+%% articleno = {66},
+%% numpages = {34},
+%% keywords = {logical relations, Rust, concurrency, type systems, separation logic}
+%% }
+%% @article{10.1145/1538788.1538814,
+%% author = {Leroy, Xavier},
+%% title = {Formal Verification of a Realistic Compiler},
+%% year = {2009},
+%% issue_date = {July 2009},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% volume = {52},
+%% number = {7},
+%% issn = {0001-0782},
+%% url = {https://doi.org/10.1145/1538788.1538814},
+%% doi = {10.1145/1538788.1538814},
+%% abstract = {This paper reports on the development and formal verification (proof of semantic preservation) of CompCert, a compiler from Clight (a large subset of the C programming language) to PowerPC assembly code, using the Coq proof assistant both for programming the compiler and for proving its correctness. Such a verified compiler is useful in the context of critical software and its formal verification: the verification of the compiler guarantees that the safety properties proved on the source code hold for the executable compiled code as well.},
+%% journal = {Commun. ACM},
+%% month = {jul},
+%% numpages = {9}
+%% }
+%% @InProceedings{10.1007/978-3-642-22863-6_17,
+%% author="Lochbihler, Andreas
+%% and Bulwahn, Lukas",
+%% editor="van Eekelen, Marko
+%% and Geuvers, Herman
+%% and Schmaltz, Julien
+%% and Wiedijk, Freek",
+%% title="Animating the Formalised Semantics of a Java-Like Language",
+%% booktitle="Interactive Theorem Proving",
+%% year="2011",
+%% publisher="Springer Berlin Heidelberg",
+%% address="Berlin, Heidelberg",
+%% pages="216--232",
+%% abstract="Considerable effort has gone into the techniques of extracting executable code from formal specifications and animating them. We show how to apply these techniques to the large JinjaThreads formalisation. It models a substantial subset of multithreaded Java source and bytecode in Isabelle/HOL and focuses on proofs and modularity whereas code generation was of little concern in its design. Employing Isabelle's code generation facilities, we obtain a verified Java interpreter that is sufficiently efficient for running small Java programs. To this end, we present refined implementations for common notions such as the reflexive transitive closure and Russell's definite description operator. From our experience, we distill simple guidelines on how to develop future formalisations with executability in mind.",
+%% isbn="978-3-642-22863-6"
+%% }
+%% 
+%% @inproceedings{10.1007/978-3-642-03359-9_11,
+%% author = {Berghofer, Stefan and Bulwahn, Lukas and Haftmann, Florian},
+%% title = {Turning Inductive into Equational Specifications},
+%% year = {2009},
+%% isbn = {9783642033582},
+%% publisher = {Springer-Verlag},
+%% address = {Berlin, Heidelberg},
+%% url = {https://doi.org/10.1007/978-3-642-03359-9_11},
+%% doi = {10.1007/978-3-642-03359-9_11},
+%% abstract = {Inductively defined predicates are frequently used in formal specifications. Using the theorem prover Isabelle , we describe an approach to turn a class of systems of inductively defined predicates into a system of equations using data flow analysis; the translation is carried out inside the logic and resulting equations can be turned into functional program code in SML , OCaml or Haskell using the existing code generator of Isabelle . Thus we extend the scope of code generation in Isabelle from functional to functional-logic programs while leaving the trusted foundations of code generation itself intact.},
+%% booktitle = {Proceedings of the 22nd International Conference on Theorem Proving in Higher Order Logics},
+%% pages = {131–146},
+%% numpages = {16},
+%% location = {Munich, Germany},
+%% series = {TPHOLs '09}
+%% }
+%% @article{10.1145/3158104,
+%% author = {Bach Poulsen, Casper and Rouvoet, Arjen and Tolmach, Andrew and Krebbers, Robbert and Visser, Eelco},
+%% title = {Intrinsically-Typed Definitional Interpreters for Imperative Languages},
+%% year = {2017},
+%% issue_date = {January 2018},
+%% publisher = {Association for Computing Machinery},
+%% address = {New York, NY, USA},
+%% volume = {2},
+%% number = {POPL},
+%% url = {https://doi.org/10.1145/3158104},
+%% doi = {10.1145/3158104},
+%% abstract = {A definitional interpreter defines the semantics of an object language in terms of the (well-known) semantics of a host language, enabling understanding and validation of the semantics through execution. Combining a definitional interpreter with a separate type system requires a separate type safety proof. An alternative approach, at least for pure object languages, is to use a dependently-typed language to encode the object language type system in the definition of the abstract syntax. Using such intrinsically-typed abstract syntax definitions allows the host language type checker to verify automatically that the interpreter satisfies type safety. Does this approach scale to larger and more realistic object languages, and in particular to languages with mutable state and objects? In this paper, we describe and demonstrate techniques and libraries in Agda that successfully scale up intrinsically-typed definitional interpreters to handle rich object languages with non-trivial binding structures and mutable state. While the resulting interpreters are certainly more complex than the simply-typed λ-calculus interpreter we start with, we claim that they still meet the goals of being concise, comprehensible, and executable, while guaranteeing type safety for more elaborate object languages. We make the following contributions: (1) A dependent-passing style technique for hiding the weakening of indexed values as they propagate through monadic code. (2) An Agda library for programming with scope graphs and frames, which provides a uniform approach to dealing with name binding in intrinsically-typed interpreters. (3) Case studies of intrinsically-typed definitional interpreters for the simply-typed λ-calculus with references (STLC+Ref) and for a large subset of Middleweight Java (MJ).},
+%% journal = {Proc. ACM Program. Lang.},
+%% month = {dec},
+%% articleno = {16},
+%% numpages = {34},
+%% keywords = {definitional interpreters, scope graphs, Agda, mechanized semantics, type safety, dependent types, Java}
+%% }
+%% @online{csharpspec,
+%%   title = {{C\# Language Specification 5.0}},
+%%   author = {Microsoft},
+%%   year = {2013},
+%%   url = {https://www.microsoft.com/en-us/download/details.aspx?id=7029}
+%% }
+%% @online{javaspec,
+%%   title = {{Java Language and Virtual Machine Specifications}},
+%%   author = {Oracle},
+%%   year = {2023},
+%%   url = {https://docs.oracle.com/javase/specs/}
+%% }
+%% 
+%% @online{pythonspec,
+%%   title = {Python 3.12.0 documentation},
+%%   author = {{Python Software Foundation}},
+%%   year = {2023},
+%%   url = {https://docs.python.org}
+%% }
+%% 
+%% @online{cstandard,
+%%   title = {{ISO/IEC 9899:2018}},
+%%   author = {{ISO/IEC}},
+%%   year = {2018},
+%%   url = {https://www.iso.org/standard/74528.html}
+%% }
+%% 
+%% @book{sml,
+%%   title = {{The Definition of Standard ML (Revised)}},
+%%   author = {Robin Milner and Mads Tofte and Robert Harper and David MacQueen},
+%%   year = {1997},
+%%   editor = {The MIT Press}
+%% }
+%% 
+%% @inproceedings{kc,
+%%  author = {Chucky Ellison and Grigore Ro\c{s}u},
+%%  title = {An Executable Formal Semantics of C with Applications},
+%%  booktitle = {Proceedings of the Symposium on Principles of Programming Languages (POPL)},
+%%  year = {2012}
+%% }
+%% 
+%% @inproceedings{kjava,
+%%  author = {Denis Bogd\u{a}na\c{s} and Grigore Ro\c{s}u},
+%%  title = {{K-Java: A Complete Semantics of Java}},
+%%  booktitle = {Proceedings of the Symposium on Principles of Programming Languages (POPL)},
+%%  year = {2015}
+%% }
+%% 
+%% @online{kpython,
+%%  title = {{The Semantics of Python in K}},
+%%  author = {{Runtime Verification Inc.}},
+%%  year = {2013},
+%%  url = {https://github.com/runtimeverification/python-semantics}
+%% }
+%% 
+%% @inproceedings{kjs,
+%%  author = {Park, Daejun and \c{S}tef\u{a}nescu, Andrei and Ro\c{s}u, Grigore},
+%%  title = {{KJS}: A Complete Formal Semantics of {JavaScript}},
+%%  booktitle = {Proceedings of the 36th ACM SIGPLAN Conference on
+%%               Programming Language Design and Implementation (PLDI'15)},
+%%  year = {2015}
+%% }
+%% 
+%% @inproceedings{jest,
+%%   title = {{JEST: N+1-version Differential Testing of Both JavaScript Engines
+%%            and Specification}},
+%%   author = {Park, Jihyeok and An, Seungmin and Youn, Dongjun and Kim, Gyeongwon
+%%             and Ryu, Sukyoung},
+%%   booktitle = {Proceedings of IEEE/ACM 43rd International Conference on Software
+%%                Engineering (ICSE)},
+%%   pages = {13--24},
+%%   year = {2021},
+%%   publisher = {Association for Computing Machinery},
+%%   address = {New York, NY, USA},
+%%   organization = {IEEE}
+%% }
+%% 
+%% @inproceedings{jstar,
+%%   title = {{JSTAR: JavaScript Specification Type Analyzer using Refinement}},
+%%   author = {Park, Jihyeok and An, Seungmin and Shin, Wonho and Sim, Yusung and
+%%             Ryu, Sukyoung},
+%%   booktitle = {Proceedings of the 36th IEEE/ACM International Conference on
+%%                Automated Software Engineering (ASE)},
+%%   publisher = {Association for Computing Machinery},
+%%   address = {New York, NY, USA},
+%%   year = {2021},
+%%   pages = {606--616}
+%% }
+%% 
+%% @inproceedings{jsaver,
+%%   title = {{Automatically Deriving JavaScript Static Analyzers from
+%%            Specifications Using Meta-Level Static Analysis}},
+%%   author = {Park, Jihyeok and An, Seungmin and Ryu, Sukyoung},
+%%   booktitle = {Proceedings of the 30th ACM Joint European Software Engineering
+%%                Conference and Symposium on the Foundations of Software
+%%                Engineering (ESEC/FSE)},
+%%   publisher = {Association for Computing Machinery},
+%%   address = {New York, NY, USA},
+%%   pages = {1022–-1034},
+%%   year = {2022}
+%% }
+%% 
+%% @online{ciecma262,
+%%  title = {{Meta: integrate esmeta type checker into CI}},
+%%  author = {{TC39}},
+%%  year = {2022},
+%%  url = {https://github.com/tc39/ecma262/pull/2926}
+%% }
+%% 
+%% @online{citest262,
+%%  title = {{CI: Integrate ESMeta}},
+%%  author = {{TC39}},
+%%  year = {2022},
+%%  url = {https://github.com/tc39/test262/pull/3730}
+%% }
+%% 
+%% @online{spectec,
+%%  title = {{https://github.com/Wasm-DSL/spectec}},
+%%  author = {{SpecTec Team}},
+%%  year = {2023},
+%%  url = {https://github.com/Wasm-DSL/spectec}
+%% }
+%% 
+%% @online{Andreasicfp23,
+%%   title = {As low-level as possible, but no lower},
+%%   author = {Andreas Rossberg},
+%%   year = {2023},
+%%   url = {https://icfp23.sigplan.org/details/icfp-2023-icfp-keynotes/38/As-low-level-as-possible-but-no-lower}
+%% }
+%% 
+%% @inproceedings{steele2017overbar,
+%%   author = "Guy Steele",
+%%   title = "It's Time for a New Old Language",
+%%   booktitle = "Principal and Practices of Parallel Programming",
+%%   series = "ACM SIGPLAN Notices",
+%%   volume = 52,
+%%   issue = 8,
+%%   year = 2017,
+%%   pages = 1,
+%% }
+%% 
+%% @inproceedings{anti-unification,
+%%   title     = {Anti-unification and Generalization: A Survey},
+%%   author    = {Cerna, David M. and Kutsia, Temur},
+%%   booktitle = {Proceedings of the Thirty-Second International Joint Conference on
+%%                Artificial Intelligence, {IJCAI-23}},
+%%   publisher = {International Joint Conferences on Artificial Intelligence Organization},
+%%   editor    = {Edith Elkind},
+%%   pages     = {6563--6573},
+%%   year      = {2023},
+%%   month     = {8},
+%%   note      = {Survey Track},
+%%   doi       = {10.24963/ijcai.2023/736},
+%%   url       = {https://doi.org/10.24963/ijcai.2023/736},
+%% }
+%% 
+%% 
+%% @article{exactcover,
+%%   author = {{Maxime Chabert and Christine Solnon}},
+%%   title = {{A Global Constraint for the Exact Cover Problem: Application to Conceptual Clustering}},
+%%   journal = {{Journal of Artificial Intelligence Research}},
+%%   year = {2020},
+%%   volume = {67},
+%%   pages = {509 -- 547}
+%% }
+%% 
+%% @Inbook{karp72,
+%%   author="Karp, Richard M.",
+%%   title="Reducibility among Combinatorial Problems",
+%%   bookTitle="Complexity of Computer Computations: Proceedings of a Symposium on the Complexity of Computer Computations",
+%%   year="1972",
+%%   pages="85--103",
+%%   doi="10.1007/978-1-4684-2001-2_9"
+%% }
+%% 
+%% @misc{knuth2000dancing,
+%%       title={Dancing links}, 
+%%       author={Donald E. Knuth},
+%%       year={2000},
+%%       eprint={cs/0011047},
+%%       archivePrefix={arXiv}
+%% }
+%% 
+%% @inProceedings{z3,
+%%   author = {{De Moura, Leonardo and Bj\o{}rner, Nikolaj}},
+%%   title = {{Z3: An Efficient SMT Solver}},
+%%   year = {2008},
+%%   isbn = {3540787992},
+%%   publisher = {Springer-Verlag},
+%%   pages = {337--340},
+%%   numpages = {4},
+%%   series = {TACAS'08/ETAPS'08}
+%% }
+%% 
+%% @online{wasmparser,
+%%   title = {WebAssembly Parser},
+%%   author = {{WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/spec/tree/main/interpreter/text}
+%% }
+%% 
+%% @online{wasm-redex-asumu,
+%%   title = {wasm-redex},
+%%   author = {Asumu Takikawa},
+%%   year = {2019},
+%%   url = {https://github.com/takikawa/wasm-redex}
+%% }
+%% 
+%% @online{wasm-redex-adam,
+%%   title = {WASM-Redex},
+%%   author = {Adam T. Geller},
+%%   year = {2021},
+%%   url = {https://github.com/atgeller/WASM-Redex}
+%% }
+%% 
+%% @online{wasm-k,
+%%   title = {KWasm},
+%%   author = {Runtime Verification Inc.},
+%%   year = {2023},
+%%   url = {https://github.com/runtimeverification/wasm-semantics}
+%% }
+%% 
+%% @misc{specdsl,
+%%   title = {Automatically Generated WebAssembly Specification},
+%%   author = {SpecTec Team},
+%%   year = {2024},
+%%   url = {https://github.com/Wasm-DSL/spectec/blob/fe709a16901fef96bc603b5d710898436613144f/spectec/WebAssembly.pdf}
+%% }
+%% 
+%% @online{wasmtest,
+%%   title = {{WebAssembly Core Testsuite}},
+%%   author = {{WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/spec/tree/main/test/core}
+%% }
+%% 
+%% @online{wast,
+%%   title = {{WebAssembly Reference Interpreter: Scripts}},
+%%   author = {{WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/spec/blob/main/interpreter/README.md#scripts}
+%% }
+%% 
+%% @online{wasm-mm,
+%%   title = {Multiple Memories Proposal for WebAssembly},
+%%   author = {Andreas Rossberg and {WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/multi-memory/}
+%% }
+%% 
+%% @online{wasm-ece,
+%%   title = {Extended Constant Expressions Proposal for WebAssembly},
+%%   author = {Sam Clegg and {WebAssembly Community Group}},
+%%   year = {2023},
+%%   url = {https://github.com/WebAssembly/extended-const/}
+%% }
+%% 
+%% @online{r6rs,
+%%   title = {{R6RS Semantics Model and Reference Implementations}},
+%%   author = {{Robert Bruce Findler and Jacob Matthews}},
+%%   year = {2023},
+%%   url = {https://www.r6rs.org/refimpl/}
+%% }
+%% 
+%% @online{typeerror1,
+%%  title = {{Add missing type to elem.drop and store soundness}},
+%%  author = {{Ben Visness}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/spec/commit/5b18d52}
+%% }
+%% 
+%% @online{typeerror2,
+%%  title = {{Fix typo in element execution}},
+%%  author = {{Julien Cretin}},
+%%  year = {2022},
+%%  url = {https://github.com/WebAssembly/spec/commit/793b3ff}
+%% }
+%% 
+%% @online{typeerror3,
+%%  title = {{Fix typos in instruction validation rules}},
+%%  author = {{Julien Cretin}},
+%%  year = {2022},
+%%  url = {https://github.com/WebAssembly/spec/commit/79ef7af}
+%% }
+%% 
+%% @online{proseerror1,
+%%  title = {{Add missing access to current frame in prose}},
+%%  author = {{Dongjun Youn}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/spec/commit/be820b2}
+%% }
+%% 
+%% @online{proseerror2,
+%%  title = {{Fix naming typo}},
+%%  author = {{Whirlicote}},
+%%  year = {2022},
+%%  url = {https://github.com/WebAssembly/spec/commit/04beeb7}
+%% }
+%% 
+%% @online{proseerror3,
+%%  title = {{Fix variable name typos}},
+%%  author = {{Andreas Rossberg}},
+%%  year = {2021},
+%%  url = {https://github.com/WebAssembly/spec/commit/4353b29}
+%% }
+%% 
+%% @online{proseerror4,
+%%  title = {{Fix missing immediate on table.set}},
+%%  author = {{Keith Winstein}},
+%%  year = {2022},
+%%  url = {https://github.com/WebAssembly/spec/commit/f6ae547}
+%% }
+%% 
+%% @online{proseerror5,
+%%  title = {{Pop dummy frame after Invocation}},
+%%  author = {{R1ru}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/spec/commit/be1f563}
+%% }
+%% 
+%% @online{proseerror6,
+%%  title = {{Add missing case for declarative elem segments}},
+%%  author = {{Andreas Rossberg}},
+%%  year = {2022},
+%%  url = {https://github.com/WebAssembly/spec/commit/ff149b4}
+%% }
+%% 
+%% @online{proseerror7,
+%%  title = {{Remove an obsolete exec step}},
+%%  author = {{Andreas Rossberg}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/spec/commit/f54b5b8}
+%% }
+%% 
+%% @online{semanticserror1,
+%%  title = {{Add missing value to table.grow reduction rule}},
+%%  author = {{Tom Stuart}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/spec/commit/3545ad0}
+%% }
+%% 
+%% @online{semanticserror2,
+%%  title = {{Remove stray x indices}},
+%%  author = {{Jim Blandy}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/spec/commit/e7f6e1c}
+%% }
+%% 
+%% @online{semanticserror3,
+%%  title = {{Fix reduction rule for label}},
+%%  author = {{Andreas Rossberg}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/spec/commit/8f5c489}
+%% }
+%% 
+%% @online{proposalerror1-4,
+%%  title = {{Fix spec for execution of struct.new, array.new\_fixed and br\_on\_cast(\_fail)}},
+%%  author = {{Dongjun Youn}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/gc/pull/456}
+%% }
+%% @online{proposalerror5,
+%%  title = {{Dimension mismatch in the premise of array.new\_data reduction rule}},
+%%  author = {{Jaehyun Lee}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/gc/issues/476}
+%% }
+%% @online{proposalerror6,
+%%  title = {{Fix getfiled auxiliary function}},
+%%  author = {{Wonho Shin}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/gc/pull/463}
+%% }
+%% @online{proposalerror7,
+%%  title = {{Pass index argument to getfield function}},
+%%  author = {{Wonho Shin}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/gc/pull/464}
+%% }
+%% @online{proposalerror8,
+%%  title = {{Fix ref.null semantics}},
+%%  author = {{Wonho Shin}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/gc/pull/478}
+%% }
+%% @online{proposalerror9,
+%%  title = {{Minor changes on array.new\_elem}},
+%%  author = {{Wonho Shin}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/gc/pull/477}
+%% }
+%% @online{proposalerror10,
+%%  title = {{Add current frame}},
+%%  author = {{Wonho Shin}},
+%%  year = {2023},
+%%  url = {https://github.com/WebAssembly/gc/pull/484}
+%% }
+%% 
+%% @software{artifact,
+%%   author       = {SpecTec Team},
+%%   title        = {pldi24-spectec/artifact: v1.0.1},
+%%   month        = mar,
+%%   year         = 2024,
+%%   publisher    = {Zenodo},
+%%   version      = {v1.0.1},
+%%   doi          = {10.5281/zenodo.10807169},
+%%   url          = {https://doi.org/10.5281/zenodo.10807169}
+%% }
+\end{thebibliography}
