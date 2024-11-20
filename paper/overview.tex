@@ -12,8 +12,6 @@
     \label{fig:overview}
 \end{figure}
 
-We propose SpecTec ...
-
 % Overview explanation
 In this chapter, we explain an overall approach to generate multiple artifacts
 from the specification and check correctness of the specification.
@@ -25,8 +23,8 @@ It is type checked to prevent meta-level errors such as notation misuses and
 dimension mismatches.
 The code below is the specification for \texttt{testop} instruction written in
 the DSL.
-\begin{lstlisting}
+\begin{lstlisting}[escapechar=\%]
   rule Step_pure/testop:
-  (CONST nt c_1) (TESTOP nt testop)  ~>  (CONST I32 c)
-  -- if c = $testop_(nt, testop, c_1)
+  (CONST nt c_1) (TESTOP nt testop)  %$\codetilde$%>  (CONST I32 c)
+  -- if c = %$\codedollar$%testop_(nt, testop, c_1)
 \end{lstlisting}

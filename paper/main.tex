@@ -50,7 +50,12 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[capitalise,nameinlink]{cleveref}
-\usepackage{listings}
+\usepackage[final]{listings}
+
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+}
 
 
 
@@ -81,6 +86,9 @@
 \renewcommand{\symbol}[1]{\textbf{#1}}
 \newcommand{\helper}[1]{\textsf{#1}}
 \newcommand{\premise}[1]{\textsf{\textbf{#1}}}
+\newcommand{\codetilde}{\texttt{\raisebox{0.5ex}{\texttildelow}}}
+\newcommand{\codedollar}{\texttt{\textdollar}}
+
 
 % Algorithm
 \newcommand{\rel}{\symbol{Rel}}
