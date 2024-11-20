@@ -16,8 +16,6 @@ all: $(MAIN).pdf
 $(MAIN).pdf: $(wildcard *.tex)
 	$(LATEX) $(MAIN)
 	$(LATEX) $(MAIN)
-	while ( grep -q '^LaTeX Warning: Label(s) may have changed' $(MAIN).log) \
-	do pdflatex $(MAIN); done
 
 
 
