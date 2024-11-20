@@ -25,9 +25,9 @@ To address this challenge, Wasm has been rigorously standardized by the
 W3C~\cite{wasm-w3c}.
 The Wasm specification is particularly rigorous, describing its semantics in
 two complementary forms: formal notation and prose notation.
-\red{\cref{fig:testop} illustrates the specification document for $testop$
+\cref{fig:testop} illustrates the specification document for $testop$
 instruction, where the upper part contains the prose notation, and the lower
-part contains the formal notation.}
+part contains the formal notation.
 The formal notation employs mathematical rules to succinctly define the
 semantics, supporting proofs such as type soundness.
 Conversely, the prose notation uses pseudocode-like algorithms to explain the
@@ -49,21 +49,20 @@ formalism, they primarily rely on the prose notation.
 
 % challenging specification process
 The demanding standardization process places a significant burden on
-specification authors, \red{particularly in maintaining consistency and correctness.
+specification authors, particularly in maintaining consistency and correctness.
 Crafting the specification document is labor-intensive, which becomes
 increasingly difficult to scale as Wasm evolves.
 This challenge is compounded by the dual requirement to maintain both a formal
 notation, written in LaTeX, and a prose notation, authored in reStructuredText.
 The separate and user-unfriendly nature of these formats hinders collaborative
 review and increases the risk of discrepancies and errors between the two
-notations, further complicating the standardization process.}
+notations, further complicating the standardization process.
 
 % SpecTec
-To mitigate this problem, we \red{propose} SpecTec~\cite{spectec}, a framework
-for mechanizing WebAssembly specification.
+To mitigate this problem, we propose SpecTec~\cite{spectec}, a framework for
+mechanizing WebAssembly specification.
 It provides domain specific language (DSL) that enables the declarative
 definition of Wasm syntax and semantics, akin to the formal notation.
-\red{
 SpecTec performs type-checking on the DSL to prevent meta-level specification
 errors and generates LaTeX for the formal notation.
 Additionally, to capture the pseudocode-like structure of the prose notation,
@@ -80,17 +79,15 @@ written in AL serves as a Wasm interpreter program.
 By testing the Wasm interpreter program, we can check the correctness of the
 specification.
 This bridges the gap between formal specification and executable code.
-Futhermore, SpecTec generates mechanized definitions for theorem provers.}
+Futhermore, SpecTec generates mechanized definitions for theorem provers.
 
 
 % challenge
-\red{
 One challenge of our approach is making AL executable.
 Since the prose notation in the official specification is written in informal
 pseudocode, the interpretation of the prose notation is not straightforward.
 The naive implementation of AL interpreter produced incorrect results when
 running Wasm official test suites, particularly those related to control flow.
-}
 Additionally, the absence of a formalized definition or formal semantics for AL
 made it difficult to identify and address the fundamental issues in its design.
 Since running tests is the primary method for assessing the correctness of the
