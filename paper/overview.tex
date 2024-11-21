@@ -15,7 +15,21 @@
 % Overview explanation
 In this chapter, we explain the overall approach to generating multiple
 artifacts from the specification and ensuring the correctness of the
-specification. \Cref{fig:overview} illustrates an overview of our approach.
+specification.
+\Cref{fig:overview} illustrates an overview of our approach.
+% SpecTec: specification mechanization tool
+SpecTec is a tool for \textit{mechanizing} WebAssembly specification
+~\cite{spectec}.
+Specification mechanization is a technique that treats a specification as data
+that can be manipulated by a machine to automatically generate parser and
+interpreter ~\cite{jiset}, to generate tests and perform differential tests
+~\cite{jest}, to find meta-level errors in the specification ~\cite{jstar}, and
+to perform meta-level static analysis for the static analysis of the defined
+language ~\cite{jsaver}.
+This technique is especially crucial in growing languages such as JavaScript
+and WebAssembly.
+
+
 % DSL
 SpecTec provides a domain-specific language (DSL) for writing specifications.
 It is a declarative language designed to resemble the formal notation while
@@ -69,3 +83,5 @@ specification using the DSL, a WebAssembly interpreter that adheres to the
 defined semantics is automatically generated.
 By testing this generated interpreter, we can assess the specification,
 thereby ensuring its correctness.
+
+\red{(Explanation for each chapter for SpecTec)}
