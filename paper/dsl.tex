@@ -3,3 +3,50 @@
 \chapter{DSL}
 \label{ch:dsl}
 \noindent
+
+
+% DSL high-level explanation
+SpecTec offers a domain-specific language (DSL) tailored for specification
+purposes.
+It is a declarative language, providing a compact and user-friendly syntax.
+It consists of DSL definitions: type, grammar, relation, and functions.
+Type definitions are used to define abstract syntax, while grammar definitions
+are used to define concrete syntax.
+The below code represents the abstract syntax and concrete syntax for
+\texttt{numtype}.
+\begin{lstlisting}[style=dsl]
+syntax numtype = I32 | I64 | F32 | F64 | V128
+grammar Bnumtype : numtype =
+  | 0x7F => I32
+  | 0x7E => I64
+  | 0x7D => F32
+  | 0x7C => F64
+\end{lstlisting}
+Relation definitions are used to define semantics, while function definitions
+are used auxiliary definitions.
+
+It is type checked to prevent meta-level errors such as notation misuses and
+dimension mismatches. The code below is the specification for \texttt{testop}
+instruction written in the DSL, which is designed to be similar to the formal
+notation when describing the semantics with compact and user-friendly
+notation.
+\begin{lstlisting}[style=dsl]
+  rule Step_pure/testop:
+  (CONST nt c_1) (TESTOP nt testop)  @$\tildecode$@>  (CONST I32 c)
+  -- if c = @$\dollarcode$@testop_(nt, testop, c_1)
+\end{lstlisting}
+
+
+% DSL
+The DSL consists of DSL definitions.
+There are mainly 4 kinds of DSL definitions: type, grammar, relation, and
+functions.
+Type definitions are used to define abstract syntax, while grammar definitions
+are used to define concrete syntax.
+Relation definitions are used to define semantics; the code above is also
+described in relation definition.
+Function definitions can be utilized for other definitions such as
+\texttt{\$testop\_} in the code.
+In addition, they can be also used to describe semantics.
+Especially, SpecTec uses function definitions to describe module instantiation
+and function invocation.

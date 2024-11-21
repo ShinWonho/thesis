@@ -51,10 +51,25 @@
 \usepackage{amssymb}
 \usepackage[capitalise,nameinlink]{cleveref}
 \usepackage[final]{listings}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 
-\lstset{
+\lstdefinestyle{dsl}{
+  xleftmargin=\parindent,
   basicstyle=\ttfamily,
+  keywordstyle=\bfseries,
   columns=fullflexible,
+  escapechar=\@,
+  keywords={syntax,relation,rule,def,grammar,var,if,otherwise,hint}
+}
+
+\lstdefinestyle{al}{
+  xleftmargin=\parindent,
+  basicstyle=\ttfamily,
+  keywordstyle=\bfseries,
+  columns=fullflexible,
+  escapechar=\@,
+  keywords={Assert, Pop, Let, Push}
 }
 
 
