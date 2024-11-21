@@ -1,201 +1,75 @@
 % !TEX root = main.tex
 
-\chapter{Background}
-\label{ch:background}
-\noindent
+\chapter{Background} \label{ch:background} \noindent
 
-\red{TODO: fix fig name}
+\section{WebAssembly} \label{sec:webassembly}
 
+WebAssembly (Wasm) is a portable, binary instruction format designed for safe
+and efficient execution across diverse environments.
+Initially developed to enhance performance in web browsers, diverse ecosystems
+leverages the advantages of Wasm, including cloud and edge
+computing~\cite{lucet, cloudflare}, the Internet of Things (IoT)\cite{wasm-iot}, and
+blockchain technologies\cite{wasm-blockchain}.
+Wasm programs are compiled from high-level languages (e.g., C, C++, Rust) into
+a compact, platform-independent binary format, enabling consistent execution
+across different hardware and operating systems.
 
-\section{WebAssembly}
-\label{sec:webassembly}
-
-
-% breif overview
-WebAssembly~\cite{wasm} is a low-level bytecode language that is safe, fast,
-portable, and compact.
-It is widely used as a compile target for web applications.
-Not only that, other areas such as edge computing~\cite{wasm-edge},
-IoT~\cite{wasm-iot}, and block chains~\cite{wasm-block} deploy the advantages
-of WebAssembly.
-
-
-% risk of implementation divergence
-There are dozens of WebAssembly engines; all the browsers have there own
-implementations of WebAssembly with multiple tiers ~\cite{v8}
-\cite{spidermonkey} \cite{webkit}, and there are many engines that target for
-specific areas including embedded systems and edge computing.
-However, as WebAssembly should be portable across these implementations, it risks
-the implementations divergence.
-
-
-% rigorous standardization -> spec is rigorous: formal notation & prose notation
-To mitigate this problem, WebAssembly has been standardized very rigourously by
-the W3C~\cite{wasm-w3c}.
-Especially, WebAssembly specification document is written very rigorously.
-It describes the semantics of WebAssembly in two forms: formal notation and
-prose notation.
-Formal notation uses mathematical rules to compactly describe the semantics,
-and it is used for proofs such as type soundness.
-On the other hand, prose notation uses psudocodes algorithm to explain the
-semantics through a step by step instruction.
-Most WebAssembly users and engine developers are not familiar with
-mathematical rules, so they utilize the prose notation.
+% Structure
+A Wasm program is comprised of \textit{modules}.
+A module is the unit of deployment, loading, and compilation, which contains
+definitions such as functions, tables, memories, and globals.
+Functions represent units of executable code.
+Each function has a type specifying its parameter and result types, along with
+a body composed of Wasm instructions.
+Tables represent indexed collections of references, such as function
+references.
+Tables are commonly used for indirect function calls, enabling features like
+dynamic dispatch.
+Memories represent linear memory, a contiguous, resizable array of bytes that
+serves as the module’s heap.
+Memory is used for storing and accessing data such as arrays, strings, or other
+data structures.
+Globals represent mutable or immutable variables that hold single values.
+Globals can store values such as integers or floating-point numbers and are
+accessible throughout the module.
 
 
-% structure
-A WebAssembly program is comprised of \textit{modules}.
-A module is the unit of deployment, loading, and compilation, which consists of
-definitions such as functions, globals, and memories.
-A module is instantiated to validate the module and allocate each definition to
-the data structure named \textit{store}.
-This results in a module instance, a runtime representation for the module.
-After the instantiation, functions can be invoked so that the function body,
-which is a sequence of instructions, is executed.
+% Instantiation & store
+Before executing the code in a module, the module must be instantiated to
+validate its content and allocate its definitions into a runtime data structure
+called the \textit{store}.
+The store acts as the memory space where executable code for functions are
+stored, where function references are placed in tables, where the linear memory
+is allocated for data, and where global variables are maintained.
+Once instantiated, functions in the module can be invoked.
+Invoking a function triggers the execution of its body, a sequence of
+Wasm instructions.
+These instructions operate on the module’s internal state, including the values
+stored in the store.
 
 
 % execution
-WebAssembly execution is based on a stack machine.
-An instruction consumes values in the stack as operands, performs some
-operation, produces resulting values, and pushes them to the stack.
-\cref{fig:testop} is the WebAssembly specification document for the
+Wasm execution is based on a stack machine.
+An instruction consumes values from the stack as operands, performs an
+operation, and pushes the resulting values onto the stack.
+For example, the \texttt{testop} instruction exemplifies how this execution
+model operates in practice.
+\cref{fig:testop} illustrates the Wasm specification document for the
 \texttt{testop} instruction.
-Prose notation is written in the upper part, and formal notation is written in
-the lower grey box.
-In the prose notation, it pops a value from the stack, performs a test
-operation, and pushes the result to the stack.
-It is written compactly in the form of reduction rule in the formal notation
-which consists of LHS, RHS, and premises: $(t.const ~ c_1) ~ t.testop$,
-$(i32.const ~ c)$, and $c = testop_t(c_1)$.
-The LHS means that the value at the top of the stack is $(t.const ~ c_1)$,
-and an instruction to execute is $t.testop$.
-The RHS means that the value at the top of the stack is changed to $(i32.const
-~ c)$, and this happens when the premise $c = testop_t(c_1)$ is satisfied.
-
-
-% control structure
-The stack stores not only the input and output values of the instructions but also
-structures related to the control flow.
-A \textit{call frame} and a \textit{label} are used for function call and
-branching, respectively.
-In exception handling proposal, there is a \textit{handler} for exception
-handling, and other strucutres could be introduced in the future.
-How these control structures are used for the control flow will be discussed in
-\cref{sec:control flow in official prose}.
-
-
-
-\newcommand{\officialp}{official prose}
-\newcommand{\spectecp}{SpecTec prose}
-
-\red{TODO: explanation of the terms \officialp{} and \spectecp{}} \\
-\red{TODO: remove redundant part in the fig} \\
-\red{TODO: explanation of context(frame/label): in the background? or here?} \\
-\red{TODO: the notion of meta-level interpreter in background} \\
-\red{TODO: try finding better terminology rather than "model"} \\
-
-\section{Control flow in official prose}
-\label{sec:control flow in official prose}
-
-% control flow structure in official prose
-It might be easy to understand how the \officialp{} explains the control flow
-of WebAssembly, if we assume that a WebAssembly code is loaded on a memory and
-a pc points to the instruction to execute.
-To describe control flow, it uses a structure named \textit{block} which
-consitutes of a instruction sequence.
-When executing the instructions in the block, pc can be changed to the starting
-point of the block or the end of the block.
-
-
-% an example of Wasm control flow in official prose
-\begin{example}
-\label{ex:br}
-\begin{verbatim}
-  // infinite loop
-  (loop (result i32) (i32.const 42) (br 0) (unreachable) end) (unreachable)
-\end{verbatim}
-\end{example}
-
-\cref{ex:br} is a WebAssembly code example that has \texttt{loop} and
-\texttt{unreachable}
-Here, result type of the \texttt{loop} is \texttt{i32} and the \texttt{loop}
-has a block of three instructions: \texttt{i32.const}, \texttt{br}, and
-\texttt{unreachable}.
-\cref{fig:loop} is the \officialp{} of the \texttt{loop} instruction.
-It says that the continuation is the start of the loop, the information is
-stored in a label, and it \textit{enters} the block with the label.
-The term \textit{enter} means that it pushes the label in the stack and makes
-pc points to the first instruction in the block.
-The \texttt{i32.const} instruction is executed first, which just pushes the
-\texttt{i32} value \texttt{42} in the stack.
-Then, The \texttt{br} instruction is executed.
-\cref{fig:br} is the \officialp{} of the \texttt{br} instruction.
-It pops the label from the stack, and makes pc points to the continuation of
-the label, which is the start of the loop instruction.
-As a result, the code example above is a infinite loop pushing \texttt{42}
-forever without executing \texttt{unreachable} instructions.
-
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/loop}}
-    \caption[Enter the caption title here]{\texttt{loop} instruction} \label{fig:loop}
-    \centerline{\includegraphics[width=15cm]{fig/br}}
-    \caption[Enter the caption title here]{\texttt{br} instruction} \label{fig:br}
-\end{figure}
-
-
-% exiting label in official prose
-There is also a special form of a behavior related to the block: an
-\textit{exiting label}.
-\cref{fig:exiting-label} is the \officialp{} of the \textit{exiting label}.
-It is special because this behavior is performed without an explicit
-WebAssembly instruction.
-Rather, the behavior is performed when \textbf{the end of a block is reached}
-without control instructions or runtime error.
-The behavior is that the label is popped from the stack, and the pc changes to
-the point after the end of the block.
-
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/exiting}}
-    \caption[Enter the caption title here]{exiting label} \label{fig:exiting-label}
-\end{figure}
-
-
-% an example of exiting label in official prose
-\begin{example}
-\label{ex:exit}
-\begin{verbatim}
-  // exiting label
-  (loop (result i32) (i32.const 42) end) (f64.const 3.14)
-\end{verbatim}
-\end{example}
-
-\cref{ex:exit} is a WebAssembly code example that has \texttt{loop} whose block is
-only \texttt{i32.const}, and \texttt{f32.const}
-When the \texttt{loop} instruction is executed, it enters the block with a label.
-After \texttt{i32.const} is executed, the end of the block is reached.
-As a result, exiting label occurs so that the label is popped from the stack,
-pc changes to the point after the end of block: \texttt{f64.const}.
-As a result, after executing the code, the value 42 and 3.14 pushed to the
-stack.
-
-
-% control flow structure with function call in official prose
-Similar to the control flow using the block and the label, there is a function
-call with a frame.
-\cref{fig:invoke} is the \officialp{} of the function invocation which takes
-place by a \texttt{call} instruction.
-A frame is pushed to the stack and enters the block of the function body with a
-label.
-There is also a special behavior named returning from a function.
-\cref{fig:returning} is the \officialp{} of the returning from a function.
-When end of function is reached without without control instructions or runtime
-error, The frame is popped from the stack, and the pc points to the next
-instruction of the caller instruction.
-
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/invoke}}
-    \caption[Enter the caption title here]{function invocation} \label{fig:invoke}
-    \centerline{\includegraphics[width=15cm]{fig/returning}}
-    \caption[Enter the caption title here]{returning from a function} \label{fig:returning}
-\end{figure}
-
+It describes its semantics using two complementary forms: prose notation and
+formal notation.
+The prose notation is written in the upper part, and the formal notation is
+written in the lower grey box.
+In the prose notation, the instruction pops a value from the stack, performs a
+test operation, and pushes the result back onto the stack.
+In the formal notation, this is compactly expressed as a reduction rule
+consisting of the left-hand side (LHS), right-hand side (RHS), and premises:
+$(t.const ~ c_1) ~ t.testop$, $(i32.const ~ c)$, and $c = testop_t(c_1)$,
+respectively.
+The LHS indicates that the value at the top of the stack is $(t.const ~ c_1)$,
+and the instruction to execute is $t.testop$.
+The RHS shows that the value at the top of the stack is updated to $(i32.const
+~ c)$, which occurs if the premise $c = testop_t(c_1)$ holds true.
+% Additionally, the stack also stores structures related to the control flow
+% along with the input and output values of the instructions: A \textit{frame}
+% for function calls and a \textit{label} for branching.

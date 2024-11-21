@@ -4,14 +4,14 @@
 \label{ch:intro}
 \noindent
 
-% breif overview
+% Brief overview
 WebAssembly (Wasm)~\cite{wasm} is a low-level bytecode language that is safe, fast,
 portable, and compact.
 It is widely used as a compilation target for web applications.
 Beyond web development, Wasm's advantages are also deployed in areas such as
 cloud and edge computing~\cite{lucet, cloudflare}, IoT~\cite{wasm-iot}, and
 blockchains~\cite{wasm-blockchain}.
-% risk of implementation divergence
+% Risk of implementation divergence
 There are numerous Wasm engines, with all major browsers implementing their own
 multi-tiered versions~\cite{v8, spidermonkey, webkit}.
 Additionally, specialized engines target specific domains, such as embedded
@@ -20,7 +20,7 @@ However, ensuring portability across these diverse implementations introduces
 the risk of divergence among them.
 
 
-% rigorous standardization -> spec is rigorous: formal notation & prose notation
+% Rigorous standardization -> spec is rigorous: formal notation & prose notation
 To address this challenge, Wasm has been rigorously standardized by the
 W3C~\cite{wasm-w3c}.
 The Wasm specification is particularly rigorous, describing its semantics in
@@ -47,7 +47,7 @@ formalism, they primarily rely on the prose notation.
 \end{figure}
 
 
-% challenging specification process
+% Challenging specification process
 The demanding standardization process places a significant burden on
 specification authors, particularly in maintaining consistency and correctness.
 Crafting the specification document is labor-intensive, which becomes
@@ -82,7 +82,7 @@ This bridges the gap between formal specification and executable code.
 Futhermore, SpecTec generates mechanized definitions for theorem provers.
 
 
-% challenge
+% Challenge
 One challenge of our approach is making AL executable.
 Since the prose notation in the official specification is written in informal
 pseudocode, the interpretation of the prose notation is not straightforward.
@@ -97,7 +97,7 @@ This underscored the need for a more robust approach to formally define AL and
 ensure its alignment with Wasm's complex semantics.
 
 
-% solution
+% Solution
 To address this, we present a formal model for how AL describes Wasm control flow.
 Using this model, we identify the underlying issues and the necessary changes
 to improve it.
@@ -110,7 +110,7 @@ as well as tests from proposals.
 
 
 % TODO: cref
-% contribution
+% Contribution
 The contributions of this paper are as follows:
 \begin{itemize}
   \item We propose a formal model for Wasm control flow in AL (\cref{ch:motivation})

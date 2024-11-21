@@ -5,6 +5,118 @@
 \section{Control flow in SpecTec prose}
 \label{sec:spectecp}
 
+
+
+
+% TODO: Remove these commands
+\newcommand{\officialp}{official prose}
+\newcommand{\spectecp}{SpecTec prose}
+
+% control structure
+It might be easy to understand how the control flow of Wasm works, if we assume
+that a Wasm code is loaded on a memory space and a pc points to the instruction
+to execute.
+To describe control flow, it introduces a structure named \textit{block} which
+consitutes of a instruction sequence.
+When branching instruction in the block is performed, pc can be changed to the
+starting point of the block or the end of the block.
+
+
+% an example of Wasm control flow in official prose
+\begin{example}
+\label{ex:br}
+\begin{verbatim}
+  // infinite loop
+  (loop (result i32) (i32.const 42) (br 0) (unreachable) end) (unreachable)
+\end{verbatim}
+\end{example}
+
+\cref{ex:br} is a Wasm code example that has \texttt{loop} and
+\texttt{unreachable}.
+Here, result type of the \texttt{loop} is \texttt{i32} and the \texttt{loop}
+has a block of three instructions: \texttt{i32.const}, \texttt{br}, and
+\texttt{unreachable}.
+\cref{fig:loop} is the specification for the \texttt{loop} instruction in the
+prose notation.
+In forth step, it says that the continuation is the start of the loop, the
+information is stored in a label.
+In the last step, it \textit{enters} the block with the label.
+The term \textit{enter} means that it pushes the label onto the stack and makes
+pc points to the first instruction in the block.
+The \texttt{i32.const} instruction is executed first, which just pushes the
+\texttt{i32} value \texttt{42} in the stack.
+Then, The \texttt{br} instruction is executed.
+\cref{fig:br} is the \officialp{} of the \texttt{br} instruction.
+It pops the label from the stack, and makes pc points to the continuation of
+the label, which is the start of the loop instruction.
+As a result, the code example above is a infinite loop pushing \texttt{42}
+forever without executing \texttt{unreachable} instructions.
+
+\begin{figure}[h!]
+    \centerline{\includegraphics[width=15cm]{fig/loop}}
+    \caption[Enter the caption title here]{\texttt{loop} instruction} \label{fig:loop}
+    \centerline{\includegraphics[width=15cm]{fig/br}}
+    \caption[Enter the caption title here]{\texttt{br} instruction} \label{fig:br}
+\end{figure}
+
+
+% exiting label in official prose
+There is also a special form of a behavior related to the block: an
+\textit{exiting label}.
+\cref{fig:exiting-label} is the \officialp{} of the \textit{exiting label}.
+It is special because this behavior is performed without an explicit
+Wasm instruction.
+Rather, the behavior is performed when \textbf{the end of a block is reached}
+without control instructions or runtime error.
+The behavior is that the label is popped from the stack, and the pc changes to
+the point after the end of the block.
+
+\begin{figure}[h!]
+    \centerline{\includegraphics[width=15cm]{fig/exiting}}
+    \caption[Enter the caption title here]{exiting label} \label{fig:exiting-label}
+\end{figure}
+
+
+% an example of exiting label in official prose
+\begin{example}
+\label{ex:exit}
+\begin{verbatim}
+  // exiting label
+  (loop (result i32) (i32.const 42) end) (f64.const 3.14)
+\end{verbatim}
+\end{example}
+
+\cref{ex:exit} is a Wasm code example that has \texttt{loop} whose block is
+only \texttt{i32.const}, and \texttt{f32.const}
+When the \texttt{loop} instruction is executed, it enters the block with a label.
+After \texttt{i32.const} is executed, the end of the block is reached.
+As a result, exiting label occurs so that the label is popped from the stack,
+pc changes to the point after the end of block: \texttt{f64.const}.
+As a result, after executing the code, the value 42 and 3.14 pushed to the
+stack.
+
+
+% control flow structure with function call in official prose
+Similar to the control flow using the block and the label, there is a function
+call with a frame.
+\cref{fig:invoke} is the \officialp{} of the function invocation which takes
+place by a \texttt{call} instruction.
+A frame is pushed to the stack and enters the block of the function body with a
+label.
+There is also a special behavior named returning from a function.
+\cref{fig:returning} is the \officialp{} of the returning from a function.
+When end of function is reached without without control instructions or runtime
+error, The frame is popped from the stack, and the pc points to the next
+instruction of the caller instruction.
+
+\begin{figure}[h!]
+    \centerline{\includegraphics[width=15cm]{fig/invoke}}
+    \caption[Enter the caption title here]{function invocation} \label{fig:invoke}
+    \centerline{\includegraphics[width=15cm]{fig/returning}}
+    \caption[Enter the caption title here]{returning from a function} \label{fig:returning}
+\end{figure}
+
+
 % control flow structure in SpecTec prose
 However, the \spectecp{} assumes a different model to explain the control flow
 of WebAssembly.
