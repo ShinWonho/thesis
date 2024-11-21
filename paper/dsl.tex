@@ -8,45 +8,54 @@
 % DSL high-level explanation
 SpecTec offers a domain-specific language (DSL) tailored for specification
 purposes.
-It is a declarative language, providing a compact and user-friendly syntax.
-It consists of DSL definitions: type, grammar, relation, and functions.
-Type definitions are used to define abstract syntax, while grammar definitions
-are used to define concrete syntax.
-The below code represents the abstract syntax and concrete syntax for
-\texttt{numtype}.
+The DSL is a declarative language, providing a compact and user-friendly syntax.
+It includes definitions for type, relation, and functions.
+Type definitions define the abstract syntax in a mannar analogous to the BNF
+format, where terminals are denoted by capital letters, while non-terminals are
+represented by lowercase letters.
+The below code represents the abstract syntax for \texttt{testop},
+\texttt{numtype} and \texttt{instr}.
 \begin{lstlisting}[style=dsl]
+syntax testop = EQZ
 syntax numtype = I32 | I64 | F32 | F64 | V128
-grammar Bnumtype : numtype =
-  | 0x7F => I32
-  | 0x7E => I64
-  | 0x7D => F32
-  | 0x7C => F64
+syntax instr =
+  | CONST numtype number
+  | TESTOP numtype testop
+  | ...
 \end{lstlisting}
-Relation definitions are used to define semantics, while function definitions
-are used auxiliary definitions.
 
-It is type checked to prevent meta-level errors such as notation misuses and
-dimension mismatches. The code below is the specification for \texttt{testop}
-instruction written in the DSL, which is designed to be similar to the formal
-notation when describing the semantics with compact and user-friendly
-notation.
+With relation, user can define the formal semantics of Wasm.
+The below code illustrates the execution semantics for \texttt{testop}
+instruction described in a relation definition.
 \begin{lstlisting}[style=dsl]
+  relation Step_pure: instr* ~> instr*
   rule Step_pure/testop:
-  (CONST nt c_1) (TESTOP nt testop)  @$\tildecode$@>  (CONST I32 c)
-  -- if c = @$\dollarcode$@testop_(nt, testop, c_1)
+  (CONST numtype c_1) (TESTOP numtype testop)  ~>  (CONST I32 c)
+  -- if c = @$\dollarcode$@testop_(numtype, testop, c_1)
+\end{lstlisting}
+The signature of the step relation $\tildecode$\texttt{>} is defined first.
+It then specifies a step rule that describes the semantics of the
+\texttt{testop} instruction with premises under which the relation holds.
+SpecTec performs type checking to ensure that any incorrect symbols or
+ill-typed relations like below code are rejected.
+\begin{lstlisting}[style=dsl]
+  (* Wrong type *)
+  rule Step_pure/testop:
+  (CONST numtype c_1) (TESTOP numtype testop)  ~>  c
+  -- if c = @$\dollarcode$@testop_(numtype, testop, c_1)
+
+  (* Notation misuse *)
+  rule Step_pure/testop:
+  (CONST numtype c_1) (TESTOP numtype testop)  =>  (CONST I32 c)
+  -- if c = @$\dollarcode$@testop_(numtype, testop, c_1)
 \end{lstlisting}
 
 
-% DSL
-The DSL consists of DSL definitions.
-There are mainly 4 kinds of DSL definitions: type, grammar, relation, and
-functions.
-Type definitions are used to define abstract syntax, while grammar definitions
-are used to define concrete syntax.
-Relation definitions are used to define semantics; the code above is also
-described in relation definition.
+TODO: funciton definition
 Function definitions can be utilized for other definitions such as
 \texttt{\$testop\_} in the code.
 In addition, they can be also used to describe semantics.
 Especially, SpecTec uses function definitions to describe module instantiation
 and function invocation.
+
+TODO: latex and mechanized definitions

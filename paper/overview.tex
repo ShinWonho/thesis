@@ -39,7 +39,7 @@ The code below shows the specification for the \texttt{testop} instruction
 written in the DSL:
 \begin{lstlisting}[style=dsl]
   rule Step_pure/testop:
-  (CONST nt c_1) (TESTOP nt testop)  @$\tildecode$@>  (CONST I32 c)
+  (CONST nt c_1) (TESTOP nt testop)  ~>  (CONST I32 c)
   -- if c = @$\dollarcode$@testop_(nt, testop, c_1)
 \end{lstlisting}
 The DSL is type checked to prevent meta-level errors such as notation misuses and
