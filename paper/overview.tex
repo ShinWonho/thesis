@@ -54,8 +54,8 @@ In AL, semantics are expressed algorithmically, in the form of step-by-step
 instructions that take inputs and perform operations, mirroring the prose notation.
 SpecTec translates declarative definitions in the DSL into algorithmic
 definitions in AL.
-The AL code below is the specification for the \texttt{testop} instruction
-generated from the DSL:
+The following code is generated from the DSL, representing the algorithmic
+specification for the \texttt{testop} instruction using AL:
 \begin{lstlisting}[style=al]
 @\textbf{Step\_pure/testop}@ nt testop {
     Assert (check_type_of_stack_top(nt))
