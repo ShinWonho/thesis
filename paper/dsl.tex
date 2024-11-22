@@ -14,8 +14,10 @@ It includes definitions for type, relation, and functions.
 Types define the abstract syntax in a mannar analogous to the BNF format, where
 terminals are represented by capital letters, while non-terminals are denoted
 by lowercase letters.
-The below code represents the abstract syntax for \texttt{testop},
+\cref{ex:dsl-syntax} represents the abstract syntax for \texttt{testop},
 \texttt{numtype} and \texttt{instr}.
+\\
+\begin{example}
 \begin{lstlisting}[style=dsl]
 syntax testop = EQZ
 syntax numtype = I32 | I64 | F32 | F64 | V128
@@ -24,35 +26,45 @@ syntax instr =
   | TESTOP numtype testop
   | ...
 \end{lstlisting}
+\label{ex:dsl-syntax}
+\end{example}
 
 
 % Relation definition
 With relation, user can define the formal semantics of Wasm.
-The below code illustrates the execution semantics for \texttt{testop}
+\cref{ex:dsl-testop} illustrates the execution semantics for \texttt{testop}
 instruction described in a relation definition.
+\\
+\begin{example}
 \begin{lstlisting}[style=dsl]
-  relation Step_pure: instr* ~> instr*
-  rule Step_pure/testop:
-  (CONST nt c_1) (TESTOP nt testop)  ~>  (CONST I32 c)
-  -- if c = @\dollarcode@testop_(nt, testop, c_1)
+relation Step_pure: instr* ~> instr*
+rule Step_pure/testop:
+(CONST nt c_1) (TESTOP nt testop)  ~>  (CONST I32 c)
+-- if c = @\dollarcode@testop_(nt, testop, c_1)
 \end{lstlisting}
+  \label{ex:dsl-testop}
+\end{example}
 The signature of the \texttt{Step\_pure} relation $\tildecode$\texttt{>} is
 defined first.
 A \texttt{Step\_pure} rule is then specified to describe the semantics of the
 \texttt{testop} instruction with premises under which the relation holds.
 SpecTec performs type checking to reject any incorrect symbols or ill-typed
 relations like below codes.
+\\
+\begin{example}
 \begin{lstlisting}[style=dsl]
-  (* Wrong type *)
-  rule Step_pure/testop:
-  (CONST nt c_1) (TESTOP nt testop)  ~>  c
-  -- if c = @\dollarcode@testop_(nt, testop, c_1)
+(* Wrong type *)
+rule Step_pure/testop:
+(CONST nt c_1) (TESTOP nt testop)  ~>  c
+-- if c = @\dollarcode@testop_(nt, testop, c_1)
 
-  (* Wrong symbol *)
-  rule Step_pure/testop:
-  (CONST nt c_1) (TESTOP nt testop)  =>  (CONST I32 c)
-  -- if c = @\dollarcode@testop_(nt, testop, c_1)
+(* Wrong symbol *)
+rule Step_pure/testop:
+(CONST nt c_1) (TESTOP nt testop)  =>  (CONST I32 c)
+-- if c = @\dollarcode@testop_(nt, testop, c_1)
 \end{lstlisting}
+  \label{ex:dsl-error}
+\end{example}
 
 
 % Function definition
@@ -63,16 +75,19 @@ As with relation definitions, defining a function begins by specifying the
 signature of the function.
 The function's actual definition is then specified, including output value and
 the premises under which the function is applicable.
-The below code represents the function definition for \texttt{\$testop\_}.
+\cref{ex:dsl-fun} represents the function definition for \texttt{\$testop\_}.
 % XXX: Hack
 \newpage
+\begin{example}
 \begin{lstlisting}[style=dsl]
-  def @\dollarcode@testop_(nt, testop, num) : num
-  def @\dollarcode@testop_(nt, testop, c) = 1
-  -- if c = 0
-  def @\dollarcode@testop_(nt, testop, c) = 1
-  -- otherwise
+def @\dollarcode@testop_(nt, testop, num) : num
+def @\dollarcode@testop_(nt, testop, c) = 1
+-- if c = 0
+def @\dollarcode@testop_(nt, testop, c) = 1
+-- otherwise
 \end{lstlisting}
+  \label{ex:dsl-fun}
+\end{example}
 In addition, functions themselves can be used to describe semantics, rather
 than merely serving as auxiliary definitions.
 Specifically, SpecTec employs function definitions to describe semantics of module
