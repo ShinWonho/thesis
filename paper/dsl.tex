@@ -10,52 +10,82 @@ SpecTec offers a domain-specific language (DSL) tailored for specification
 purposes.
 The DSL is a declarative language, providing a compact and user-friendly syntax.
 It includes definitions for type, relation, and functions.
-Type definitions define the abstract syntax in a mannar analogous to the BNF
-format, where terminals are denoted by capital letters, while non-terminals are
-represented by lowercase letters.
+% Type definition
+Types define the abstract syntax in a mannar analogous to the BNF format, where
+terminals are represented by capital letters, while non-terminals are denoted
+by lowercase letters.
 The below code represents the abstract syntax for \texttt{testop},
 \texttt{numtype} and \texttt{instr}.
 \begin{lstlisting}[style=dsl]
 syntax testop = EQZ
 syntax numtype = I32 | I64 | F32 | F64 | V128
 syntax instr =
-  | CONST numtype number
+  | CONST numtype num
   | TESTOP numtype testop
   | ...
 \end{lstlisting}
 
+
+% Relation definition
 With relation, user can define the formal semantics of Wasm.
 The below code illustrates the execution semantics for \texttt{testop}
 instruction described in a relation definition.
 \begin{lstlisting}[style=dsl]
   relation Step_pure: instr* ~> instr*
   rule Step_pure/testop:
-  (CONST numtype c_1) (TESTOP numtype testop)  ~>  (CONST I32 c)
-  -- if c = @$\dollarcode$@testop_(numtype, testop, c_1)
+  (CONST nt c_1) (TESTOP nt testop)  ~>  (CONST I32 c)
+  -- if c = @\dollarcode@testop_(nt, testop, c_1)
 \end{lstlisting}
-The signature of the step relation $\tildecode$\texttt{>} is defined first.
-It then specifies a step rule that describes the semantics of the
+The signature of the \texttt{Step\_pure} relation $\tildecode$\texttt{>} is
+defined first.
+A \texttt{Step\_pure} rule is then specified to describe the semantics of the
 \texttt{testop} instruction with premises under which the relation holds.
-SpecTec performs type checking to ensure that any incorrect symbols or
-ill-typed relations like below code are rejected.
+SpecTec performs type checking to reject any incorrect symbols or ill-typed
+relations like below codes.
 \begin{lstlisting}[style=dsl]
   (* Wrong type *)
   rule Step_pure/testop:
-  (CONST numtype c_1) (TESTOP numtype testop)  ~>  c
-  -- if c = @$\dollarcode$@testop_(numtype, testop, c_1)
+  (CONST nt c_1) (TESTOP nt testop)  ~>  c
+  -- if c = @\dollarcode@testop_(nt, testop, c_1)
 
-  (* Notation misuse *)
+  (* Wrong symbol *)
   rule Step_pure/testop:
-  (CONST numtype c_1) (TESTOP numtype testop)  =>  (CONST I32 c)
-  -- if c = @$\dollarcode$@testop_(numtype, testop, c_1)
+  (CONST nt c_1) (TESTOP nt testop)  =>  (CONST I32 c)
+  -- if c = @\dollarcode@testop_(nt, testop, c_1)
 \end{lstlisting}
 
 
-TODO: funciton definition
-Function definitions can be utilized for other definitions such as
-\texttt{\$testop\_} in the code.
-In addition, they can be also used to describe semantics.
-Especially, SpecTec uses function definitions to describe module instantiation
-and function invocation.
+% Function definition
+Functions enable auxiliary definitions that are used for other definitions such
+as \texttt{\$testop\_} in the relation for \texttt{testop} in the code example
+above.
+As with relation definitions, defining a function begins by specifying the
+signature of the function.
+The function's actual definition is then specified, including output value and
+the premises under which the function is applicable.
+The below code represents the function definition for \texttt{\$testop\_}.
+% XXX: Hack
+\newpage
+\begin{lstlisting}[style=dsl]
+  def @\dollarcode@testop_(nt, testop, num) : num
+  def @\dollarcode@testop_(nt, testop, c) = 1
+  -- if c = 0
+  def @\dollarcode@testop_(nt, testop, c) = 1
+  -- otherwise
+\end{lstlisting}
+In addition, functions themselves can be used to describe semantics, rather
+than merely serving as auxiliary definitions.
+Specifically, SpecTec employs function definitions to describe semantics of module
+instantiation and function invocation.
 
-TODO: latex and mechanized definitions
+
+% LaTeX and mechanized definitions
+SpecTec generates LaTeX code from these DSL definitions.
+The DSL allows users to include rendering hints, enabling them to customize how
+the definitions are rendered.
+The below grey box in \cref{fig:spectec-testop} is rendered result of
+LaTeX code generated from the relation definition.
+By using rendering hints, \texttt{(CONST nt c)} appears as \texttt{(nt.const
+c)}, and \texttt{(TESTOP nt testop)} is displayed as \texttt{(nt.testop)}.
+In addition, SpecTec generates mechanized definitions for theorem provers
+enabling the formal verification of properties such as type soundness.

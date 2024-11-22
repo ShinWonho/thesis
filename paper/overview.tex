@@ -40,7 +40,7 @@ written in the DSL:
 \begin{lstlisting}[style=dsl]
   rule Step_pure/testop:
   (CONST nt c_1) (TESTOP nt testop)  ~>  (CONST I32 c)
-  -- if c = @$\dollarcode$@testop_(nt, testop, c_1)
+  -- if c = @\dollarcode@testop_(nt, testop, c_1)
 \end{lstlisting}
 The DSL is type checked to prevent meta-level errors such as notation misuses and
 dimension mismatches.
@@ -58,10 +58,10 @@ The AL code below is the specification for the \texttt{testop} instruction
 generated from the DSL:
 \begin{lstlisting}[style=al]
 @\textbf{Step\_pure/testop}@ nt testop {
-    Assert (top_value(nt))
-    Pop (numtype_0.CONST c_1)
+    Assert (check_type_of_stack_top(nt))
+    Pop (CONST nt c_1)
     Let c = @$\dollarcode$@testop_(nt, testop, c_1)
-    Push (I32.CONST c)
+    Push (CONST I32 c)
 }
 \end{lstlisting}
 Using AL, SpecTec generates reStructuredText code.
