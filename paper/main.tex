@@ -74,6 +74,15 @@
   keywords={Assert, Pop, Let, Push}
 }
 
+\lstdefinestyle{wasm}{
+  basicstyle=\ttfamily,
+  keywordstyle=\bfseries,
+  columns=fullflexible,
+  commentstyle=\itshape,
+  escapechar=\@,
+  keywords={syntax,relation,rule,def,grammar,var,if,otherwise,hint}
+}
+
 
 
 \newcounter{example} % Define a counter for examples
@@ -105,6 +114,8 @@
 \newcommand{\premise}[1]{\textsf{\textbf{#1}}}
 \newcommand{\tildecode}{\texttt{\raisebox{0.5ex}{\texttildelow}}}
 \newcommand{\dollarcode}{\texttt{\textdollar}}
+\newcommand{\hatcode}{\textsuperscript{$\wedge$}}
+
 
 
 % Algorithm

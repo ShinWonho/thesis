@@ -2,8 +2,50 @@
 \label{ch:al}
 \noindent
 
+
+SpecTec introduces AL, an algorithmic specification language, for specifying
+the prose notation.
+Given that the prose notation in the official specification is written
+informally, it is essential to define AL with rigour.
+We begin by how the official specification describes Wasm control flow in
+\cref{sec:???}
+Next, we then define a formal model for Wasm control flow in AL in
+\cref{sec:model}.
+We then formalize the syntax and semantics of AL in \cref{sec:formal}.
+\red{Finally, we ??? in \cref{sec:spectec-prose}.}
+
+
 \section{Formal Model for WebAssembly Control Flow}
 \label{sec:model}
+
+The way the official specification describe Wasm control flow differs b/w the
+prose notation and the formal notation.
+In the prose notation, it implicitly assumes a program counter, so it
+\textit{jumps} to certain point of the code.
+\begin{lstlisting}[style=wasm]
+(block (br 0) (unreachable) end)
+@\hatcode@
+(block (br 0) (unreachable) end)
+        @\hatcode@
+(block (br 0) (unreachable) end)
+                                  @\hatcode@
+\end{lstlisting}
+
+
+\begin{lstlisting}[style=wasm]
+(i32.const 1) (if (br 0) (unreachable) else (unreachable) end)
+@\hatcode@
+(i32.const 1) (if (br 0) (unreachable) else (unreachable) end)
+                @\hatcode@
+(block (br 0) (unreachable) end)
+@\hatcode@
+(block (br 0) (unreachable) end)
+        @\hatcode@
+(block (br 0) (unreachable) end)
+                                  @\hatcode@
+\end{lstlisting}
+Official specification explains Wasm control flow in a different manner in the prose notation and the formal notation.
+The keyword is "jump" and "execute"
 
 
 
@@ -12,10 +54,17 @@
 \newcommand{\officialp}{official prose}
 \newcommand{\spectecp}{SpecTec prose}
 
+
 % control structure
+A program counter is imp
 It might be easy to understand how the control flow of Wasm works, if we assume
 that a Wasm code is loaded on a memory space and a pc points to the instruction
 to execute.
+
+
+
+
+
 To describe control flow, it introduces a structure named \textit{block} which
 consitutes of a instruction sequence.
 When branching instruction in the block is performed, pc can be changed to the
@@ -1426,3 +1475,25 @@ excessively verbose.
 
 \section{Prose Notation Specification for WebAssembly}
 \label{sec:spectec-prose}
+
+SpecTec translates declarative definitions in the DSL into algorithmic
+definitions in AL.
+\cref{ex:al-testop} is generated from \cref{ex:dsl-testop}, representing the
+algorithmic specification for the \texttt{testop} instruction using AL:
+\\
+\begin{example}
+\begin{lstlisting}[style=al]
+@\textbf{Step\_pure/testop}@ nt testop {
+    Assert (check_type_of_stack_top(nt))
+    Pop (CONST nt c_1)
+    Let c = @$\dollarcode$@testop_(nt, testop, c_1)
+    Push (CONST I32 c)
+}
+\end{lstlisting}
+  \label{ex:al-testop}
+\end{example}
+Using AL, SpecTec generates reStructuredText code.
+\cref{fig:spectec-testop} shows the generated document for \texttt{testop}
+instruction.
+The generated document closely resembles the official document except for some
+minor notation changes and some missing hyperlinks.

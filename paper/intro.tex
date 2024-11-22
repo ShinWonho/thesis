@@ -5,8 +5,8 @@
 \noindent
 
 % Brief overview
-WebAssembly (Wasm)~\cite{wasm} is a low-level bytecode language that is safe, fast,
-portable, and compact.
+WebAssembly (Wasm)~\cite{wasm} is a low-level bytecode language that is safe,
+fast, portable, and compact.
 It is widely used as a compilation target for web applications.
 Beyond web development, Wasm's advantages are also deployed in areas such as
 cloud and edge computing~\cite{lucet, cloudflare}, IoT~\cite{wasm-iot}, and
@@ -20,7 +20,7 @@ However, ensuring portability across these diverse implementations introduces
 the risk of divergence among them.
 
 
-% Rigorous standardization -> spec is rigorous: formal notation & prose notation
+% Rigorous standardization -> formal notation & prose notation
 To address this challenge, Wasm has been rigorously standardized by the
 W3C~\cite{wasm-w3c}.
 The Wasm specification is particularly rigorous, describing its semantics in
@@ -99,7 +99,8 @@ ensure its alignment with Wasm's complex semantics.
 
 
 % Solution
-To address this, we present a formal model for how AL describes Wasm control flow.
+To address this, we present a formal model for how AL describes Wasm control
+flow.
 Using this model, we identify the underlying issues and the necessary changes
 to improve it.
 Based on these insight, we formalize AL's syntax and semantics to accurately
@@ -113,7 +114,9 @@ as well as tests from proposals.
 % Contribution
 The contributions of this paper are as follows:
 \begin{itemize}
-  \item We propose a formal model for Wasm control flow in AL (\cref{sec:model})
+  \item We propose a formal model for Wasm control flow in AL
+    (\cref{sec:model})
   \item We formalize syntax and semantics of AL (\cref{sec:formal})
-  \item We implement an AL interpreter based on the formalization (\cref{ch:interpreter})
+  \item We implement an AL interpreter based on the formalization
+    (\cref{ch:interpreter})
 \end{itemize}
