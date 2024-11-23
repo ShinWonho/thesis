@@ -53,7 +53,8 @@ specification authors, particularly in maintaining consistency and correctness.
 Crafting the specification document is labor-intensive, which becomes
 increasingly difficult to scale as Wasm evolves.
 This challenge is compounded by the dual requirement to maintain both a formal
-notation, written in LaTeX, and a prose notation, authored in reStructuredText.
+specification, written in LaTeX, and a prose specification, authored in
+reStructuredText.
 The separate and user-unfriendly nature of these formats hinders collaborative
 review and increases the risk of discrepancies and errors between the two
 notations, further complicating the standardization process.
@@ -85,8 +86,8 @@ Futhermore, SpecTec generates mechanized definitions for theorem provers.
 
 % Challenge
 One challenge of our approach is making AL executable.
-Since the prose notation in the official specification is written in informal
-pseudocode, the interpretation of the prose notation is not straightforward.
+Since the prose specification is written in informal pseudocode, its
+interpretation is not straightforward.
 The naive implementation of AL interpreter produced incorrect results when
 running Wasm official test suites, particularly those related to control flow.
 Additionally, the absence of a formalized definition or formal semantics for AL
