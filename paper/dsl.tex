@@ -49,7 +49,7 @@ defined first.
 A \texttt{Step\_pure} rule is then specified to describe the semantics of the
 \texttt{testop} instruction with premises under which the relation holds.
 SpecTec performs type checking to reject any incorrect symbols or ill-typed
-relations like below codes.
+relations like \cref{ex:dsl-error}.
 \\
 \begin{example}
 \begin{lstlisting}[style=dsl]
@@ -69,8 +69,7 @@ rule Step_pure/testop:
 
 % Function definition
 Functions enable auxiliary definitions that are used for other definitions such
-as \texttt{\$testop\_} in the relation for \texttt{testop} in the code example
-above.
+as \texttt{\$testop\_} in the premise of \cref{ex:dsl-testop}.
 As with relation definitions, defining a function begins by specifying the
 signature of the function.
 The function's actual definition is then specified, including output value and
