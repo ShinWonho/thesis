@@ -14,6 +14,7 @@ Wasm programs are compiled from high-level languages (e.g., C, C++, Rust) into
 a compact, platform-independent binary format, enabling consistent execution
 across different hardware and operating systems.
 
+
 % Structure
 A Wasm program is comprised of \textit{modules}.
 A module is the unit of deployment, loading, and compilation, which contains
@@ -48,7 +49,7 @@ These instructions operate on the module’s internal state, including the value
 stored in the store.
 
 
-% execution
+% Execution
 Wasm execution is based on a stack machine.
 An instruction consumes values from the stack as operands, performs an
 operation, and pushes the resulting values onto the stack.
@@ -73,3 +74,19 @@ The RHS shows that the value at the top of the stack is updated to $(i32.const
 % Additionally, the stack also stores structures related to the control flow
 % along with the input and output values of the instructions: A \textit{frame}
 % for function calls and a \textit{label} for branching.
+
+
+% Structured Control Flow
+Wasm supports control instructions for structured control flow, which
+eliminates the need for arbitrary jumps, ensuring structured and predictable
+execution.
+Control instructions include \texttt{blocks}, \texttt{call}, \texttt{br}, and
+\texttt{return}, which are explicitly delimited in the code.
+Each control instruction is associated with \textit{contexts} that facilitate
+structured execution and aid in handling nested or complex control flows.
+For instance, the \texttt{block} instruction groups a sequence of instructions
+and provides a scoped execution context with a \textit{label}, while the
+\texttt{call} instruction executes body of a function with a \textit{frame}.
+The \texttt{br} and \texttt{return} instructions jumps to the beginning or
+the end of the block and the function, specified within the contexts, providing
+targeted control transfers.
