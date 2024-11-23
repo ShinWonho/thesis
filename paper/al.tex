@@ -4,49 +4,59 @@
 
 
 SpecTec introduces AL, an algorithmic specification language, for specifying
-the prose notation.
-Given that the prose notation in the official specification is written
-informally, it is essential to define AL with rigour.
-We begin by how the official specification describes Wasm control flow in
-\cref{sec:???}
-Next, we then define a formal model for Wasm control flow in AL in
+the prose specification.
+Since the prose specification is written informally, it is essential to define
+AL with rigour.
+We begin by outlining the ambiguity of the prose specification in
+\cref{sec:prose-informal}.
+Next, we define a formal model for Wasm control flow in AL in
 \cref{sec:model}.
 We then formalize the syntax and semantics of AL in \cref{sec:formal}.
 \red{Finally, we ??? in \cref{sec:spectec-prose}.}
 
+\section{Ambiguity in the prose specification}
+\label{sec:prose-informal}
+
+The prose specification describes Wasm semantics in an informal manner,
+particularly when addressing control flow.
+% Jump
+Wasm control instructions \textit{jump} to certain code point for control
+transfer.
+While it does not explicitly explain the mechanics of jumping, the simplest
+interpretation involves assuming a program counter.
+\cref{fig:return} illustrates the prose specification for the \texttt{return}
+instruction.
+In the final step, it jumps to the instruction after the original call that
+pushed the frame, which likely corresponds to updating the program counter to
+the return address stored in the frame.
+
+
+% Execute
+On the other hand, some control instructions \textit{execute} a Wasm
+instruction.
+\cref{fig:if} represents the prose specification for the \texttt{if}
+instruction, which executes a block instruction with instructions in the then
+branch or the else branch based on the value in the stack.
+However, the block instruction itself does not appeared in the actual code,
+making its execution unclear in this context.
+The situation become even more complicated when the block contains control
+instructions, such as function call.
+While the intended meaning can still be inferred, this informality introduces
+ambiguity, leaving room for multiple interpretations.
+
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=15cm]{fig/return}}
+  \caption[\texttt{return} instruction]{\texttt{return} instruction}
+    \label{fig:return}
+  \centerline{\includegraphics[width=15cm]{fig/if}}
+  \caption[\texttt{if} instruction]{\texttt{if} instruction}
+    \label{fig:if}
+\end{figure}
+
 
 \section{Formal Model for WebAssembly Control Flow}
 \label{sec:model}
-
-The way the official specification describe Wasm control flow differs b/w the
-prose notation and the formal notation.
-In the prose notation, it implicitly assumes a program counter, so it
-\textit{jumps} to certain point of the code.
-\begin{lstlisting}[style=wasm]
-(block (br 0) (unreachable) end)
-@\hatcode@
-(block (br 0) (unreachable) end)
-        @\hatcode@
-(block (br 0) (unreachable) end)
-                                  @\hatcode@
-\end{lstlisting}
-
-
-\begin{lstlisting}[style=wasm]
-(i32.const 1) (if (br 0) (unreachable) else (unreachable) end)
-@\hatcode@
-(i32.const 1) (if (br 0) (unreachable) else (unreachable) end)
-                @\hatcode@
-(block (br 0) (unreachable) end)
-@\hatcode@
-(block (br 0) (unreachable) end)
-        @\hatcode@
-(block (br 0) (unreachable) end)
-                                  @\hatcode@
-\end{lstlisting}
-Official specification explains Wasm control flow in a different manner in the prose notation and the formal notation.
-The keyword is "jump" and "execute"
-
 
 
 
