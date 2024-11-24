@@ -104,8 +104,8 @@ To address this, we present a formal model for how AL describes Wasm control
 flow.
 Using this model, we identify the underlying issues and the necessary changes
 to improve it.
-Based on these insight, we formalize AL's syntax and semantics to accurately
-capture Wasm control flow.
+Based on these insight, we formally define AL's syntax and semantics to
+accurately capture Wasm control flow.
 We then implement an AL interpreter according to this formalization and
 evaluate its correctness.
 The interpreter successfully passes all tests in the Wasm official test suite,
@@ -115,9 +115,9 @@ as well as tests from proposals.
 % Contribution
 The contributions of this paper are as follows:
 \begin{itemize}
-  \item We propose a formal model for Wasm control flow in AL
+  \item We propose a formal model for Wasm control flow.
     (\cref{sec:model})
-  \item We formalize syntax and semantics of AL (\cref{sec:formal})
+  \item We define syntax and semantics of AL (\cref{sec:definition})
   \item We implement an AL interpreter based on the formalization
     (\cref{ch:interpreter})
 \end{itemize}

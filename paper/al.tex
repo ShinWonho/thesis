@@ -5,14 +5,15 @@
 
 SpecTec introduces AL, an algorithmic specification language, for specifying
 the prose specification.
-Since the prose specification is written informally, it is essential to define
-AL with rigour.
+Since the prose notation of the official specification is informal, it is
+essential to rigorously define AL to ensure an unambiguous and correct
+specification, rather than merely imitating the original.
 We begin by outlining the ambiguity of the prose specification in
 \cref{sec:prose-informal}.
-Next, we define a formal model for Wasm control flow in AL in
+Next, we propose a formal model for Wasm control flow in AL in
 \cref{sec:model}.
-We then formalize the syntax and semantics of AL in \cref{sec:formal}.
-\red{Finally, we ??? in \cref{sec:spectec-prose}.}
+We then define the syntax and the semantics of AL in \cref{sec:definition}.
+\red{Finally, we ??? in \cref{???}.}
 
 \section{Ambiguity in the prose specification}
 \label{sec:prose-informal}
@@ -55,325 +56,101 @@ ambiguity, leaving room for multiple interpretations.
 \end{figure}
 
 
-\section{Formal Model for WebAssembly Control Flow}
+
+\section{A Formal Model for WebAssembly Control Flow}
 \label{sec:model}
 
 
-
-% TODO: Remove these commands
-\newcommand{\officialp}{official prose}
-\newcommand{\spectecp}{SpecTec prose}
-
-
-% control structure
-A program counter is imp
-It might be easy to understand how the control flow of Wasm works, if we assume
-that a Wasm code is loaded on a memory space and a pc points to the instruction
-to execute.
-
-
-
-
-
-To describe control flow, it introduces a structure named \textit{block} which
-consitutes of a instruction sequence.
-When branching instruction in the block is performed, pc can be changed to the
-starting point of the block or the end of the block.
+% TODO: Clever way to distinguish jargon rather then \textit
+% Formal model
+To formally specify the prose specification, we construct a formal model to
+describe Wasm control flow.
+% Execute
+Rather than relying on a program counter, we employ an instruction stack to
+represent execution progress.
+Execution proceeds by popping an instruction from the stack and performing its
+operation.
+To avoid confusion with the stack that contains values interleaved with
+contexts, we refer to the latter as the \textit{interleaved stack}.
+This approach allows us to define the \textit{execute} operation without
+introducing a program counter.
 
 
-% an example of Wasm control flow in official prose
-\begin{example}
-\label{ex:br}
-\begin{verbatim}
-  // infinite loop
-  (loop (result i32) (i32.const 42) (br 0) (unreachable) end) (unreachable)
-\end{verbatim}
-\end{example}
+% Jump
+We then split two distinct usages of the \textit{jump} operation:
+\textit{enter} and \textit{exit}.
+Since Wasm supports structured control flow, the \textit{jump} operation is
+used either for entering or exiting control structures such as a function body
+and a block of instructions.
+% Enter
+We define the \textit{enter} as the operation of pushing the context associated
+with the jump onto the interleaved stack and the instructions within
+the structure onto the instruction stack.
+On the contrary, we define \textit{exit} as the operation of popping the
+corresponding context and instructions.
 
-\cref{ex:br} is a Wasm code example that has \texttt{loop} and
-\texttt{unreachable}.
-Here, result type of the \texttt{loop} is \texttt{i32} and the \texttt{loop}
-has a block of three instructions: \texttt{i32.const}, \texttt{br}, and
-\texttt{unreachable}.
-\cref{fig:loop} is the specification for the \texttt{loop} instruction in the
-prose notation.
-In forth step, it says that the continuation is the start of the loop, the
-information is stored in a label.
-In the last step, it \textit{enters} the block with the label.
-The term \textit{enter} means that it pushes the label onto the stack and makes
-pc points to the first instruction in the block.
-The \texttt{i32.const} instruction is executed first, which just pushes the
-\texttt{i32} value \texttt{42} in the stack.
-Then, The \texttt{br} instruction is executed.
-\cref{fig:br} is the \officialp{} of the \texttt{br} instruction.
-It pops the label from the stack, and makes pc points to the continuation of
-the label, which is the start of the loop instruction.
-As a result, the code example above is a infinite loop pushing \texttt{42}
-forever without executing \texttt{unreachable} instructions.
 
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/loop}}
-    \caption[Enter the caption title here]{\texttt{loop} instruction} \label{fig:loop}
-    \centerline{\includegraphics[width=15cm]{fig/br}}
-    \caption[Enter the caption title here]{\texttt{br} instruction} \label{fig:br}
+% State transition
+To express the \textit{enter} and \textit{exit} operation formally, we model
+them as state transitions.
+We define a Wasm state as a tuple of the interleaved stack, the instruction
+stack, and the store.
+For brevity, we omit the store in this discussion.
+Let the interleaved stack initially contains $n$ entries $we_1 ~ ... ~ we_n$,
+and the instruction stack contains $m$ entries $wi_1 ~ ... ~ wi_m$.
+Suppose $wi_1$ is a control instruction that enters a control structure
+containing a sequence of k instrucitons $wi_{11} ~ ... ~ wi_{1k}$ with an
+associated context $wc$.
+The \textit{enter} operation can be expressed as the following state transition:
+\[
+(we_1 ~ ... ~ we_n, ~ wi_1 ~ ... ~ wi_m) \quad\leadsto\quad
+  (
+    wc ~ we_1 ~ ...  ~ we_n, ~
+    wi_{11} ~ ... ~ wi_{1k} ~ \textbf{end}_{wc} ~ wi_2 ~ ... ~ wi_m
+  )
+\]
+
+
+% TODO: Fix end instruction in the 5.3
+
+% End
+Note that we introduce an administrative instruction, \textbf{end}, to mark the
+end of the structure in the instruction stack.
+The prose specification describes a behavior that must take place when the end
+of a structure is reached without control transfer.
+\cref{fig:exiting-label} illustrates this behavior for a function.
+While not a Wasm instruction itself, it is presented in the same format as Wasm
+instructions.
+Therefore, we formalize this behavior as an administrative instruction,
+\textbf{end}.
+
+
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=15cm]{fig/returning}}
+  \caption[Behavior for the end a block]{Behavior for the end of a block}
+    \label{fig:exiting-label}
 \end{figure}
 
-
-% exiting label in official prose
-There is also a special form of a behavior related to the block: an
-\textit{exiting label}.
-\cref{fig:exiting-label} is the \officialp{} of the \textit{exiting label}.
-It is special because this behavior is performed without an explicit
-Wasm instruction.
-Rather, the behavior is performed when \textbf{the end of a block is reached}
-without control instructions or runtime error.
-The behavior is that the label is popped from the stack, and the pc changes to
-the point after the end of the block.
-
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/exiting}}
-    \caption[Enter the caption title here]{exiting label} \label{fig:exiting-label}
-\end{figure}
-
-
-% an example of exiting label in official prose
-\begin{example}
-\label{ex:exit}
-\begin{verbatim}
-  // exiting label
-  (loop (result i32) (i32.const 42) end) (f64.const 3.14)
-\end{verbatim}
-\end{example}
-
-\cref{ex:exit} is a Wasm code example that has \texttt{loop} whose block is
-only \texttt{i32.const}, and \texttt{f32.const}
-When the \texttt{loop} instruction is executed, it enters the block with a label.
-After \texttt{i32.const} is executed, the end of the block is reached.
-As a result, exiting label occurs so that the label is popped from the stack,
-pc changes to the point after the end of block: \texttt{f64.const}.
-As a result, after executing the code, the value 42 and 3.14 pushed to the
-stack.
-
-
-% control flow structure with function call in official prose
-Similar to the control flow using the block and the label, there is a function
-call with a frame.
-\cref{fig:invoke} is the \officialp{} of the function invocation which takes
-place by a \texttt{call} instruction.
-A frame is pushed to the stack and enters the block of the function body with a
-label.
-There is also a special behavior named returning from a function.
-\cref{fig:returning} is the \officialp{} of the returning from a function.
-When end of function is reached without without control instructions or runtime
-error, The frame is popped from the stack, and the pc points to the next
-instruction of the caller instruction.
-
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/invoke}}
-    \caption[Enter the caption title here]{function invocation} \label{fig:invoke}
-    \centerline{\includegraphics[width=15cm]{fig/returning}}
-    \caption[Enter the caption title here]{returning from a function} \label{fig:returning}
-\end{figure}
-
-
-% control flow structure in SpecTec prose
-However, the \spectecp{} assumes a different model to explain the control flow
-of WebAssembly.
-Rather than using the notion of a pc, \spectecp{} assumes that WebAssembly
-instructions are just given one by one.
-This is because the \spectecp{} is generated automatically from the
-\red{SpecTec DSL}.
-\red{SpecTec DSL} uses rewrite rule to describe WebAssembly semantics, and it
-is interpreted in \spectecp{} as consuming a WebAssembly instruction, pushing
-or poping a control structures, and inputing new WebAssembly instructions.
-It can be expressed in the following form:
-$c^* \vdash i_0, i_1, ..., i_m \leadsto c'^* \vdash i'_0, ...i'_{m'}, i_1, ..., i_m$.
-It means that given a sequence of contexts $c^*$, executing $i_0$ results in a
-new sequence of contexts $c'^*$ and instructions $i'_0, ...i'_{m'}$.
-To simply model the control flow of WebAssembly, other things not closely
-related to the control flow are omitted in this notation.
-
-
-% challenges in SpecTec prose
-However, this viewpoint is challenged by the exiting label.
-As the block structure doesn't remain intact in this model, it is hard to
-describe \textbf{the end of the block}.
-Furthermore, the exiting label is not performed by a specific WebAssembly
-instruction, which makes it hard to model the behavior.
-To handle this problem, an administrative instruction \texttt{end} is
-introduced in \spectecp.
-When entering a block, an \texttt{end} is appended to the end of the block.
-
-
-% an example of Wasm control flow in official prose
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/spectec-loop}}
-    \caption[Enter the caption title here]{SpecTec \texttt{loop}} \label{fig:spectec-loop}
-\end{figure}
-\begin{figure}[h!]
-    \centerline{\includegraphics[width=15cm]{fig/spectec-br}}
-    \caption[Enter the caption title here]{SpecTec \texttt{br}} \label{fig:spectec-br}
-\end{figure}
-
-\red{TODO: Change to array} \\
-\begin{align}
-  &c^*
-  \vdash
-  loop([ ~ i32.const ~ 42, ~ br ~ 0, ~ unreachable ~ ]), ~ unreachable
-  \label{eq:loop-1} \\
-&\leadsto
-  label(loop([ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
-  \vdash
-  i32.const ~ 42, ~ br ~ 0, ~ unreachable, ~ end, ~ unreachable
-  \label{eq:loop-2} \\
-  &\leadsto
-  label(loop([ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ])), c^*
-  \vdash
-  ~ br ~ 0, ~ unreachable, ~ end, ~ unreachable
-  \label{eq:loop-3} \\
-&\leadsto
-  c^*
-  \vdash
-  loop([ ~ i32.const ~ 42; ~ br ~ 0; ~ unreachable ~ ]), unreachable
-  \label{eq:loop-4}
-\end{align}
-
-Consider \cref{ex:br} above.
-If we assume some control structure $c^*$ is given, the code can be expressed
-like \cref{eq:loop-1}.
-\cref{fig:spectec-loop} is the \spectecp{} of the \texttt{loop} instruction.
-Rather than storing the point to jump as a continuation in the label, it stores
-the \texttt{loop} instruction itself in the label, and \textit{enters} the
-block.
-Here, \textit{enter} means that it pushes the label in the stack and executes
-the instructions in the block, which means that \texttt{i32.const},
-\texttt{br}, \texttt{unreachable}, \texttt{end} and \texttt{unreachable} become
-the new inputs in \cref{eq:loop-2}.
-When \texttt{i32.const} is excuted, it pushes 42 as \officialp{} does
-in \cref{eq:loop-3}.
-The value is omitted for brevity.
-However, \texttt{br} behaves a bit differently.
-\cref{fig:spectec-br} is the \spectecp{} of the \texttt{br} instruction.
-It pops the label from the stack, removes the input instructions until the end
-of the block including the \texttt{end}, considers the loop instruction in the
-label as a new input instruction.
-Consequently, remaining inputs are \texttt{loop}, and \texttt{unreachable}
-again in \cref{eq:loop-4}.
-Therefore, it explains the same behavior in a different point of view.
-
-\red{TODO: Also use example 3 to explain function call in official prose}
-
-% an example of function call in official prose
-\begin{example}
-\label{ex:invoke}
-\begin{verbatim}
-  // function definition of $push42
-  (func $push42 (result i32) (i32.const 42))
-
-  // function call
-  (call $push42) (f32.const 3.14)
-\end{verbatim}
-\end{example}
-
-\red{TODO: Change to array} \\
-\begin{align}
-  &c^* \vdash call(\$push42), ~ f32.const ~ 3.14 \label{eq:call-1} \\
-&\leadsto
-  Label(\epsilon), ~ Frame, ~ c^* \vdash i32.const ~ 42, ~ end, ~ f32.const ~ 3.14 \label{eq:call-2} \\
-&\leadsto
-  Label(\epsilon), ~ Frame, ~ c^* \vdash end, ~ f32.const ~ 3.14 \label{eq:call-3} \\
-&\leadsto
-  c^* \vdash f32.const ~ 3.14 \label{eq:call-4} \\
-&\leadsto
-  c^* \vdash \epsilon \label{eq:call-5}
-\end{align}
-
-\cref{ex:invoke} contains a function definition whose body is \texttt{i32.const}, a
-\texttt{call} instruction followed by a \texttt{f32.const} instruction, which
-can be expressed in \cref{eq:call-1}.
-By invoking a function, it pushes a frame and enters the block with a label in
-\cref{eq:call-2}.
-After executing the body in \cref{eq:call-3}, an \texttt{end} is executed.
-In this point, this \texttt{end} represent both the end of the block and the
-function.
-As a consequence, this \text{end} perform both exiting label and returning from
-a function in \cref{eq:call-4}, and the instruction after the \texttt{call} is
-executed in \cref{eq:call-5}
-It results in the values 42 and 3.14 pushed to the stack.
-
-
-% summary & test
-In short, the behavior of an \texttt{end} instruction 1) performs exiting
-label, 2) looks up the top of the context, and 3) performs returing from a
-function, if it is a frame.
-The \spectecp{} can model the WebAssembly control flow using this \texttt{end}
-instruction.
-To show the correctness of the \spectecp{}, we run the WebAssembly tests
-including official WebAssembly test suite by executing the \spectecp{} with
-\red{definitional interpreter}.
-
-
-% Problem
-However, tests related to the control instruction are failed.
-At that time, there was no explicit model to describe the control flow in
-\spectecp{}, it was hard to define the problem, making it complicated to fix
-the problem.
+Similarly, the \textit{exit} operation can be described as a transition of Wasm
+state.
+Suppose $wi_1$ is a control instruction that exits a control structure, and $i$
+values $wv_1 ~ ... wv_i$ are at the top of the interleaved stack, followed by a
+context $wc$, and $j$ instructions $wi_1 ~ ... ~ wi_j$ are at the top of the
+instruction stack followed by an \textbf{end} instruction.
+The \textit{exit} operation can be represented as the following state transition:
+\[
+(wv_1 ~ ... ~ wv_i ~ wc ~ we_{i+2} ~ ...  ~ we_n,
+  wi_1 ~ ... ~ wi_j ~ \textbf{end}_{wc} ~ wi_{j+2} ~ ..  ~ wi_m)
+  \quad\leadsto\quad
+  (we_{i+1} ~ ... ~ we_n, wi_{j+1} ~ ... ~ wi_m)
+\]
+This transition model provides the foundation for the formal definition of AL.
 
 
 
-%%%%%%%%
-
-% an example of buggy test case
-\begin{example}
-\label{ex:bug}
-\begin{verbatim}
-  // function definition of $br-returning
-  (func  $brAndReturning (br 0) (unreachable))
-
-  // function call
-  (call $brAndReturning)
-\end{verbatim}
-\end{example}
-
-\cref{ex:bug} contains a function that has only a \texttt{br} instruction, and a
-\texttt{call} insstruction.
-According to the \officialp{}, when the function \texttt{\$brAndReturning} is
-called, a frame is pushed to the stack, and the block of the function
-body is entered with a label.
-When the \texttt{br} is executed, it pops the label from the stack.
-As the end of the function is reached after the execution, returning from a
-function is performed.
-As a result, the frame is popped, so the call actually does nothing.
-
-
-% explaination of the bug in SpecTec prose
-\begin{align}
-  &c^* \vdash call(\$brAndReturning) \label{eq:bug-1} \\
-&\leadsto
-  Label(\epsilon), ~ Frame, ~ c^* \vdash (br ~ 0) ~ (unreachable), ~ end \label{eq:bug-2} \\
-&\leadsto
-  Frame, ~ c^* \vdash \epsilon \label{eq:bug-3}
-\end{align}
-
-In \spectecp{} the call instruction in \cref{eq:bug-1} pushes a frame and
-enters the function body \cref{eq:bug-2}.
-When the \texttt{br} is executed, it pops the label and removes the input
-instructions until the end in \cref{eq:bug-3}.
-As a result, the frame is remained after the executing the call.
-The problem is that the \texttt{br} should remove the end of the block but
-should not remove the end of the function, but \texttt{end} express the end of
-the block and the function at the same time.
-
-
-% Fix
-To fix the problem, semantics of \enteri is changed.
-The sequence of contexts that is pushed in the AL algorithm is stored,
-and when a block is entered, exiting label and returning from a function is
-appended according to the sequence.
-
-
-\section{Formalization for Algorithmic Specification Language}
-\label{sec:formal}
+\section{Definition of Algorithmic Specification Language}
+\label{sec:definition}
 
 % TODO: remove seq command
 \newcommand{\seq}[1]{#1^*}
@@ -1483,8 +1260,8 @@ excessively verbose.
 
 
 
-\section{Prose Notation Specification for WebAssembly}
-\label{sec:spectec-prose}
+\section{???}
+\label{sec:???}
 
 SpecTec translates declarative definitions in the DSL into algorithmic
 definitions in AL.
