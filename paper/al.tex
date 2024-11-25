@@ -46,17 +46,6 @@ While the intended meaning can still be inferred, this informality introduces
 ambiguity, leaving room for multiple interpretations.
 
 
-\begin{figure}[h]
-  \centerline{\includegraphics[width=15cm]{fig/return}}
-  \caption[\texttt{return} instruction]{\texttt{return} instruction}
-    \label{fig:return}
-  \centerline{\includegraphics[width=15cm]{fig/if}}
-  \caption[\texttt{if} instruction]{\texttt{if} instruction}
-    \label{fig:if}
-\end{figure}
-
-
-
 \section{A Formal Model for WebAssembly Control Flow}
 \label{sec:model}
 
@@ -72,27 +61,27 @@ Execution proceeds by popping an instruction from the stack and performing its
 operation.
 To avoid confusion with the stack that contains values interleaved with
 contexts, we refer to the latter as the \textit{interleaved stack}.
-This approach allows us to define the \textit{execute} operation without
-introducing a program counter.
+This approach allows us to define the execute operation without introducing a
+program counter.
 
 
 % Jump
-We then split two distinct usages of the \textit{jump} operation:
-\textit{enter} and \textit{exit}.
-Since Wasm supports structured control flow, the \textit{jump} operation is
-used either for entering or exiting control structures such as a function body
-and a block of instructions.
+We then split two distinct usages of the jump operation: \textit{enter} and
+\textit{exit}.
+Since Wasm supports structured control flow, the jump operation is used either
+for entering or exiting control structures such as a function body and a block
+of instructions.
 % Enter
-We define the \textit{enter} as the operation of pushing the context associated
-with the jump onto the interleaved stack and the instructions within
-the structure onto the instruction stack.
-On the contrary, we define \textit{exit} as the operation of popping the
-corresponding context and instructions.
+We define the enter as the operation of pushing the context associated with the
+jump onto the interleaved stack and the instructions within the structure onto
+the instruction stack.
+Similarly, we define exit as the operation of popping the corresponding context
+and instructions.
 
 
 % State transition
-To express the \textit{enter} and \textit{exit} operation formally, we model
-them as state transitions.
+To express the enter and exit operation formally, we model them as state
+transitions.
 We define a Wasm state as a tuple of the interleaved stack, the instruction
 stack, and the store.
 For brevity, we omit the store in this discussion.
@@ -101,7 +90,7 @@ and the instruction stack contains $m$ entries $wi_1 ~ ... ~ wi_m$.
 Suppose $wi_1$ is a control instruction that enters a control structure
 containing a sequence of k instrucitons $wi_{11} ~ ... ~ wi_{1k}$ with an
 associated context $wc$.
-The \textit{enter} operation can be expressed as the following state transition:
+The enter operation can be expressed as the following state transition:
 \[
 (we_1 ~ ... ~ we_n, ~ wi_1 ~ ... ~ wi_m) \quad\leadsto\quad
   (
@@ -111,34 +100,29 @@ The \textit{enter} operation can be expressed as the following state transition:
 \]
 
 
-% TODO: Fix end instruction in the 5.3
-
 % End
 Note that we introduce an administrative instruction, \textbf{end}, to mark the
 end of the structure in the instruction stack.
-The prose specification describes a behavior that must take place when the end
-of a structure is reached without control transfer.
-\cref{fig:exiting-label} illustrates this behavior for a function.
-While not a Wasm instruction itself, it is presented in the same format as Wasm
+It models unique behavior described in the prose specification that must take
+place when the end of a structure is reached without control transfer.
+For example, if a function body executes without concluding with a
+\texttt{return} instruction, a behavior that corresponds to the \texttt{return}
+is performed.
+\cref{fig:exiting-label} illustrates this behavior.
+While not a Wasm instruction itself, it is represented in the same way as Wasm
 instructions.
 Therefore, we formalize this behavior as an administrative instruction,
 \textbf{end}.
 
 
-
-\begin{figure}[h]
-  \centerline{\includegraphics[width=15cm]{fig/returning}}
-  \caption[Behavior for the end a block]{Behavior for the end of a block}
-    \label{fig:exiting-label}
-\end{figure}
-
-Similarly, the \textit{exit} operation can be described as a transition of Wasm
+% Exit
+In the same way, the exit operation can be described as a transition of Wasm
 state.
 Suppose $wi_1$ is a control instruction that exits a control structure, and $i$
 values $wv_1 ~ ... wv_i$ are at the top of the interleaved stack, followed by a
 context $wc$, and $j$ instructions $wi_1 ~ ... ~ wi_j$ are at the top of the
 instruction stack followed by an \textbf{end} instruction.
-The \textit{exit} operation can be represented as the following state transition:
+The exit operation can be represented as the following state transition:
 \[
 (wv_1 ~ ... ~ wv_i ~ wc ~ we_{i+2} ~ ...  ~ we_n,
   wi_1 ~ ... ~ wi_j ~ \textbf{end}_{wc} ~ wi_{j+2} ~ ..  ~ wi_m)
@@ -146,6 +130,23 @@ The \textit{exit} operation can be represented as the following state transition
   (we_{i+1} ~ ... ~ we_n, wi_{j+1} ~ ... ~ wi_m)
 \]
 This transition model provides the foundation for the formal definition of AL.
+
+% XXX: HACK
+\newpage
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=15cm]{fig/return}}
+  \caption[\texttt{return} instruction]{\texttt{return} instruction}
+    \label{fig:return}
+  \centerline{\includegraphics[width=15cm]{fig/if}}
+  \caption[\texttt{if} instruction]{\texttt{if} instruction}
+    \label{fig:if}
+  \centerline{\includegraphics[width=15cm]{fig/returning}}
+  \caption[Behavior for the end a block]{Behavior for the end of a block}
+    \label{fig:exiting-label}
+\end{figure}
+
+
 
 
 
@@ -160,7 +161,7 @@ This transition model provides the foundation for the formal definition of AL.
 \label{syntax}
 
 {
-\renewcommand{\arraystretch}{0.8835}  % Decrease row spacing locally
+\renewcommand{\arraystretch}{0.97}  % Decrease row spacing locally
 \begin{align*}
 \begin{array}{lcccrlr}
 %
@@ -173,6 +174,7 @@ This transition model provides the foundation for the formal definition of AL.
     &&&& | & ~ \enteri ~ (e, e) &\quad\text{(Enter)} \\
     &&&& | & ~ \pushctxi ~ e &\quad\text{(Push Context)} \\
     &&&& | & ~ \pushi ~ e &\quad\text{(Push)} \\
+    &&&& | & ~ \exiti ~ &\quad\text{(Exit)} \\
     &&&& | & ~ \popctxi ~ e &\quad\text{(Pop Context)} \\
     &&&& | & ~ \popi ~ e &\quad\text{(Pop)} \\
     &&&& | & ~ \popni ~ (e, e) &\quad\text{(Pop N)} \\
@@ -243,15 +245,16 @@ An algorithm is either an AL relation or an AL function, corresponding to the
 relation and the function definitions in the DSL.
 % instruction
 An AL instruction is \ifi{} for conditionally choosing a branch, \eitheri{} for
-nondeterministically choosing a branch, \enteri{} for entering a block,
-\pushctxi{} for pushing a Wasm context, \pushi{} for pushing a Wasm value,
-\popctxi{} for popping a Wasm context, \popi{} for popping a Wasm value,
-\popni{} for popping $n$ Wasm values, \popalli{} for popping all Wasm values
-within a Wasm context, \leti{} for let binding, \trapi{} for trapping,
-\returnreli{} for returning from an AL relation, \returnfuni{} for returning
-from an AL function, \executei{} for executing given Wasm instructions,
-\calli{} for an AL function call with let binding, \replaceframei{} for
-replacing a frame, or \replacestorei{} for replacing a store.
+nondeterministically choosing a branch, \enteri{} for entering a control
+structure, \pushctxi{} for pushing a Wasm context, \pushi{} for pushing a Wasm
+value, \exiti{} for exiting a control structure, \popctxi{} for popping a Wasm
+context, \popi{} for popping a Wasm value, \popni{} for popping $n$ Wasm
+values, \popalli{} for popping all Wasm values within a Wasm context, \leti{}
+for let binding, \trapi{} for trapping, \returnreli{} for returning from an AL
+relation, \returnfuni{} for returning from an AL function, \executei{} for
+executing given Wasm instructions, \calli{} for an AL function call with let
+binding, \replaceframei{} for replacing a frame, or \replacestorei{} for
+replacing a store.
 % expression
 An expression is a variable, number, boolean, AL function name, list, record
 (or struct), tuple, tagged tuple, unary or binary operation, data structure
@@ -516,8 +519,8 @@ $.
   (i^*, \mu, wc_1 ~ ... ~ wc_n, k) = c \\
   w, \mu \vdash e_1 \Rightarrow wc \qquad
   w, \mu \vdash e_2 \Rightarrow \listv ~ \seq{wi_1} \\
-  wi = \getendinstr(wc) \qquad
-  wi_1 = \getendinstr(wc_1) \quad ... \quad wi_n = \getendinstr(wc_n) \\
+  wi = \casev ~ (\text{"End"}, wc) \qquad
+  wi_1 = \casev ~ (\text{"End"}, wc_1) \quad ... \quad wi_n = \casev ~ (\text{"End"}, wc_n) \\
   wi_2^* = wi_1^* ~ wi ~ wi_1 ~ ... ~ wi_n \\
   \hline
   \seq{a}, w, c \vdash \enteri ~ (e_1, e_2)
@@ -541,17 +544,27 @@ $.
   \hline
   \seq{a}, w, c \vdash \pushi ~ e \Rightarrow (\push(w, wv), \algo ~ c) \\
 %
+% Exit
+\newline \\
+  (\seq{we}, \seq{wi}, sto) = w \qquad
+  (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \\
+  \seq{wi'} = \exit(\seq{wi}) \qquad
+  c' = \popwasmctx_{C}(c) \\
+  \hline
+  \seq{a}, w, c \vdash \exiti
+  \Rightarrow
+  ((\seq{we'}, \seq{wi'}, sto), \algo ~ c') \\
+%
 % PopCtx
 \newline \\
   (\seq{we}, \seq{wi}, sto) = w \qquad
   (\seq{wv}, wc, \seq{we'}) = \splitctx(\seq{we}) \\
   \mu = \getenv(c) \cdot \assign(e, wc) \qquad
-  \seq{wi'} = \exit(\seq{wi}) \qquad
   c' = \popwasmctx_{C}(c) \\
   \hline
   \seq{a}, w, c \vdash \popctxi ~ e
   \Rightarrow
-  ((\seq{we'}, \seq{wi'}, sto), \algo ~ (\setenv(c', \mu))) \\
+  ((\seq{wv} ~ \seq{we'}, \seq{wi}, sto), \algo ~ (\setenv(c', \mu))) \\
 %
 % Pop
 \newline \\
@@ -679,10 +692,13 @@ interleaved stack and the context $c$.
 % Push
 $\pushi ~ e${} evaluates $e$, pushing the resulting value $wv$ to the
 interleaved stack.
-% PopCtx
-$\popctxi ~ e${} pops all Wasm values up to and including a Wasm context $wc$
-from the interleaved stack and all Wasm instructions up to and including an end
+% Exit
+$\exiti${} pops all Wasm values up to and including a Wasm context $wc$ from
+the interleaved stack and all Wasm instructions up to and including an end
 instruction from the Wasm instruction stack.
+It also pops a Wasm context from the context $c$.
+% PopCtx
+$\popctxi ~ e${} pops a Wasm context $wc$ from the interleaved stack.
 It also pops a Wasm context from the context $c$.
 Then, it assign the Wasm context $wc$ to $e$.
 % Pop
@@ -1071,7 +1087,7 @@ excessively verbose.
 \newline \\
   &\exit(wi ~ \seq{wi}) =
     \begin{cases}
-      \seq{wi} &\quad\quad \premise{if}\quad ~ \isendinstr(wi) \\
+      \seq{wi} &\quad\quad \premise{if}\quad ~ wi = \casev ~ (\text{"End"}, wc) \\
       \exit(\seq{wi}) &\quad\quad \premise{otherwise} \\
     \end{cases}
   \\
@@ -1220,22 +1236,6 @@ excessively verbose.
     &\quad\quad\premise{otherwise}
   \end{cases}
   \\
-%
-% get_end_algo
-\newline \\
-  &\getendinstr(wc) =
-  \begin{cases}
-    \casev ~ (\text{``Exiting"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Label"}, \seq v)\\
-    \casev ~ (\text{``Returning"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Frame"}, \seq v)
-  \end{cases} \\
-%
-% is_end_instr
-\newline \\
-  &\isendinstr(wi) =
-  \begin{cases}
-    true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{``Exiting"}, \epsilon) \quad\lor\quad wi = \casev ~ (\text{``Returning"}, \epsilon)\\
-    false &\quad\quad\premise{otherwise}
-  \end{cases} \\
 %
 % is_true
 \newline \\

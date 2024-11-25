@@ -115,29 +115,29 @@ below, AL can effectively describe the exception handler semantics:
     ~ | ~ \casev ~ (\text{``Frame"}, \seq v)
     ~ | ~ \casev ~ (\text{``Handler"}, \seq v) \\
 \end{align*}
-\begin{align*}
-%
-% get_end_algo
-\newline \\
-  &\getendinstr(wc) =
-  \begin{cases}
-    \casev ~ (\text{``Exiting"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Label"}, \seq v) \\
-    \casev ~ (\text{``Returning"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Frame"}, \seq v) \\
-    \casev ~ (\text{``Exiting-handler"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Handler"}, \seq v) \\
-  \end{cases} \\
-%
-% is_end_instr
-\newline \\
-  &\isendinstr(wi) =
-  \begin{cases}
-    true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{``Exiting"}, \epsilon) \\
-    &\quad\quad\lor\quad
-    wi = \casev ~ (\text{``Returning"}, \epsilon) \\
-    &\quad\quad\lor\quad
-    wi = \casev ~ (\text{``Exiting-handler"}, \epsilon) \\
-    false &\quad\quad\premise{otherwise}
-  \end{cases} \\
-\end{align*}
+% \begin{align*}
+% %
+% % get_end_algo
+% \newline \\
+%   &\getendinstr(wc) =
+%   \begin{cases}
+%     \casev ~ (\text{``Exiting"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Label"}, \seq v) \\
+%     \casev ~ (\text{``Returning"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Frame"}, \seq v) \\
+%     \casev ~ (\text{``Exiting-handler"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Handler"}, \seq v) \\
+%   \end{cases} \\
+% %
+% % is_end_instr
+% \newline \\
+%   &\isendinstr(wi) =
+%   \begin{cases}
+%     true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{``Exiting"}, \epsilon) \\
+%     &\quad\quad\lor\quad
+%     wi = \casev ~ (\text{``Returning"}, \epsilon) \\
+%     &\quad\quad\lor\quad
+%     wi = \casev ~ (\text{``Exiting-handler"}, \epsilon) \\
+%     false &\quad\quad\premise{otherwise}
+%   \end{cases} \\
+% \end{align*}
 
 To evaluate the extended formalization, we updated the AL interpreter
 accordingly.
