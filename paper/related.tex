@@ -3,3 +3,64 @@
 \chapter{Related Work}
 \label{ch:related}
 \noindent
+
+
+% TODO: Fact check
+
+\textbf{General purpose language framework.}
+% Lem
+Lem~\cite{lem} is a language and tool for developing large-scale, rigorous
+semantics; it supports multiple output formats (e.g., LaTeX, Coq, and OCaml) to
+integrate formal specifications with proof tools and implementations.
+While Lem itself does not directly generate interpreters, its OCaml backend can
+be used to implement one.
+% Ott
+Ott~\cite{ott} is a lightweight tool for writing and maintaining formal
+semantics of programming languages, enabling generation of LaTeX for
+documentation and definitions for theorem provers such as Coq, Isabelle, or
+Twelf.
+It does not directly generate interpreters but serves as a frontend for
+creating formal specifications that can be used to derive interpreters manually
+or via theorem provers.
+% PLT
+PLT Redex~\cite{plt} is a Racket-based domain-specific language for specifying,
+experimenting with, and testing operational semantics, making it particularly
+suited for exploring small-step semantics and reduction systems.
+It provides an interactive environment for evaluating terms, which is akin to
+generating an interpreter.
+% K
+K Framework~\cite{k} is a formal language for defining programming languages
+and formal analysis tools; it enables the generation of interpreters,
+compilers, and formal verification frameworks directly from the semantics,
+making it a powerful tool for executable formal semantics.
+% Sail
+Sail~\cite{sail} is a domain-specific language designed for the formal
+specification of hardware architectures, particularly processors, using an
+abstract, executable semantics.
+While it is primarily used for hardware modeling, its general framework can
+also be applied to other systems for language.
+However, none of these tools are capable of specifying an algorithmic
+specification.
+
+
+\textbf{Specialized language framework.}
+% ESMeta
+ESMeta~\cite{esmeta} is a language framework specialized for JavaScript.
+It parses the JavaScript specification, ECMAScript, to automatically generate
+parser and interpreter ~\cite{jiset}, to generate tests and perform
+differential tests ~\cite{jest}, to find meta-level errors in the specification
+~\cite{jstar}, and to perform meta-level static analysis for the static
+analysis of the defined language ~\cite{jsaver}.
+However, it is not capable of specifying declarative specification.
+% ASL
+ASL~\cite{asl} is a language framework specialized for specifying the behavior
+and semantics of ARM instruction sets.
+% Only test?
+It also parses the algorithmic specification of ARM and test the specification.
+% ASL to Sail
+ASL to Sail project~\cite{asl2sail} translates ASL into Sail to enable formal
+verification, analysis, and multi-platform compatibility of ARM architecture
+semantics.
+Hence, ASL can specify both declarative and algorithmic specifications;
+however, it takes an opposite approach compared to SpecTec, translating the
+algorithmic specification into a declarative form.
