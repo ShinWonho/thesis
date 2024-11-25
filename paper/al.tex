@@ -13,7 +13,8 @@ We begin by outlining the ambiguity of the prose specification in
 Next, we propose a formal model for Wasm control flow in AL in
 \cref{sec:model}.
 We then define the syntax and the semantics of AL in \cref{sec:definition}.
-\red{Finally, we ??? in \cref{???}.}
+Finally, we produce an executable Wasm specification using AL interpreter that
+ensures the correctness of the specification in \cref{sec:exec-spec}.
 
 \section{Ambiguity in the prose specification}
 \label{sec:prose-informal}
@@ -650,7 +651,6 @@ $.
 %
 % Replace-frame
 \newline \\
-\text{NOTE: $e_1$ is either store or current frame} \\
   \mu = \getenv(c) \qquad
   \casev ~ (\text{``Frame"}, v_1 ~ v_2) = \getcurframe(w) \qquad
   w, \mu \vdash e \Rightarrow v \\
@@ -1260,13 +1260,13 @@ excessively verbose.
 
 
 
-\section{???}
-\label{sec:???}
+\section{An Executable WebAssembly Specification}
+\label{sec:exec-spec}
 
-SpecTec translates declarative definitions in the DSL into algorithmic
-definitions in AL.
-\cref{ex:al-testop} is generated from \cref{ex:dsl-testop}, representing the
-algorithmic specification for the \texttt{testop} instruction using AL:
+% AL spec
+SpecTec translates declarative definitions in the DSL into algorithms in AL.
+\cref{ex:al-testop} is the generated algorithm from \cref{ex:dsl-testop},
+representing the algorithmic specification for the \texttt{testop} instruction:
 \\
 \begin{example}
 \begin{lstlisting}[style=al]
@@ -1279,8 +1279,28 @@ algorithmic specification for the \texttt{testop} instruction using AL:
 \end{lstlisting}
   \label{ex:al-testop}
 \end{example}
-Using AL, SpecTec generates reStructuredText code.
-\cref{fig:spectec-testop} shows the generated document for \texttt{testop}
-instruction.
-The generated document closely resembles the official document except for some
-minor notation changes and some missing hyperlinks.
+SpecTec generates reStructuredText code from the AL algorithms.
+The upper part of \cref{fig:spectec-testop} shows the rendered result of
+reStructuredText code for the \texttt{testop} instruction.
+
+
+% Executable
+A notable feature of AL is executability, supported by SpecTec's AL interpreter
+following the syntax and the semantics of AL.
+This executability allows the specification itself to be executed, enabling the
+execution of the specified language, Wasm.
+The execution of a Wasm program begins with two entry points: module
+instantiation and function invocation, both defined within the specification as
+algorithms.
+Executing these algorithms performs operations for executing the Wasm program,
+ultimately producing its execution result.
+In this way, the execution of a Wasm program is realized by the execution of
+the specification itself.
+
+
+% Correctness
+That is to say, the prose specification written in AL, together with the AL
+interpreter, functions as a Wasm interpreter which faithfully follows the
+written specification.
+By testing this Wasm interpreter, we can test the specification, thereby
+ensuring its correctness.

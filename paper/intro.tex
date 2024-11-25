@@ -106,7 +106,7 @@ Using this model, we identify the underlying issues and the necessary changes
 to improve it.
 Based on these insight, we formally define AL's syntax and semantics to
 accurately capture Wasm control flow.
-We then implement an AL interpreter according to this formalization and
+We then implement an AL interpreter according to the formal definition and
 evaluate its correctness.
 The interpreter successfully passes all tests in the Wasm official test suite,
 as well as tests from proposals.
@@ -115,9 +115,8 @@ as well as tests from proposals.
 % Contribution
 The contributions of this paper are as follows:
 \begin{itemize}
-  \item We propose a formal model for Wasm control flow.
-    (\cref{sec:model})
+  \item We propose a formal model for Wasm control flow. (\cref{sec:model})
   \item We define syntax and semantics of AL (\cref{sec:definition})
-  \item We implement an AL interpreter based on the formalization
-    (\cref{ch:interpreter})
+  \item We implement an AL interpreter for executable specification
+    (\cref{sec:exec-spec})
 \end{itemize}
