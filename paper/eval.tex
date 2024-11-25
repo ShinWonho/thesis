@@ -4,154 +4,50 @@
 \label{ch:eval}
 \noindent
 
-We evaluate our approach with the following three research questions.
+We evaluate our approach with the following two research questions.
 \begin{itemize}
-  \item RQ1. (Correctness) Does the formalization correctly capture the Wasm
-    control flow? (\S 5.1)
-  \item RQ2. (Generality) Does the formalization capture the fundamental
-    control flow semantics rather than being tailored to the current version of
-    the specification? (\S 5.2)
-  \item RQ3. \red{(Efficiency) Does our approach efficient? (or scalable?) (\S
-    5.3)}
+  \item \textbf{RQ1. (Correctness)} Does AL ensures the correct specification?
+    (\S 5.1)
+  \item \textbf{RQ2. (Generality)} Does AL capture the fundamental operations of
+    Wasm to describe Wasm semantics rather than being tailored to the current
+    version of the specification? (\S 5.2)
 \end{itemize}
 
 \section{RQ1: Correctness}
-To demonstrate that our formalization correctly solves the problem, we revisit
-\cref{ex:bug}.
-The code below is a simplified version of Wasm interpreter program written in AL.
-\begin{verbatim}
-(* Top-level function: invoke *)
-invoke funidx:
-  PushCtxI Frame
-  EnterI (Label(\epsilon), get_function_body(funidx))
-  ReturnFunI get_return_values(funidx)
 
-(* Wasm instructions *)
-Br 0:
-  PopCtxI Label(instr*)
-  ExecuteI instr*
-
-Unreachable:
-  TrapI
-
-(* Admin instructions *)
-Exiting:
-  PopCtxI Label(instr*)
-
-Returning:
-  PopCtxI Frame
-
-\end{verbatim}
-Using the semantics defined in \cref{ch:formal} together with the AL program,
-\cref{ex:bug} produces the same as the officialp{}; invoking the function has
-no effect.
-We adopt the simplified notation $wc \vdash wi^*$ for a Wasm state, $L$ for a
-label and $F$ for a frame, as in the notation from \cref{sec:spectecp}.
-Additionally, we omit the environment argument in \algo{} and the arguments of AL
-instructions.
-
-\[
-\begin{array}{l}
-  \epsilon \vdash \epsilon; ~ \toplevelcall(\text{``invoke"}, \numv ~ (\helper{funidx\_of}(\text{``\$brAndReturning"})))
-  \\
-  \leadsto \epsilon \vdash \epsilon; ~ \algo ~ (\pushctxi ~ \enteri ~ \returnfuni, ~ \epsilon, ~ \mt)
-  \\
-  \leadsto F \vdash \epsilon; ~ \algo ~ (\enteri ~ \returnfuni, ~ F, ~ \mt)
-  \\
-  \leadsto L ~ F \vdash (br ~ \epsilon) ~ (unreachable) ~ (exiting) ~ (returning); \wasm ~ (L ~ F, ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt))
-  \\
-  \leadsto L ~ F \vdash (unreachable) ~ (exiting) ~ (returning); \\
-  \quad\qquad\qquad\qquad\qquad \algo ~ (\popctxi ~ \executei, ~ \epsilon, ~ \wasm ~ (L ~ F, ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt)))
-  \\
-  \leadsto F \vdash (returning); ~
-    \algo ~ (\executei, ~ \epsilon, ~ \wasm ~ (F, ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt)))
-  \\
-  \leadsto F \vdash (returning); ~
-    \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (F, ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt)))
-  \\
-  \leadsto F \vdash (returning); ~ \wasm ~ (F, ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt))
-  \\
-  \leadsto F \vdash \epsilon; ~
-    \algo ~ (\popctxi, ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt)))
-  \\
-  \leadsto \epsilon \vdash \epsilon; ~
-    \algo ~ (\epsilon, ~ \epsilon, ~ \wasm ~ (\epsilon, ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt)))
-  \\
-  \leadsto \epsilon \vdash \epsilon; ~ \wasm ~ (\epsilon, ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt))
-  \\
-  \leadsto \epsilon \vdash \epsilon; ~ \algo ~ (\returnfuni, ~ \epsilon, ~ \mt)
-  \\
-  \leadsto \epsilon \vdash \epsilon; ~ \ret ~ (\epsilon, ~ \mt)
-  \\
-\end{array}
-\]
-
-Furthermore, we implement AL interpreter according to the formalization to
-evaluate its correctness.
-We write the Wasm specification using the DSL and generat a Wasm interpreter
-program written in AL.
-By executing the program with the AL interpreter against the official Wasm test
-suite, we indirectly test the AL interpreter.
-We test it using execution tests from official Wasm test suite.
+We define the syntax and semantics of Wasm manually using the DSL.
+The DSL is translated into AL, which serves as a Wasm interpreter that
+faithfully follows the written specification.
+To ensure correctness of the specification, we run this Wasm interpreter
+against the execution tests from the official Wasm test suite.
+The execution tests check whether the execution of a Wasm program produces
+expected values or errors.
 Tests related to inifinite loop detection are excluded, as the specification
 does not define this behavior.
-The result shows that the interpreter successfully pass all 51,549 tests in 70
+The results demonstrate that the interpreter successfully pass all 51,549 tests in 70
 seconds on \red{(lambda 9)}.
+Passing all the tests ensures the correctness of the specification.
 
 
+% 7 + 3 + ??? + 44
 \section{RQ2: Generality}
-The Wasm exception handler proposal introduces a new control structure,
-\textit{handler}, along with new control instructions.
-In our formalization, we initially assumed that a context is either a label or
-a frame.
-By simply extending the formalization to include a handler case, as shown
-below, AL can effectively describe the exception handler semantics:
+We evaluate AL's generality by applying SpecTec to eight proposals prepared for
+inclusion in the next version of Wasm: typed function references
+~\cite{proposal-fr}, garbage collection~\cite{propsal-gc}, tail calls
+~\cite{proposal-tc}, multiple memories~\cite{proposal-mm}, extended constant
+expressions~\cite{proposal-ec}, memory64~\cite{proposal-m64}, relaxed SIMD
+~\cite{proposal-rs}, exception handling~\cite{proposal-eh}.
+This proposals add or modify ??? Wasm instructions.
+In particular, the garbage collection proposal adds substantial complications
+to the Wasm type system, and the exception handling proposal introduces a new
+context, \textit{handler}.
+Notably, specifying all eight proposals in AL requires only trivial
+adjustments, such as adding a handler case to the context.
 
-\begin{align*}
-%
-% Wasm Context
-  \text{Wasm Context}\quad ~ WC ~\ni~ wc ~::=~
-    ~ \casev ~ (\text{``Label"}, \seq v)
-    ~ | ~ \casev ~ (\text{``Frame"}, \seq v)
-    ~ | ~ \casev ~ (\text{``Handler"}, \seq v) \\
-\end{align*}
-% \begin{align*}
-% %
-% % get_end_algo
-% \newline \\
-%   &\getendinstr(wc) =
-%   \begin{cases}
-%     \casev ~ (\text{``Exiting"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Label"}, \seq v) \\
-%     \casev ~ (\text{``Returning"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Frame"}, \seq v) \\
-%     \casev ~ (\text{``Exiting-handler"}, \epsilon) &\quad\quad\premise{if}\quad wc = \casev ~ (\text{``Handler"}, \seq v) \\
-%   \end{cases} \\
-% %
-% % is_end_instr
-% \newline \\
-%   &\isendinstr(wi) =
-%   \begin{cases}
-%     true &\quad\quad\premise{if}\quad wi = \casev ~ (\text{``Exiting"}, \epsilon) \\
-%     &\quad\quad\lor\quad
-%     wi = \casev ~ (\text{``Returning"}, \epsilon) \\
-%     &\quad\quad\lor\quad
-%     wi = \casev ~ (\text{``Exiting-handler"}, \epsilon) \\
-%     false &\quad\quad\premise{otherwise}
-%   \end{cases} \\
-% \end{align*}
-
-To evaluate the extended formalization, we updated the AL interpreter
-accordingly.
-We incorporated the exception handler feature into the specification and
-generated a Wasm interpreter.
-The interpreter successfully passed all 51,614 execution tests in the exception handlers
-proposal, excluding infinite loop tests, in 116 seconds.
-
-\section{\red{RQ3: Efficiency}}
-The Wasm tail call proposal introduces tail call optimization so that it
-contains tests with heavy recursive calls.
-As a result, running the test with previous AL interpreter results in a call
-stack overflow.
-To evaluate the \red{efficiency} of our approach, we similarly generate a Wasm
-interpreter including tail call features.
-It successfully passes all 51,639 execution tests in the tail call proposal,
-excluding infinite loop tests, in 1,284 seconds.
+We manually craft the specification including the proposal features using the
+DSL, and similarly generate a Wasm interpreter using AL.
+This interpreter is tested against the execution tests in the official test
+suites and the proposals, excluding test related to the infinite loop
+detection.
+The interpreter successfully passed all ??? execution tests, in ??? seconds.
+Passing all these tests demonstrates the generality of AL.
