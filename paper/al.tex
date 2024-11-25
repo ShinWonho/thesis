@@ -544,6 +544,9 @@ $.
   w, \getenv(c) \vdash e \Rightarrow wv \\
   \hline
   \seq{a}, w, c \vdash \pushi ~ e \Rightarrow (\push(w, wv), \algo ~ c) \\
+\end{gather*}
+\newpage
+\begin{gather*}
 %
 % Exit
 \newline \\
@@ -732,8 +735,8 @@ otherwise, it uses $s_2$ as the function name.
 It evaluates $\seq e$ to $v^*$, resulting in $\call ~ (s_1, s_{name}, v_1 ~ ...
 ~ v_n)${} where $s_{name}$ is the function name.
 % ReplaceFrame
-\replaceframei{} retrieves the current frame $\casev ~ (\text{``Frame"}, v_1
-v_2)${} in the Wasm context $w$.
+\replaceframei{} retrieves the current frame $\casev ~ (\text{``Frame"}, v_1 ~
+_2)${} in the Wasm context $w$.
 It then evaluates $e$ to $v$, updating the value at location $v_2$ along paths
 $p^+$ to $v$.
 % ReplaceFrame
@@ -742,6 +745,7 @@ sto$ along paths $p^+$ to v.
 
 
 
+\newpage
 
 %% Expression
 
@@ -909,6 +913,9 @@ sto$ along paths $p^+$ to v.
   \hline
   w, \mu \vdash \itere ~ (e_1, \listidxiter ~ e_2, s_1 ~ ... ~ s_m) \Rightarrow
   \listv ~ v_1 ~ ... ~ v_n \\
+\end{gather*}
+\newpage
+\begin{gather*}
 %
 % Match
 \newline \\
