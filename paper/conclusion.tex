@@ -3,3 +3,24 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
 \noindent
+
+
+This thesis introduces SpecTec, a framework designed to mechanize the
+specification of Wasm.
+It offers a domain specific language that facilitates the declarative
+definition of Wasm's syntax and semantics, closely resembling formal notation.
+SpecTec incorporates type-checking within the DSL to prevent errors in
+meta-level specifications and translates them into prose specifications.
+
+To formally define the semantics of Wasm in the prose specification, we propose
+a rigorous model of Wasm’s control flow, define the syntax and semantics of the
+AL language for specifying the prose, and implement an AL interpreter.
+By leveraging this interpreter, specifications written in AL are executable,
+functioning as a Wasm interpreter.
+
+Executing these specifications enables the direct evaluation of the Wasm
+specification.
+This framework bridges the gap between formal specification and executable
+code, ensuring their correctness and fidelity.
+
+

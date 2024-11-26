@@ -260,7 +260,6 @@
 % @command title 논문 제목(title of thesis)
 % @options [default: (none)]
 % - korean: 한글제목(korean title) | english: 영문제목(english title)
-% TODO: Below is working titles
 \title[korean] {실행가능한 알고리즘 명세 언어를 활용하여 올바른 WebAssembly 명세를 위한 기계화 명세 기술 연구}
 \title[english]{Mechanizing Specification with An Executable Algorithmic Specification Language for Correct WebAssembly Specification}
 
@@ -344,12 +343,11 @@
 % @command approvaldate 지도교수논문승인일
 % @param   year,month,day 연,월,일 순으로 입력
 % TODO: not approved!
-\approvaldate{2020}{12}{5}
+\approvaldate{2024}{12}{???}
 
 % @command refereedate 심사위원논문심사일
 % @param   year,month,day 연,월,일 순으로 입력
-% TODO: TBD
-\refereedate{2020}{12}{5}
+\refereedate{2024}{12}{12}
 
 % @command gradyear 졸업년도
 \gradyear{2025}
@@ -367,23 +365,59 @@
  %% Number of keywords must be less than 6.
  %% Don't write english letters in the abstract in korean.
   \begin{summary}
-  % TODO: Korean abstract
-  초록초록
-
+  웹어셈블리는 안전하고 빠르며 이식 가능하고 컴팩트한 저수준 바이트코드
+  언어로, 웹 애플리케이션의 컴파일 대상 언어로 널리 사용된다.
+  웹어셈블리의 명세는 특히 엄격하며, 웹어셈블리을 두 가지 보완적인 형태로 설명한다:
+  \textit{형식 표기법}과 \textit{서술 표기법}.
+  이러한 표준화 과정은 명세 작성자에게 상당한 부담을 주며, 특히 정확성을
+  유지하는 데 어려움을 겪게 한다.
+  이 문제를 완화하기 위해 우리는 웹어셈블리 명세를 기계화하는 프레임워크인 SpecTec을
+  제안한다.
+  이 프레임워크는 웹어셈블리의 문법과 의미를 선언적으로 정의할 수 있는 형식 표기법과
+  유사한 형태의 도메인 특화 언어를 제공한다.
+  SpecTec은 도메인 특화 언어에 대해 타입 검사를 수행하여 메타 수준의 명세 오류를 방지하고,
+  이를 알고리즘 명세 언어를 이용해 서술 표기법으로 변환한다.
+  이 언어는 웹어셈블리의 명세를 서술 표기법으로 정확하게 명시할 수 있도록 엄격하게
+  설계되었다.
+  이 언어는 실행 가능한데, 이 언어로 작성된 모든 웹어셈블리 명세는 웹어셈블리 인터프리터
+  프로그램으로 작동할 수 있다.
+  이 웹어셈블리 인터프리터 프로그램을 테스트함으로써 우리는 명세의 정확성을 확인할 수
+  있다.
   \end{summary}
 
   \begin{Korkeyword}
-  % TODO: Korean keyword
+  웹어셈블리, 실행가능한 명세, 기계화된 명세, 언어 프레임워크, 도메인 특화 언어
   \end{Korkeyword}
 
 
   \begin{abstract}
-  % TODO: English abstract
-  Greengreen
+  WebAssembly (Wasm) is a low-level bytecode language that is safe, fast,
+  portable, and compact, widely used as a compilation target for web
+  applications.
+  The Wasm specification is particularly rigorous, describing its semantics in
+  two complementary forms: \textit{formal notation} and \textit{prose
+  notation}.
+  The demanding standardization process places a significant burden on
+  specification authors, particularly in maintaining correctness.
+  To mitigate this problem, we propose SpecTec, a framework for mechanizing
+  Wasm specification.
+  It provides domain specific language (DSL) that enables the declarative
+  definition of Wasm syntax and semantics, akin to the formal notation.
+  SpecTec performs type-checking on the DSL to prevent meta-level specification
+  errors, and translate it into the prose specification with algorithmic
+  specification language.
+  This algorithmic language is designed with rigor to correctly specify Wasm
+  semantics in the prose notation.
+  One notable aspect of this language is that it is executable, meaning any
+  Wasm specification written in this language serves as a Wasm interpreter
+  program.
+  By testing the Wasm interpreter program, we can check the correctness of the
+  specification.
   \end{abstract}
 
   \begin{Engkeyword}
-  % TODO: English keyword
+  WebAssembly, executable specification, mechanized specification, language
+  framework, domain specific language
   \end{Engkeyword}
 
 
@@ -440,8 +474,6 @@
 %% It is optional.
 
 \acknowledgment[4]
-% TODO: ack
-악
 
 %%
 %% 약력 시작
@@ -478,9 +510,7 @@
   % @environment career 경력
   % @options [default: (none)] - 해당기간을 입력
   \begin{career}
-    % TODO
     \item[2023. 3.\ --\ 2025. 2.] 한국과학기술원 전산학부 조교
-    \item[2024. 10.\ --\ 2024. 10.] 한국과학기술원 홍재민 박사 결혼식 참석
   \end{career}
 
   % @environment activity 학회활동
