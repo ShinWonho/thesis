@@ -46,7 +46,8 @@ In particular, the garbage collection proposal adds substantial complications
 to the Wasm type system, and the exception handling proposal introduces a new
 context, \textit{handler}.
 Notably, specifying all eight proposals in AL requires only trivial
-adjustments, such as adding a handler case to the context.
+adjustments: adding a handler case to the context and generalizing runtime
+errors to describe an exception.
 
 We manually craft the specification including the proposal features using the
 DSL, and similarly generate a Wasm interpreter using AL.
