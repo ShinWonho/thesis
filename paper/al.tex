@@ -46,28 +46,32 @@ While the intended meaning can still be inferred, this informality leaves room
 for wrong interpretations.
 
 
-\section{A Formal Model for WebAssembly Control Flow}
+\section{A Formal Model for the prose specification}
 \label{sec:model}
 
 
 % TODO: Clever way to distinguish jargon rather then \textit
 % Formal model
-To formally specify the prose specification, we construct a formal model the
-prose specification.
+To formally specify the prose specification, we construct a formal model for
+the prose specification.
 % Execute
 Rather than relying on a program counter, we employ an instruction stack to
 represent execution progress.
 Execution proceeds by popping an instruction from the stack and performing its
-operation.
+operations.
 To avoid confusion with the stack that contains values interleaved with
 contexts, we refer to the latter as the \textit{interleaved stack}.
 This approach allows us to define the execute operation without introducing a
 program counter.
+We define a Wasm state as a tuple of the interleaved stack, the instruction
+stack, and the store.
+An operation, as described in a step of the prose specification, is then
+formalized as a state transition.
 
 
 % Jump
-We then split two distinct usages of the jump operation: \textit{enter} and
-\textit{exit}.
+To define the jump formally, we split two distinct usages of the jump
+operation: \textit{enter} and \textit{exit}.
 Since Wasm supports structured control flow, the jump operation is used either
 for entering or exiting control structures such as a function body and a block
 of instructions.
@@ -80,10 +84,7 @@ and instructions.
 
 
 % State transition
-To express the enter and exit operation formally, we model them as state
-transitions.
-We define a Wasm state as a tuple of the interleaved stack, the instruction
-stack, and the store.
+We then formalize the enter operation as a state transition.
 For brevity, we omit the store in this discussion.
 Let the interleaved stack initially contains $n$ entries $we_1 ~ ... ~ we_n$,
 and the instruction stack contains $m$ entries $wi_1 ~ ... ~ wi_m$.
