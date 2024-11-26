@@ -24,12 +24,16 @@ The execution tests check whether the execution of a Wasm program produces
 expected values or errors.
 Tests related to inifinite loop detection are excluded, as the specification
 does not define this behavior.
-The results demonstrate that the interpreter successfully pass all 51,549 tests in 70
-seconds on \red{(lambda 9)}.
+The results demonstrate that the interpreter successfully pass all 51,549 tests
+in 70 seconds on a machine running Ubuntu 18.04.3 LTS, equipped with an Intel
+Core i7-6700K processor (6th generation) and 8GB of Samsung DDR4 PC4-17000
+memory.
 Passing all the tests ensures the correctness of the specification.
 
 
 % 7 + 3 + ??? + 44
+% TODO: Fill number
+% TODO: Add cite
 \section{RQ2: Generality}
 We evaluate AL's generality by applying SpecTec to eight proposals prepared for
 inclusion in the next version of Wasm: typed function references
