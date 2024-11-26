@@ -10,8 +10,7 @@ essential to rigorously define AL to ensure an correct specification, rather
 than merely imitating the original.
 We begin by outlining the informality of the prose specification in
 \cref{sec:prose-informal}.
-Next, we propose a formal model for Wasm control flow in AL in
-\cref{sec:model}.
+Next, we propose a formal model for the prose specification \cref{sec:model}.
 We then define the syntax and the semantics of AL in \cref{sec:definition}.
 Finally, we produce an executable Wasm specification using AL interpreter that
 ensures the correctness of the specification in \cref{sec:exec-spec}.
@@ -53,8 +52,8 @@ for wrong interpretations.
 
 % TODO: Clever way to distinguish jargon rather then \textit
 % Formal model
-To formally specify the prose specification, we construct a formal model to
-describe Wasm control flow.
+To formally specify the prose specification, we construct a formal model the
+prose specification.
 % Execute
 Rather than relying on a program counter, we employ an instruction stack to
 represent execution progress.
