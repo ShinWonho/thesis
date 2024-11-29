@@ -84,26 +84,23 @@ This bridges the gap between formal specification and executable code.
 Futhermore, SpecTec generates mechanized definitions for theorem provers.
 
 
+% 느낌 대신 "논리"적인 흐름에 집중 (일관성과 일맥상통)
 % Challenge
-One challenge of our approach is making AL executable.
+When desiging the SpecTec, one of the challenges in our approach is making AL
+executable.
+In this master thesis, we focus on this specific challenge.
 Since the prose specification is written in informal pseudocode, its
 interpretation is not straightforward.
-The naive implementation of AL interpreter produced incorrect results when
-running Wasm official test suites, particularly those related to control flow.
-Additionally, the absence of a formalized definition or formal semantics for AL
-made it difficult to identify and address the fundamental issues in its design.
-Since running tests is the primary method for assessing the correctness of the
-specification, this limitation hindered the development of both the generated
-interpreter and the specification itself.
-This underscored the need for a more robust approach to formally define AL and
-ensure its alignment with Wasm's complex semantics.
+The absence of a formalized definition or formal semantics for the prose
+specification posed significant difficulty in realizing executable AL.
+Since executing the specification against tests is the primary method for
+assessing its correctness, this limitation hindered the development of both the
+generated interpreter and the specification itself.
 
 
 % Solution
 To address this, we present a formal model for how the prose specification
 describes Wasm semantics.
-Using this model, we identify the underlying issues and the necessary changes
-to improve it.
 Based on these insight, we formally define AL's syntax and semantics to
 accurately capture Wasm semantics.
 We then implement an AL interpreter according to the formal definition and
