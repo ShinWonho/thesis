@@ -77,7 +77,7 @@ The RHS shows that the value at the top of the stack is updated to $(i32.const
 
 
 % Structured Control Flow
-\red{Wasm supports control instructions for structured control flow, which
+Wasm supports control instructions for structured control flow, which
 eliminates the need for arbitrary jumps, ensuring structured and predictable
 execution.
 Control instructions include \texttt{block}, \texttt{call}, \texttt{br}, and
@@ -91,4 +91,3 @@ while the \texttt{call} instruction executes the body of a function with
 pushing a \textit{frame} onto the stack.
 The \texttt{br} and \texttt{return} instructions jump to the beginning or
 the end of the block and the function, specified in the contexts.
-}
